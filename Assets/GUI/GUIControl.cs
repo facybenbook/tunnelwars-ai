@@ -42,7 +42,7 @@ public class GUIControl : MonoBehaviour
 
         if (GUI.Button(new Rect(Screen.width - 38.0f, 5.0f, 33.0f, 33.0f), currentTex, ""))
         {
-            music.SendMessage("Toggle");
+            //music.Toggle();
             mute = !mute;
             if (currentTex == muteEnabledTexture) currentTex = muteDisabledTexture;
             else currentTex = muteEnabledTexture;

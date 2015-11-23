@@ -4,28 +4,28 @@ using System.Collections.Generic;
 
 public class Game : MonoBehaviour {
 
-	Transform protoground;
-	Transform protogroundImmutable;
-	Transform protobombs;
-	Transform protorockets;
-	Transform protominions;
-	Transform protolightnings;
-	Transform protobomb;
-	Transform protorocket;
-	Transform protominion;
-	Transform protomasterminion;
-	Transform protolightning;
-	Transform protogravity;
-	Transform protospeed;
-	Transform protoexplosion;
-	Transform dead;
-	GameObject gui;
+	public Transform protoground;
+	public Transform protogroundImmutable;
+	public Transform protobombs;
+	public Transform protorockets;
+	public Transform protominions;
+	public Transform protolightnings;
+	public Transform protobomb;
+	public Transform protorocket;
+	public Transform protominion;
+	public Transform protomasterminion;
+	public Transform protolightning;
+	public Transform protogravity;
+	public Transform protospeed;
+	public Transform protoexplosion;
+	public Transform dead;
+	public GameObject gui;
 	
-	AudioClip clickSound;
-	AudioClip hurtSound;
-	AudioClip shiftSound;
-	AudioClip ammoSound;
-	AudioClip lightningSound;
+	public AudioClip clickSound;
+	public AudioClip hurtSound;
+	public AudioClip shiftSound;
+	public AudioClip ammoSound;
+	public AudioClip lightningSound;
 	
 	// STATIC
 	private static int started_as_master = 0;
@@ -129,12 +129,19 @@ public class Game : MonoBehaviour {
 		temp.x = 1600;
 		temp.y = 864;
 		player2.position = temp;
-		
+
+		// Add space
+		for (int i = 0; i < 7000; i++) {
+			ground.Add (true);
+			ground_sprite.Add(null);
+		}
+
 		// Make regular ground
 		for (int i= 0; i < 46; i++)
 		{
 			for (int j= 0; j < 16; j++)
 			{
+
 				float chance = 0.02f; // Default chance
 				
 				if(j != 0)
@@ -219,8 +226,11 @@ public class Game : MonoBehaviour {
 			temp.y = 64 * i;
 			clone.position = temp;
 		};
-		
+
 		// Create reveal ground
+		for (int i = 0; i < 10; i++) {
+			ground_reveal.Add(null);
+		}
 		for (int i = 0; i < 4; i++)
 		{
 			clone = Instantiate(protoground);
@@ -253,7 +263,7 @@ public class Game : MonoBehaviour {
 			ammo_vspeed.Add(0);
 		};
 		
-		gui.SendMessage("SetMode", 0);
+		gui.GetComponent<GUIControl>().SetMode(0);
 	}
 	
 	void  LateUpdate (){
