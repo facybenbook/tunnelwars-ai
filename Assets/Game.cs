@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 public class Game : MonoBehaviour {
 
+	// Unity transforms of prototypes of objects to clone
 	public Transform protoground;
 	public Transform protogroundImmutable;
 	public Transform protobombs;
@@ -20,14 +21,15 @@ public class Game : MonoBehaviour {
 	public Transform protoexplosion;
 	public Transform dead;
 	public GameObject gui;
-	
+
+	// Our sounds
 	public AudioClip clickSound;
 	public AudioClip hurtSound;
 	public AudioClip shiftSound;
 	public AudioClip ammoSound;
 	public AudioClip lightningSound;
 	
-	// STATIC
+	// Must be accessible during game restart?
 	private static int started_as_master = 0;
 	
 	// Input variables
@@ -76,7 +78,7 @@ public class Game : MonoBehaviour {
 	private int spawnTimer = 7;
 	private int restartTimer = -1;
 	
-	private float floor_level = 64 * 14;
+	private float floor_level = 64.0f * 14.0f;
 	private List<bool> ground= new List<bool>();
 	private List<Transform> ground_sprite= new List<Transform>();
 	private List<Transform> ground_reveal= new List<Transform>();
@@ -97,15 +99,16 @@ public class Game : MonoBehaviour {
 	private Transform clone;
 	private int startTimer = 1;
 
-	// For setting positions
-	private Vector3 temp = new Vector3(1344,864);
+	// Intermediary vector used for updating
+	private Vector3 temp = new Vector3();
 	
 	void  Awake (){
 		Application.targetFrameRate = 10;
 		QualitySettings.vSyncCount = 1;
 	}
 	
-	void  LateStart (){   
+	void  LateStart (){
+
 		// Find GameObjects
 		player1 = GameObject.Find("Player 1").transform;
 		player2 = GameObject.Find("Player 2").transform;
@@ -812,8 +815,8 @@ public class Game : MonoBehaviour {
 			switch(type)
 			{
 				
-				// Bombs
-			case 1:
+			// Bombs
+			case 1: {
 
 				temp = projTransform.position;
 				temp.y += speed;
@@ -885,16 +888,17 @@ public class Game : MonoBehaviour {
 					i -= 1;
 				}
 				break;
+			}
 				
-				// Rockets
-			case 2:
+			// Rockets
+			case 2:{
 
 				temp = projTransform.position;
 				temp.x += projTransform.localScale.x * 14;
 				projTransform.position = temp;
 				x += projTransform.localScale.x * 14;
 				
-				destroy = false;
+				bool destroy = false;
 				
 				// Player collide
 				if (parent == 2)
@@ -973,15 +977,16 @@ public class Game : MonoBehaviour {
 					i -= 1;
 				}
 				break;
+			}
 				
-				// Minions
-			case 3:
+			// Minions
+			case 3: {
 				// Check ground collision
-				bool  falling = !(checkGround(x - 9, y + 16 + speed) || checkGround(x + 9, y + 16 + speed));
+				bool  falling = !(checkGround(x - 9.0f, y + 36.0f + speed) || checkGround(x + 9.0f, y + 36.0f + speed));
 				bool  pushing_into_wall = (checkGround(x + speed2 + (projectile[i] as Transform).localScale.x * 18, y + 8) ||
 				                           checkGround(x + speed2 + (projectile[i] as Transform).localScale.x * 18, y - 15));
 				
-				destroy = false;
+				bool destroy = false;
 
 				temp = projTransform.position;
 				
@@ -989,17 +994,16 @@ public class Game : MonoBehaviour {
 				{
 					temp.y += speed;
 					y += speed;
-					temp_int_unity = (int)projectile_speed[i]; 
-					temp_int_unity = (int)projectile_speed[i];
-					projectile_speed[i] = temp_int_unity +  1;
+					
+					projectile_speed[i] += 1.0f;
 					projectile_aux[i] = 12;
 				}
 				else
 				{
 					projectile_speed[i] = 0;
-					temp.y = Mathf.Ceil((y - floor_level) / 64) * 64 + floor_level - 15;
+					y = temp.y = Mathf.Ceil((y - floor_level) / 64.0f) * 64.0f + floor_level - 15.0f;
 				}
-				
+
 				if (!pushing_into_wall)
 				{
 					temp.x += speed2;
@@ -1009,7 +1013,7 @@ public class Game : MonoBehaviour {
 				else
 				{
 					temp.x = Mathf.Round(x / 64) * 64 - (projectile[i] as Transform).localScale.x * 28;
-					temp.y = projTransform.position.y;
+					temp.y = y;//projTransform.position.y;
 					if (falling)
 					{
 						// Speed doubles?
@@ -1018,8 +1022,10 @@ public class Game : MonoBehaviour {
 					else
 					{
 						bool blow_ground= false;
-						// Pushing into a wall and also not falling. Wait then die. 
-						temp_int_unity = projectile_aux[i]; projectile_aux[i] = temp_int_unity - 1;
+						// Pushing into a wall and also not falling. Wait then die.
+						int temp_int_unity = projectile_aux[i];
+						projectile_aux[i] = temp_int_unity - 1;
+						//print(projectile_aux[i]);
 						if (temp_int_unity - 1 <= 0)
 						{
 							destroy = true;
@@ -1058,8 +1064,6 @@ public class Game : MonoBehaviour {
 						}
 					}
 				}
-
-				projTransform.position = temp;
 
 				// Check player collision
 				if (parent == 2)
@@ -1131,7 +1135,10 @@ public class Game : MonoBehaviour {
 						}
 					};
 				}
-				
+
+				// Update position
+				projTransform.position = temp;
+
 				if (destroy)
 				{
 					// Destroy self
@@ -1144,10 +1151,12 @@ public class Game : MonoBehaviour {
 					projectile_aux.RemoveAt(i);
 					i -= 1;
 				}
+
 				break;
+			}
 				
-				// Lightning
-			case 6:
+			// Lightning
+			case 6: {
 				projectile_aux[i] = aux - 1;
 				if (aux == 20)
 				{
@@ -1197,6 +1206,7 @@ public class Game : MonoBehaviour {
 					player1_vspeed -= 10;
 				}
 				break;
+			}
 			}
 		};
 		
@@ -1350,12 +1360,12 @@ public class Game : MonoBehaviour {
 	}
 
 	private bool checkGround ( float x ,   float y  ){
-		if (x <= 0 || x >= 2944) return true;
-		if (x >= 1408 && x <= 1536 && y <= 1152) return true;
+		if (x <= 0.0f || x >= 2944.0f) return true;
+		if (x >= 1408.0f && x <= 1536.0f && y <= 1152.0f) return true;
 		if (y < floor_level) return false;
 		if (y > 1920) return true;
 		float x64th = x / 64.0f;
-		float relY64th = (y - floor_level) / 64;
+		float relY64th = (y - floor_level) / 64.0f;
 		int index = (int) (Mathf.Floor(x64th) * 46.0f +
 			Mathf.Floor(relY64th));
 		if (index < 0 || index > ground.Count) return true;
