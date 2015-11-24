@@ -28,7 +28,7 @@ public interface IWorld {
 	void Advance(List<WorldAction> actions);
 }
 
-partial class World : IWorld {
+public partial class World : IWorld {
 
 	// Get the initial world state
 	public World() {

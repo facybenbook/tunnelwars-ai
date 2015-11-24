@@ -44,16 +44,26 @@ public class Game : MonoBehaviour {
 
 		// Set up the world with the initial state
 		currentWorld = new RenderedWorld(this);
+
+		// Create a keyboard control agent for player 1
+		player1Agent = new WASDFAgent(1);
 	}
 
 	// Called every frame
 	void Update () {
 
-		currentWorld.Advance(new List<WorldAction>());
+		// Advance world using our agents
+		List<WorldAction> actions = player1Agent.getAction(currentWorld);
+		currentWorld.Advance(actions);
 	}
 
 	// Restarts the game
 	void RestartGame () {
 		
 	}
+
+
+
+	WASDFAgent player1Agent;
+
 }

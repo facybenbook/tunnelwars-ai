@@ -11,7 +11,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 // Types of weapons
-enum WeaponType {
+public enum WeaponType {
 	None,
 	Bombs,
 	Rockets,
@@ -52,7 +52,8 @@ partial class World : IWorld {
 		public float Health {
 			get { return health; }
 			set {
-				if (value <= 0.0f) {
+				health = value;
+				if (health <= 0.0f) {
 					// Kill player
 				}
 			}
@@ -104,13 +105,17 @@ partial class World : IWorld {
 			// Handle action input if alive
 			if (Alive) {
 				foreach (WorldAction action in actions) {
-						
+
 					if (action == jumpAction) {
+
 						jump();
 						break;
 					}
 				}
 			}
+
+			// Gravity always affects motion
+			fall();
 		}
 
 
