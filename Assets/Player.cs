@@ -20,7 +20,7 @@ public enum WeaponType {
 }
 
 partial class World : IWorld {
-	interface IPlayer {
+	public interface IPlayer {
 
 		// Transformation
 		float X { get; set; }
@@ -65,10 +65,22 @@ partial class World : IWorld {
 		// Weapons
 		public int Ammo { get; set; }
 		public WeaponType Weapon { get; set; }
-		public bool IsMaster { get; set; }
+		public virtual bool IsMaster {
+			get {
+				return isMaster;
+			}
+			set {
+				isMaster = value;
+				Ammo = -1;
+			}
+		}
 
-		// Constructor
+		// Constructors
+		public Player() {}
 		public Player(World parent, bool isMaster, int actionSet) {
+			Init(parent, isMaster, actionSet);
+		}
+		public void Init(World parent, bool isMaster, int actionSet) {
 
 			X = 0.0f;
 			Y = 0.0f;
@@ -77,20 +89,20 @@ partial class World : IWorld {
 			Ammo = 0;
 			Weapon = WeaponType.None;
 			IsMaster = isMaster;
-
+			
 			vSpeed = 0.0f;
 			gravity = 1.0f;
 			noFall = true;
 			wallStick = 0;
 			world = parent;
-
+			
 			// Assign actions to respond to
 			if (actionSet == 1) {
 				leftAction = WorldAction.P1Left;
 				rightAction = WorldAction.P1Right;
 				jumpAction = WorldAction.P1Jump;
 				fireAction = WorldAction.P1Fire;
-
+				
 			} else if (actionSet == 2) {
 				leftAction = WorldAction.P2Left;
 				rightAction = WorldAction.P2Right;
@@ -100,7 +112,7 @@ partial class World : IWorld {
 		}
 
 		// Takes an input list of world actions and updates the state
-		public void Advance(List<WorldAction> actions) {
+		virtual public void Advance(List<WorldAction> actions) {
 
 			// Handle action input if alive
 			if (Alive) {
@@ -121,6 +133,7 @@ partial class World : IWorld {
 
 
 		World world;
+		bool isMaster;
 
 		// Kinematics
 		float vSpeed;

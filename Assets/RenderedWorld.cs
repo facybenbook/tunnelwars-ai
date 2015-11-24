@@ -26,8 +26,6 @@ class RenderedWorld : World, IWorld {
 
 		// Retain the game script reference for later use
 		resourceScript = resourceSourceScript;
-
-		player1Transform = player2Transform = playerDeadTransform = null;
 		isSetup = false;
 
 		Setup();
@@ -38,10 +36,6 @@ class RenderedWorld : World, IWorld {
 
 		isSetup = true;
 
-		// Find player transforms
-		player1Transform = GameObject.Find("Player 1").transform;
-		player2Transform = GameObject.Find("Player 2").transform;
-
 		// Add grounds
 		for (int i = 0; i < blocksWidth; i++) {
 
@@ -49,6 +43,8 @@ class RenderedWorld : World, IWorld {
 				if (ground[i, j]) setGroundByIndex(i, j, true);
 			}
 		}
+
+		// Players are always added
 	}
 	
 
@@ -61,11 +57,6 @@ class RenderedWorld : World, IWorld {
 
 	// The ground transforms
 	Transform[,] groundTransforms = new Transform[blocksWidth, blocksHeight];
-
-	// The player transforms
-	Transform player1Transform;
-	Transform player2Transform;
-	Transform playerDeadTransform;
 
 	override protected void setGroundByIndex(int i, int j, bool value) {
 		ground[i, j] = value;
@@ -84,21 +75,61 @@ class RenderedWorld : World, IWorld {
 		} else {
 
 			// Destroy Unity object for ground
-			Transform groundTransform = groundTransforms[i, j];
 			Transform transform = groundTransforms[i, j];
 			UnityEngine.Object.Destroy(transform.gameObject);
 		}
+	}
+
+	// Create renderable subclass of Player and use it when creating players
+	public class RenderedPlayer : Player {
+
+		public RenderedPlayer(World parent, bool isMaster, int actionSet) {
+
+			getTransform(actionSet);
+			base.Init(parent, isMaster, actionSet);
+		}
+
+		// Override the set master method so that Unity scene is updated
+		public override bool IsMaster {
+			get {
+				return base.IsMaster;
+			}
+			set {
+				base.IsMaster = value; // Call derived assignment
+				playerTransform.gameObject.SendMessage("SetMaster", value);
+			}
+		}
+
+		public override void Advance(List<WorldAction> actions) {
+
+			base.Advance(actions);
+			playerTransform.position = new Vector3(X, Y);
+			playerTransform.localScale = new Vector3(XScale, 1.0f);
+		}
+
+		// The player's unity transform
+		Transform playerTransform;
+
+		// Get transform variable
+		void getTransform(int playerNum) {
+
+			Transform t = null;
+			if (playerNum == 1) {
+				t = GameObject.Find("Player 1").transform;
+			} else if (playerNum == 2) {
+				t = GameObject.Find("Player 2").transform;
+			}
+			playerTransform = t;
+		}
+
+	}
+	override protected IPlayer createPlayer(bool isMaster, int actionSet) {
+		return new RenderedPlayer(this, isMaster, actionSet);
 	}
 
 	override protected void postUpdate() {
 
 		// Do nothing if not setup to render
 		if (!isSetup) return;
-
-		// Update the transforms
-		player1Transform.position = new Vector3(player1.X, player1.Y);
-		player1Transform.localScale = new Vector3(player1.XScale, 1.0f);
-		player2Transform.position = new Vector3(player2.X, player2.Y);
-		player2Transform.localScale = new Vector3(player2.XScale, 1.0f);
 	}
 }

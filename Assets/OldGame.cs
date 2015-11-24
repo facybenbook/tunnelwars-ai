@@ -112,7 +112,9 @@ public class OldGame : MonoBehaviour {
 		// Find GameObjects
 		player1 = GameObject.Find("Player 1").transform;
 		player2 = GameObject.Find("Player 2").transform;
-		
+
+		DONE
+
 		// Set master if a player lost last round
 		if (started_as_master == 1)
 		{

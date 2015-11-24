@@ -64,25 +64,27 @@ public partial class World : IWorld {
 
 
 	// Players
-	protected Player player1;
-	protected Player player2;
+	protected IPlayer player1;
+	protected IPlayer player2;
 
 	// An array of bools determining whether ground is filled in
 	protected bool[,] ground = new bool[blocksWidth, blocksHeight];
 
 	// Sets up a new world
 	protected void Setup() {
-		SetupWithMasterPlayer(0);
+		SetupWithMasterPlayer(1);
 	}
 	protected void SetupWithMasterPlayer(int masterPlayer) {
 
 		// Add players
-		player1 = new Player(this, masterPlayer == 1, actionSet: 1);
-		player2 = new Player(this, masterPlayer == 2, actionSet: 2);
+		player1 = createPlayer(masterPlayer == 1, actionSet: 1);
+		player2 = createPlayer(masterPlayer == 2, actionSet: 2);
 		player1.X = 1344.0f;
 		player1.Y = 864.0f;
 		player2.X = 1600.0f;
 		player2.Y = 864.0f;
+
+
 		
 		// Fill in regular ground with caves
 		for (int i = 0; i < blocksWidth; i++) {
@@ -147,6 +149,11 @@ public partial class World : IWorld {
 	// Sets the ground at indices i, j
 	virtual protected void setGroundByIndex(int i, int j, bool value) {
 		ground[i, j] = value;
+	}
+
+	// Creates a player
+	virtual protected IPlayer createPlayer(bool isMaster, int actionSet) {
+		return new Player(this, isMaster, actionSet) as IPlayer;
 	}
 
 	// Called at the end of each world creation/advance
