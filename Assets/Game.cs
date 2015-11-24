@@ -49,6 +49,7 @@ public class Game : MonoBehaviour {
 	// Called every frame
 	void Update () {
 
+		currentWorld.Advance(new List<WorldAction>());
 	}
 
 	// Restarts the game

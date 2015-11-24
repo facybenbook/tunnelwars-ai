@@ -382,8 +382,7 @@ public class OldGame : MonoBehaviour {
 				player1_vspeed = -14;
 			}
 		}
-		if (w && w_prev == false)
-		{
+		if (w && w_prev == false) {
 			if ((player2_nofall || player2_wallstick > 0) && player2_hh > 0)
 			{
 				player2_vspeed = -14;
