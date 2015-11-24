@@ -37,23 +37,29 @@ public class Game : MonoBehaviour {
 	public AudioClip LightningSound;
 
 	// The current world
-	World currentWorld = null;
+	RenderedWorld currentWorld = null;
 
 	// First-time setup
 	void Start () {
 
 		// Set up the world with the initial state
 		currentWorld = new RenderedWorld(this);
+		currentWorld.Display();
 
-		// Create a keyboard control agent for player 1
-		player1Agent = new WASDFAgent(1);
+		// Create a keyboard control agent for player 2
+		agentList = new List<IAgent>();
+		agentList.Add(new WASDFAgent(2));
 	}
 
 	// Called every frame
 	void Update () {
 
 		// Advance world using our agents
-		List<WorldAction> actions = player1Agent.getAction(currentWorld);
+		List<WorldAction> actions = new List<WorldAction>();
+		foreach (IAgent agent in agentList) {
+			actions.AddRange(agent.GetAction(currentWorld));
+		}
+
 		currentWorld.Advance(actions);
 	}
 
@@ -63,7 +69,7 @@ public class Game : MonoBehaviour {
 	}
 
 
-
-	WASDFAgent player1Agent;
+	// A list of all agents that are used for the game
+	List<IAgent> agentList;
 
 }

@@ -1,7 +1,7 @@
 ﻿/*
  * RenderedWorld.cs
  * 
- * Same as the World class exept that it becomes visible upon instantiation.
+ * Same as the World class exept that it becomes visible upon Display.
  * Subsequent updates to rendered worlds affect the Unity scene.
  * 
  */
@@ -9,6 +9,12 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+
+public interface IRenderedWorld {
+
+	// Sets up Unity objects
+	void Display();
+}
 
 class RenderedWorld : World, IWorld {
 
@@ -22,11 +28,33 @@ class RenderedWorld : World, IWorld {
 		resourceScript = resourceSourceScript;
 
 		player1Transform = player2Transform = playerDeadTransform = null;
+		isSetup = false;
 
 		Setup();
 	}
+
+	// Sets up Unity objects
+	public void Display() {
+
+		isSetup = true;
+
+		// Find player transforms
+		player1Transform = GameObject.Find("Player 1").transform;
+		player2Transform = GameObject.Find("Player 2").transform;
+
+		// Add grounds
+		for (int i = 0; i < blocksWidth; i++) {
+
+			for (int j = 0; j < blocksHeight; j++) {
+				if (ground[i, j]) setGroundByIndex(i, j, true);
+			}
+		}
+	}
 	
 
+
+	// Whether Unity objects have been set up
+	bool isSetup;
 
 	// A reference to the script with all resources
 	Game resourceScript = null;
@@ -42,6 +70,9 @@ class RenderedWorld : World, IWorld {
 	override protected void setGroundByIndex(int i, int j, bool value) {
 		ground[i, j] = value;
 
+		// Do nothing if not setup to render
+		if (!isSetup) return;
+
 		if (value) {
 
 			// Add Unity object for ground
@@ -54,22 +85,15 @@ class RenderedWorld : World, IWorld {
 
 			// Destroy Unity object for ground
 			Transform groundTransform = groundTransforms[i, j];
-			if (groundTransform) {
-				Transform transform = groundTransforms[i, j];
-				UnityEngine.Object.Destroy(transform.gameObject);
-			}
+			Transform transform = groundTransforms[i, j];
+			UnityEngine.Object.Destroy(transform.gameObject);
 		}
 	}
 
 	override protected void postUpdate() {
-	
-		// Find the player transforms if needed
-		if (!player1Transform) {
-			 player1Transform = GameObject.Find("Player 1").transform;
-		}
-		if (!player2Transform) {
-			player2Transform = GameObject.Find("Player 2").transform;
-		}
+
+		// Do nothing if not setup to render
+		if (!isSetup) return;
 
 		// Update the transforms
 		player1Transform.position = new Vector3(player1.X, player1.Y);

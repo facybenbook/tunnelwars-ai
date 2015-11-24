@@ -13,7 +13,7 @@ using System.Collections.Generic;
 public interface IAgent {
 
 	// This method, given a world should return a list of world actions
-	List<WorldAction> getAction(World world);
+	List<WorldAction> GetAction(World world);
 }
 
 // This class provides a base for all agents that control a single player
@@ -37,7 +37,7 @@ public abstract class PlayerAgentBase : IAgent {
 		}
 	}
 
-	abstract public List<WorldAction> getAction(World world);
+	abstract public List<WorldAction> GetAction(World world);
 
 	protected WorldAction leftAction;
 	protected WorldAction rightAction;
@@ -59,7 +59,7 @@ public class WASDFAgent : PlayerAgentBase {
 		fPrev = false;
 	}
 	
-	override public List<WorldAction> getAction(World world) {
+	override public List<WorldAction> GetAction(World world) {
 
 		wPrev = w;
 		fPrev = f;
