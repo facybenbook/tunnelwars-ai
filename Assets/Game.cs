@@ -68,7 +68,6 @@ public class Game : MonoBehaviour {
 		
 	}
 
-
 	// A list of all agents that are used for the game
 	List<IAgent> agentList;
 

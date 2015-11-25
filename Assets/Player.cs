@@ -1,8 +1,8 @@
 ﻿/*
  * Player.cs
  * 
- * The player class manages the game logic player movement and firing. This
- * class is defined as an inner class to the world class
+ * The Player class manages the game logic player movement and firing. This
+ * class is defined as an inner class to the World class
  * 
  */
 
@@ -19,28 +19,9 @@ public enum WeaponType {
 	Lightning
 }
 
-partial class World : IWorld {
-	public interface IPlayer {
+partial class World : IAdvancing {
 
-		// Transformation
-		float X { get; set; }
-		float Y { get; set; }
-		float XScale { get; set; }
-
-		// Health
-		float Health { get; set; }
-		bool Alive { get; }
-
-		// Weapons
-		int Ammo { get; set; }
-		WeaponType Weapon { get; set; }
-		bool IsMaster { get; set; }
-
-		// Takes an input list of world actions and updates the state
-		void Advance(List<WorldAction> actions);
-	}
-
-	public class Player : IPlayer {
+	public class Player : IAdvancing {
 
 		// Transformation
 		public float X { get; set; }

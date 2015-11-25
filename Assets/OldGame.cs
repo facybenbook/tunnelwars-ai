@@ -126,6 +126,8 @@ public class OldGame : MonoBehaviour {
 			player2_ammo = -1;
 			player2.gameObject.SendMessage("SetMaster", true);
 		}
+
+		DONE
 		
 		temp.x = 1344;
 		temp.y = 864;
@@ -134,6 +136,8 @@ public class OldGame : MonoBehaviour {
 		temp.x = 1600;
 		temp.y = 864;
 		player2.position = temp;
+
+DONE
 		
 		// Add space
 		for (int i = 0; i < 7000; i++) {
@@ -185,6 +189,8 @@ public class OldGame : MonoBehaviour {
 				}
 			};
 		};
+
+DONE
 		
 		// Create immutable ground
 		// Left edge
@@ -231,7 +237,10 @@ public class OldGame : MonoBehaviour {
 			temp.y = 64 * i;
 			clone.position = temp;
 		};
-		
+
+DONE
+
+UNDONE
 		// Create reveal ground
 		for (int i = 0; i < 10; i++) {
 			ground_reveal.Add(null);
@@ -252,6 +261,7 @@ public class OldGame : MonoBehaviour {
 			// Colorize here
 			ground_reveal[i * 2 + 1] = clone;
 		};
+END UNDONE
 		
 		// Create bombs that are there at the start
 		for (int i = 0; i < 4; i++)

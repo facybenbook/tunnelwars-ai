@@ -10,13 +10,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public interface IRenderedWorld {
-
-	// Sets up Unity objects
-	void Display();
-}
-
-class RenderedWorld : World, IWorld {
+class RenderedWorld : World {
 
 	public RenderedWorld() {}
 
@@ -28,7 +22,7 @@ class RenderedWorld : World, IWorld {
 		resourceScript = resourceSourceScript;
 		isSetup = false;
 
-		Setup();
+		Init();
 	}
 
 	// Sets up Unity objects
@@ -45,6 +39,40 @@ class RenderedWorld : World, IWorld {
 		}
 
 		// Players are always added
+
+		// Add immutable ground
+		// Left edge
+		for (int i = 0; i < 31; i++)
+		{
+			Transform clone = Object.Instantiate(resourceScript.ProtogroundImmutable);
+			clone.position = new Vector3(-64.0f, i * 64.0f);
+		};
+		// Right edge
+		for (int i = 0; i < 31; i++)
+		{
+			Transform clone = Object.Instantiate(resourceScript.ProtogroundImmutable);
+			clone.position = new Vector3(2944.0f, i * 64.0f);
+		};
+		// Top edge
+		for (int i = -1; i < 47; i++)
+		{
+			Transform clone = Object.Instantiate(resourceScript.ProtogroundImmutable);
+			clone.position = new Vector3(i * 64.0f, -64.0f);
+		};
+		// Bottom edge
+		for (int i = -1; i < 47; i++)
+		{
+			Transform clone = Object.Instantiate(resourceScript.ProtogroundImmutable);
+			clone.position = new Vector3(i * 64.0f, 1920.0f);
+		};
+		// Middle wall
+		for (int i = 0; i < 18; i++)
+		{
+			Transform clone = Object.Instantiate(resourceScript.ProtogroundImmutable);
+			clone.position = new Vector3(1408.0f, 64.0f * i);
+			clone = Object.Instantiate(resourceScript.ProtogroundImmutable);
+			clone.position = new Vector3(1472.0f, 64.0f * i);
+		};
 	}
 	
 
@@ -123,7 +151,7 @@ class RenderedWorld : World, IWorld {
 		}
 
 	}
-	override protected IPlayer createPlayer(bool isMaster, int actionSet) {
+	override protected Player createPlayer(bool isMaster, int actionSet) {
 		return new RenderedPlayer(this, isMaster, actionSet);
 	}
 

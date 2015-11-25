@@ -22,21 +22,23 @@ public enum WorldAction {
 	P2Fire
 }
 
-public interface IWorld {
+// An interface for all objects that can "advance" in the same sense that a world does
+// from a list of actions.
+public interface IAdvancing {
 
 	// Takes an input list of world actions and updates the state
 	void Advance(List<WorldAction> actions);
 }
 
-public partial class World : IWorld {
+public partial class World : IAdvancing {
 
 	// Get the initial world state
 	public World() {
-		Setup();
+		Init();
 	}
 	public World(bool empty) {
 		if (!empty) {
-			Setup();
+			Init();
 		}
 	}
 
@@ -64,17 +66,23 @@ public partial class World : IWorld {
 
 
 	// Players
-	protected IPlayer player1;
-	protected IPlayer player2;
+	protected Player player1;
+	protected Player player2;
+
+	// List of powerups
+	List<Powerup> powerups;
 
 	// An array of bools determining whether ground is filled in
 	protected bool[,] ground = new bool[blocksWidth, blocksHeight];
 
 	// Sets up a new world
-	protected void Setup() {
-		SetupWithMasterPlayer(1);
+	protected void Init() {
+		InitWithMasterPlayer(0);
 	}
-	protected void SetupWithMasterPlayer(int masterPlayer) {
+	protected void InitWithMasterPlayer(int masterPlayer) {
+
+		// Initialize lists
+		powerups = new List<Powerup>();
 
 		// Add players
 		player1 = createPlayer(masterPlayer == 1, actionSet: 1);
@@ -84,8 +92,19 @@ public partial class World : IWorld {
 		player2.X = 1600.0f;
 		player2.Y = 864.0f;
 
+		// Create bombs that are there at the start
+		for (int i = 0; i < 4; i++)
+		{
+			float x, y;
+			if (i == 0) x = 1792.0f;
+			else if (i == 1) x = 1952.0f;
+			else if (i == 2) x = 1088.0f;
+			else x = 928.0f;
+			y = floorLevel - 64.0f;
+			Powerup powerup = new Powerup(this, 1792.0f, 1952.0f, PowerupType.Bombs);
+			powerups.Add(powerup);
+		};
 
-		
 		// Fill in regular ground with caves
 		for (int i = 0; i < blocksWidth; i++) {
 			for (int j = 0; j < blocksHeight; j++) {
@@ -122,7 +141,6 @@ public partial class World : IWorld {
 	}
 
 	// Checks the ground at a point
-	// HACK: Hardcoded spatial dimensions in here. Quite ugly.
 	protected bool checkGround(float x, float y) {
 		if (x <= 0.0f || x >= 2944.0f) return true;
 		if (x >= 1408.0f && x <= 1536.0f && y <= 1152.0f) return true;
@@ -152,8 +170,8 @@ public partial class World : IWorld {
 	}
 
 	// Creates a player
-	virtual protected IPlayer createPlayer(bool isMaster, int actionSet) {
-		return new Player(this, isMaster, actionSet) as IPlayer;
+	virtual protected Player createPlayer(bool isMaster, int actionSet) {
+		return new Player(this, isMaster, actionSet);
 	}
 
 	// Called at the end of each world creation/advance
