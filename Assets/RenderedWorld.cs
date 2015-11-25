@@ -22,7 +22,7 @@ class RenderedWorld : World {
 		resourceScript = resourceSourceScript;
 		isSetup = false;
 
-		Init();
+		init();
 	}
 
 	// Sets up Unity objects
@@ -114,7 +114,7 @@ class RenderedWorld : World {
 		public RenderedPlayer(World parent, bool isMaster, int actionSet) {
 
 			getTransform(actionSet);
-			base.Init(parent, isMaster, actionSet);
+			base.init(parent, isMaster, actionSet);
 		}
 
 		// Override the set master method so that Unity scene is updated

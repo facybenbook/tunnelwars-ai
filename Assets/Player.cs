@@ -59,9 +59,9 @@ partial class World : IAdvancing {
 		// Constructors
 		public Player() {}
 		public Player(World parent, bool isMaster, int actionSet) {
-			Init(parent, isMaster, actionSet);
+			init(parent, isMaster, actionSet);
 		}
-		public void Init(World parent, bool isMaster, int actionSet) {
+		public void init(World parent, bool isMaster, int actionSet) {
 
 			X = 0.0f;
 			Y = 0.0f;

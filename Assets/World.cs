@@ -34,11 +34,11 @@ public partial class World : IAdvancing {
 
 	// Get the initial world state
 	public World() {
-		Init();
+		init();
 	}
 	public World(bool empty) {
 		if (!empty) {
-			Init();
+			init();
 		}
 	}
 
@@ -76,10 +76,10 @@ public partial class World : IAdvancing {
 	protected bool[,] ground = new bool[blocksWidth, blocksHeight];
 
 	// Sets up a new world
-	protected void Init() {
-		InitWithMasterPlayer(0);
+	protected void init() {
+		initWithMasterPlayer(0);
 	}
-	protected void InitWithMasterPlayer(int masterPlayer) {
+	protected void initWithMasterPlayer(int masterPlayer) {
 
 		// Initialize lists
 		powerups = new List<Powerup>();
