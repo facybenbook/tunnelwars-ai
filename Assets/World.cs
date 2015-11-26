@@ -43,7 +43,7 @@ public partial class World : IAdvancing {
 	}
 
 	// Takes an input list of world actions and updates the state
-	public void Advance(List<WorldAction> actions) {
+	virtual public void Advance(List<WorldAction> actions) {
 
 		// Advance players
 		player1.Advance(actions);
@@ -51,9 +51,14 @@ public partial class World : IAdvancing {
 
 		// Advance spawn timer and spawn powerups
 		spawnTimer -= 1;
-		if (spawnTimer == 0 && powerups.Count < 64) {
+		if (spawnTimer <= 0 && powerups.Count < 64) {
 			Powerup.SpawnRandom(this);
 			spawnTimer = spawnTimerMax;
+		}
+
+		// Advance powerups
+		foreach (Powerup powerup in powerups) {
+			powerup.Advance(null);
 		}
 
 		postUpdate();
@@ -121,7 +126,7 @@ public partial class World : IAdvancing {
 			else if (i == 2) x = 1088.0f;
 			else x = 928.0f;
 			y = floorLevel - 64.0f;
-			Powerup powerup = new Powerup(this, 1792.0f, 1952.0f, PowerupType.Bombs);
+			Powerup powerup = CreatePowerup(x, y, PowerupType.Bombs);
 			powerups.Add(powerup);
 		};
 
@@ -189,9 +194,17 @@ public partial class World : IAdvancing {
 		ground[i, j] = value;
 	}
 
-	// Creates a player
+	// Player creation
 	virtual protected Player createPlayer(bool isMaster, int actionSet) {
 		return new Player(this, isMaster, actionSet);
+	}
+
+	// Powerup creation/deletion
+	virtual public Powerup CreatePowerup(float x, float y, PowerupType type) {
+		return new Powerup(this, x, y, type);
+	}
+	virtual public void DestroyPowerup(Powerup powerup) {
+		powerups.Remove(powerup);
 	}
 
 	// Called at the end of each world creation/advance

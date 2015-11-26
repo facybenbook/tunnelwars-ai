@@ -39,7 +39,7 @@ partial class World : IAdvancing {
 
 		// Spawns a random powerup
 		public static void SpawnRandom(World parent) {
-		
+
 			float spawnX, spawnY;
 			do {
 				spawnX = Random.Range(0.0f, 2880.0f);
@@ -58,7 +58,8 @@ partial class World : IAdvancing {
 			if (lightningChanceSample == 0) type = PowerupType.Lightning;
 
 			// Create instances
-			Powerup powerup = new Powerup(parent, spawnX, spawnY, type);
+			Powerup powerup = parent.CreatePowerup(spawnX, spawnY, type);
+			parent.powerups.Add(powerup);
 		}
 
 		virtual public void Advance(List<WorldAction> actions) {

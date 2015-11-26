@@ -21,6 +21,7 @@ class RenderedWorld : World {
 		// Retain the game script reference for later use
 		resourceScript = resourceSourceScript;
 		isSetup = false;
+		//ToDestroy = new List<Transform>();
 
 		init();
 	}
@@ -44,47 +45,60 @@ class RenderedWorld : World {
 		// Left edge
 		for (int i = 0; i < 31; i++)
 		{
-			Transform clone = Object.Instantiate(resourceScript.ProtogroundImmutable);
+			Transform clone = Object.Instantiate(resourceScript.ProtogroundImmutable.transform);
 			clone.position = new Vector3(-64.0f, i * 64.0f);
 		};
 		// Right edge
 		for (int i = 0; i < 31; i++)
 		{
-			Transform clone = Object.Instantiate(resourceScript.ProtogroundImmutable);
+			Transform clone = Object.Instantiate(resourceScript.ProtogroundImmutable.transform);
 			clone.position = new Vector3(2944.0f, i * 64.0f);
 		};
 		// Top edge
 		for (int i = -1; i < 47; i++)
 		{
-			Transform clone = Object.Instantiate(resourceScript.ProtogroundImmutable);
+			Transform clone = Object.Instantiate(resourceScript.ProtogroundImmutable.transform);
 			clone.position = new Vector3(i * 64.0f, -64.0f);
 		};
 		// Bottom edge
 		for (int i = -1; i < 47; i++)
 		{
-			Transform clone = Object.Instantiate(resourceScript.ProtogroundImmutable);
+			Transform clone = Object.Instantiate(resourceScript.ProtogroundImmutable.transform);
 			clone.position = new Vector3(i * 64.0f, 1920.0f);
 		};
 		// Middle wall
 		for (int i = 0; i < 18; i++)
 		{
-			Transform clone = Object.Instantiate(resourceScript.ProtogroundImmutable);
+			Transform clone = Object.Instantiate(resourceScript.ProtogroundImmutable.transform);
 			clone.position = new Vector3(1408.0f, 64.0f * i);
-			clone = Object.Instantiate(resourceScript.ProtogroundImmutable);
+			clone = Object.Instantiate(resourceScript.ProtogroundImmutable.transform);
 			clone.position = new Vector3(1472.0f, 64.0f * i);
 		};
 	}
-	
+
 
 
 	// A reference to the script with all resources
 	public Game resourceScript;
+
+	// A list of Unity objects to be destroyed
+	//public List<Transform> ToDestroy;
 
 	// Whether Unity objects have been set up
 	bool isSetup;
 
 	// The ground transforms
 	Transform[,] groundTransforms = new Transform[blocksWidth, blocksHeight];
+
+	override public void Advance(List<WorldAction> actions) {
+		base.Advance(actions);
+
+		// Delete objects in list
+		/*foreach (Transform obj in ToDestroy) {
+			Debug.Log ("DESTROY");
+			Object.Destroy(obj.gameObject);
+		}*/
+	}
 
 	override protected void setGroundByIndex(int i, int j, bool value) {
 		ground[i, j] = value;
@@ -95,7 +109,7 @@ class RenderedWorld : World {
 		if (value) {
 
 			// Add Unity object for ground
-			Transform clone = Object.Instantiate(resourceScript.Protoground);
+			Transform clone = Object.Instantiate(resourceScript.Protoground.transform);
 			float size = World.blockSize;
 			clone.position = new Vector3(i * size, j * size + floorLevel);
 			groundTransforms[i, j] = clone;
@@ -158,13 +172,12 @@ class RenderedWorld : World {
 	// Override powerup class to render
 	public class RenderedPowerup : Powerup {
 
+		public Transform ObjectTransform { get; set; }
+
 		public RenderedPowerup(RenderedWorld parent, float x, float y, PowerupType type, Game resourceScript) : base(parent, x, y, type) {
 
-			// Initialize base object
-			//base.init(parent as World, x, y, type);
-
 			// Create the unity object
-			Transform cloneSource = null;
+			GameObject cloneSource = null;
 			switch (type) {
 
 			case PowerupType.Bombs:
@@ -187,23 +200,26 @@ class RenderedWorld : World {
 				break;
 
 			}
-			transform = Object.Instantiate(cloneSource);
-			transform.position = new Vector3(x, y);
-		}
-
-		~RenderedPowerup() {
-			UnityEngine.Object.Destroy(transform.gameObject);
+			ObjectTransform = Object.Instantiate(cloneSource.transform);
+			ObjectTransform.position = new Vector3(x, y);
 		}
 
 		public override void Advance(List<WorldAction> actions) {
 
 			base.Advance(actions);
-			transform.position = new Vector3(X, Y);
+			ObjectTransform.position = new Vector3(X, Y);
 		}
+	}
+	override public Powerup CreatePowerup(float x, float y, PowerupType type) {
+		return new RenderedPowerup(this, x, y, type, resourceScript);
+	}
+	override public void DestroyPowerup(Powerup powerup) {
 
+		RenderedPowerup rendered = powerup as RenderedPowerup;
 
-
-		Transform transform;
+		// Remove Unity object
+		Object.Destroy(rendered.ObjectTransform.gameObject);
+		base.DestroyPowerup(powerup);
 	}
 
 	override protected void postUpdate() {

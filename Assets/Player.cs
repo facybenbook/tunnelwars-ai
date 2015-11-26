@@ -292,7 +292,7 @@ partial class World : IAdvancing {
 				                                       X - 32.0f, Y - 32.0f, X + 32.0f, Y + 32.0f)) {
 
 					// Collided with player - delete powerup
-					world.powerups.Remove(powerup);
+					world.DestroyPowerup(powerup);
 					
 					// Switch mastermode?
 					if (Random.Range(0, 30) == 0) { // 1 in 30 odds
@@ -316,7 +316,7 @@ partial class World : IAdvancing {
 				} else if (isSpeedGrav && checkPlayerRectIntersect(x - 8.0f, y - 8.0f, x + 8.0f, y + 8.0f)) {
 				
 					// Collided with player - delete powerup
-					world.powerups.Remove(powerup);
+					world.DestroyPowerup(powerup);
 
 					if (powerup.Type == PowerupType.Speed) {
 						if (Speed < 28.0f) Speed *= 2.0f;

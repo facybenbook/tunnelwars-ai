@@ -13,20 +13,20 @@ using System.Collections.Generic;
 public class Game : MonoBehaviour {
 
 	// Unity resource references
-	public Transform Protoground;
-	public Transform ProtogroundImmutable;
-	public Transform Protobombs;
-	public Transform Protorockets;
-	public Transform Protominions;
-	public Transform Protolightnings;
-	public Transform Protobomb;
-	public Transform Protorocket;
-	public Transform Protominion;
-	public Transform Protomasterminion;
-	public Transform Protolightning;
-	public Transform Protogravity;
-	public Transform Protospeed;
-	public Transform Protoexplosion;
+	public GameObject Protoground;
+	public GameObject ProtogroundImmutable;
+	public GameObject Protobombs;
+	public GameObject Protorockets;
+	public GameObject Protominions;
+	public GameObject Protolightnings;
+	public GameObject Protobomb;
+	public GameObject Protorocket;
+	public GameObject Protominion;
+	public GameObject Protomasterminion;
+	public GameObject Protolightning;
+	public GameObject Protogravity;
+	public GameObject Protospeed;
+	public GameObject Protoexplosion;
 	public Transform Dead;
 	public GameObject Gui;
 	
@@ -39,7 +39,7 @@ public class Game : MonoBehaviour {
 	// The current world
 	RenderedWorld currentWorld = null;
 
-	void  Awake (){
+	void  Awake () {
 		Application.targetFrameRate = 60;
 		QualitySettings.vSyncCount = 1;
 	}
