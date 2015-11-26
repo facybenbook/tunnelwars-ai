@@ -77,11 +77,11 @@ class RenderedWorld : World {
 	
 
 
+	// A reference to the script with all resources
+	public Game resourceScript;
+
 	// Whether Unity objects have been set up
 	bool isSetup;
-
-	// A reference to the script with all resources
-	Game resourceScript = null;
 
 	// The ground transforms
 	Transform[,] groundTransforms = new Transform[blocksWidth, blocksHeight];
@@ -153,6 +153,57 @@ class RenderedWorld : World {
 	}
 	override protected Player createPlayer(bool isMaster, int actionSet) {
 		return new RenderedPlayer(this, isMaster, actionSet);
+	}
+	
+	// Override powerup class to render
+	public class RenderedPowerup : Powerup {
+
+		public RenderedPowerup(RenderedWorld parent, float x, float y, PowerupType type, Game resourceScript) : base(parent, x, y, type) {
+
+			// Initialize base object
+			//base.init(parent as World, x, y, type);
+
+			// Create the unity object
+			Transform cloneSource = null;
+			switch (type) {
+
+			case PowerupType.Bombs:
+				cloneSource = resourceScript.Protobombs;
+				break;
+			case PowerupType.Gravity:
+				cloneSource = resourceScript.Protogravity;
+				break;
+			case PowerupType.Lightning:
+				cloneSource = resourceScript.Protolightnings;
+				break;
+			case PowerupType.Minions:
+				cloneSource = resourceScript.Protominions;
+				break;
+			case PowerupType.Rockets:
+				cloneSource = resourceScript.Protorockets;
+				break;
+			case PowerupType.Speed:
+				cloneSource = resourceScript.Protospeed;
+				break;
+
+			}
+			transform = Object.Instantiate(cloneSource);
+			transform.position = new Vector3(x, y);
+		}
+
+		~RenderedPowerup() {
+			UnityEngine.Object.Destroy(transform.gameObject);
+		}
+
+		public override void Advance(List<WorldAction> actions) {
+
+			base.Advance(actions);
+			transform.position = new Vector3(X, Y);
+		}
+
+
+
+		Transform transform;
 	}
 
 	override protected void postUpdate() {

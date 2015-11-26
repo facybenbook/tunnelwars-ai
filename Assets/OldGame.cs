@@ -277,9 +277,14 @@ END UNDONE
 			ammo_type.Add(1);
 			ammo_vspeed.Add(0);
 		};
+
+DONE
 		
 		gui.GetComponent<GUIControl>().SetMode(0);
 	}
+
+DONE
+
 	
 	void  LateUpdate (){
 		f_prev = f;
@@ -289,6 +294,8 @@ END UNDONE
 		
 		ctrloption = Input.GetAxis("Player 1 Fire") > 0.25f;
 		f = Input.GetAxis("Player 2 Fire") > 0.25f;
+
+DONE
 		
 		// Firing
 		if (ctrloption && ctrloption_prev == false)
@@ -330,6 +337,8 @@ END UNDONE
 			}
 		}
 	}
+
+DONE
 	
 	void  Update (){
 		if (startTimer == 1)
@@ -341,8 +350,14 @@ END UNDONE
 		// Update timers
 		if (player1_firewait > 0) player1_firewait -= 1;
 		if (player2_firewait > 0) player2_firewait -= 1;
+
+DONE
+
 		if (player1_wallstick > 0) player1_wallstick -= 1;
 		if (player2_wallstick > 0) player2_wallstick -= 1;
+
+DONE
+
 		if (player1_speed_timer >= 0) player1_speed_timer -= 1;
 		if (player1_speed_timer == 0) player1_speed = 7;
 		if (player2_speed_timer >= 0) player2_speed_timer -= 1;
@@ -377,6 +392,8 @@ END UNDONE
 			Application.LoadLevel(0);
 			redo_health();
 		}
+
+DONE
 		
 		// Input
 		right = Input.GetAxis("Player 1 Horizontal") < -0.25f;
@@ -400,6 +417,8 @@ END UNDONE
 				player2_vspeed = -14;
 			}
 		}
+
+DONE
 		
 		// Arrow key movement
 		if (left && player1_hh > 0 && !right)
@@ -420,6 +439,9 @@ END UNDONE
 				player1.position = temp;
 			}
 		}
+
+DONE
+
 		if (a && player2_hh > 0 && !d)
 		{
 			temp = player2.localScale;
@@ -474,7 +496,9 @@ END UNDONE
 				player2.position = temp;
 			}
 		}
-		
+
+DONE
+
 		// Falling
 		if (checkGround(player1.position.x, player1.position.y + 33 + player1_vspeed) ||
 		    checkGround(player1.position.x - 18, player1.position.y + 33 + player1_vspeed) ||
@@ -546,10 +570,14 @@ END UNDONE
 				}
 			}
 		}
+
+DONE
 		
 		player1_vspeed = Mathf.Min(45, player1_vspeed);
 		player2_vspeed = Mathf.Min(45, player2_vspeed);
-		
+
+DONE
+
 		if (player1.position.y < 32)
 		{
 			temp = player1.position;
@@ -564,6 +592,8 @@ END UNDONE
 			player2.position = temp;
 			player2_vspeed = Mathf.Max(0, player2_vspeed);
 		}
+
+DONE
 		
 		// Spawn stuff
 		spawnTimer -= 1;
@@ -615,7 +645,9 @@ END UNDONE
 			spawnTimer = 60;
 			redo_health();
 		}
-		
+
+DONE
+
 		// Make ammo fall and collide
 		int deleteMe = -1;
 		for (int i= 0; i < ammo.Count; i++)
@@ -630,6 +662,8 @@ END UNDONE
 			y = obj.position.y;
 			float vspeed = ammo_vspeed[i];
 			int type = ammo_type[i];
+
+DONE
 			
 			// Grav and fast don't fall or collide
 			if (type != 4 && type != 5)
@@ -732,6 +766,8 @@ END UNDONE
 					}
 				}
 			}
+
+DONE
 			
 			// Fast powerup
 			else if (type == 4)
@@ -805,6 +841,8 @@ END UNDONE
 			// Destroy objects
 			UnityEngine.Object.Destroy(obj.gameObject);
 		}
+
+DONE
 		
 		// Make projectiles move and collide
 		for (int i = 0; i < projectile.Count; i++)

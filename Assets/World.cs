@@ -49,6 +49,13 @@ public partial class World : IAdvancing {
 		player1.Advance(actions);
 		player2.Advance(actions);
 
+		// Advance spawn timer and spawn powerups
+		spawnTimer -= 1;
+		if (spawnTimer == 0 && powerups.Count < 64) {
+			Powerup.SpawnRandom(this);
+			spawnTimer = spawnTimerMax;
+		}
+
 		postUpdate();
 	}
 
@@ -69,8 +76,16 @@ public partial class World : IAdvancing {
 	protected Player player1;
 	protected Player player2;
 
-	// List of powerups
+	// The number of the player that started as master
+	int startedAsMaster;
+
+	// List of powerups/projectiles
 	List<Powerup> powerups;
+	List<Projectile> projectiles;
+
+	// The spawning timer
+	int spawnTimer;
+	const int spawnTimerMax = 60;
 
 	// An array of bools determining whether ground is filled in
 	protected bool[,] ground = new bool[blocksWidth, blocksHeight];
@@ -81,8 +96,12 @@ public partial class World : IAdvancing {
 	}
 	protected void initWithMasterPlayer(int masterPlayer) {
 
+		spawnTimer = spawnTimerMax;
+		startedAsMaster = masterPlayer;
+
 		// Initialize lists
 		powerups = new List<Powerup>();
+		projectiles = new List<Projectile>();
 
 		// Add players
 		player1 = createPlayer(masterPlayer == 1, actionSet: 1);
@@ -95,7 +114,8 @@ public partial class World : IAdvancing {
 		// Create bombs that are there at the start
 		for (int i = 0; i < 4; i++)
 		{
-			float x, y;
+			float x = 0.0f;
+			float y = 0.0f;
 			if (i == 0) x = 1792.0f;
 			else if (i == 1) x = 1952.0f;
 			else if (i == 2) x = 1088.0f;

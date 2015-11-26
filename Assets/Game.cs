@@ -39,12 +39,18 @@ public class Game : MonoBehaviour {
 	// The current world
 	RenderedWorld currentWorld = null;
 
+	void  Awake (){
+		Application.targetFrameRate = 60;
+		QualitySettings.vSyncCount = 1;
+	}
+
 	// First-time setup
 	void Start () {
 
 		// Set up the world with the initial state
 		currentWorld = new RenderedWorld(this);
 		currentWorld.Display();
+		Gui.GetComponent<GUIControl>().SetMode(0);
 
 		// Create a keyboard control agent for player 2
 		agentList = new List<IAgent>();
