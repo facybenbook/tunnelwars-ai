@@ -54,8 +54,8 @@ public class Game : MonoBehaviour {
 
 		// Create a keyboard control agent for both players
 		agentList = new List<IAgent>();
-		agentList.Add(new WASDFAgent(2));
 		agentList.Add(new WASDFAgent(1));
+		agentList.Add(new AdversarialSearch(2));
 	}
 
 	// Called every frame

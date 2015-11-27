@@ -118,6 +118,11 @@ public partial class World : IAdvancing {
 		return 0.0f;
 	}
 
+	// Determine whether an action is applicable
+	public bool CheckActionApplicable(WorldAction action) {
+		return Player1.CheckActionApplicable(action) && Player2.CheckActionApplicable(action);
+	}
+
 	// Checks the ground at a point
 	public bool CheckGround(float x, float y) {
 		if (x <= 0.0f || x >= 2944.0f) return true;

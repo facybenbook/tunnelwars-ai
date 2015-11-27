@@ -156,8 +156,9 @@ partial class World : IAdvancing {
 			vSpeed -= 10.0f;
 		}
 
-		// Check if an action is applicable
-		bool CheckActionApplicable(WorldAction action) {
+		// Check if an action is applicable. Actions that don't concern the player
+		// are by default applicable.
+		public bool CheckActionApplicable(WorldAction action) {
 
 			// Note this code is redundant but cost is negligible
 

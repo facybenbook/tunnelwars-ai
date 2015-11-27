@@ -88,6 +88,3 @@ public class WASDFAgent : PlayerAgentBase {
 	bool wPrev;
 	bool fPrev;
 }
-
-
-
