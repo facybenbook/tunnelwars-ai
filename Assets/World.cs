@@ -98,6 +98,39 @@ public partial class World : IAdvancing {
 
 		postUpdate();
 	}
+	
+	// Whether or not the world is terminal
+	bool isTerminal() {
+
+		if (!Player1.IsAlive || !Player2.IsAlive) return true;
+		return false;
+	}
+
+	// The winner of a terminal world, returned as a float.
+	// Player 2 is -1, player 1 is 1. 0 if not yet finished
+	float terminalUtility() {
+
+		if (Player1.IsAlive && !Player2.IsAlive) {
+			return 1.0f;
+		} else if (Player2.IsAlive && !Player1.IsAlive) {
+			return -1.0f;
+		}
+	}
+
+	// Checks the ground at a point
+	public bool CheckGround(float x, float y) {
+		if (x <= 0.0f || x >= 2944.0f) return true;
+		if (x >= 1408.0f && x <= 1536.0f && y <= 1152.0f) return true;
+		if (y < floorLevel) return false;
+		if (y > 1920.0f) return true;
+		float relX = x / blockSize;
+		float relY = (y - floorLevel) / blockSize;
+		int xIndex = Mathf.FloorToInt(relX);
+		int yIndex = Mathf.FloorToInt(relY);
+		if (xIndex < 0 || xIndex > blocksWidth) return true;
+		if (yIndex > blocksHeight) return true;
+		return ground[xIndex, yIndex];
+	}
 
 
 
@@ -205,30 +238,6 @@ public partial class World : IAdvancing {
 				target.Health -= (radius - d) / radius * maxStrength;
 			}
 		}
-	}
-
-	// Checks the ground at a point
-	protected bool checkGround(float x, float y) {
-		if (x <= 0.0f || x >= 2944.0f) return true;
-		if (x >= 1408.0f && x <= 1536.0f && y <= 1152.0f) return true;
-		if (y < floorLevel) return false;
-		if (y > 1920.0f) return true;
-		float relX = x / blockSize;
-		float relY = (y - floorLevel) / blockSize;
-		int xIndex = Mathf.FloorToInt(relX);
-		int yIndex = Mathf.FloorToInt(relY);
-		if (xIndex < 0 || xIndex > blocksWidth) return true;
-		if (yIndex > blocksHeight) return true;
-		return ground[xIndex, yIndex];
-	}
-
-	// Intersects two rectangles. Almost
-	protected bool checkRectIntersect(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4) {
-		// Note: this cheats
-		if ((x1 >= x3 && x1 < x4) || (x2 >= x3 && x2 < x4)) {
-			if ((y1 >= y3 && y1 <= y4) || (y2 >= y3 && y2 <= y4)) return true;
-		}
-		return false;
 	}
 
 	// Sets the ground at indices i, j

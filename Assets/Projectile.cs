@@ -51,13 +51,13 @@ partial class World : IAdvancing {
 				}
 				
 				// Ground collide
-				if (world.checkGround(X - 6.0f, Y)) {
+				if (world.CheckGround(X - 6.0f, Y)) {
 
 					// Destroy ground
 					world.setGround(X - 6.0f, Y, false);
 					destroy = true;
 				
-				} else if (world.checkGround(X + 6.0f, Y)) {
+				} else if (world.CheckGround(X + 6.0f, Y)) {
 
 					world.setGround(X + 6.0f, Y, false);
 					destroy = true;
@@ -93,13 +93,13 @@ partial class World : IAdvancing {
 				}*/
 				
 				// Ground collide
-				if (world.checkGround(X + normalized * 16.0f, Y - 8.0f)) {
+				if (world.CheckGround(X + normalized * 16.0f, Y - 8.0f)) {
 
 					// Destroy ground
 					world.setGround(X + normalized * 16.0f, Y - 8.0f, false);
 					destroy = true;
 
-				} else if (world.checkGround(X + normalized * 16.0f, Y + 8.0f)) {
+				} else if (world.CheckGround(X + normalized * 16.0f, Y + 8.0f)) {
 
 					// Destroy ground
 					world.setGround(X + normalized * 16.0f, Y + 8.0f, false);
@@ -118,10 +118,10 @@ partial class World : IAdvancing {
 			case WeaponType.Minions: {
 
 				// Check ground collision
-				bool falling = !(world.checkGround(X - 9.0f, Y + 36.0f + vSpeed) ||
-				                 world.checkGround(X + 9.0f, Y + 36.0f + vSpeed));
-				bool pushingIntoWall = (world.checkGround(X + hSpeed + normalized * 9.0f, Y + 8.0f) ||
-				                        world.checkGround(X + hSpeed + normalized * 9.0f, Y - 15.0f));
+				bool falling = !(world.CheckGround(X - 9.0f, Y + 36.0f + vSpeed) ||
+				                 world.CheckGround(X + 9.0f, Y + 36.0f + vSpeed));
+				bool pushingIntoWall = (world.CheckGround(X + hSpeed + normalized * 9.0f, Y + 8.0f) ||
+				                        world.CheckGround(X + hSpeed + normalized * 9.0f, Y - 15.0f));
 				bool destroy = false;
 
 				if (falling) {
@@ -163,8 +163,8 @@ partial class World : IAdvancing {
 
 							// Check if either ground is non-blowupable
 							// TODO: Reveal ground should be blowupable too
-							bool blowRight = world.checkGround(X + blockSize * normalized, Y);
-							bool blowBelow = world.checkGround(X, Y + blockSize);
+							bool blowRight = world.CheckGround(X + blockSize * normalized, Y);
+							bool blowBelow = world.CheckGround(X, Y + blockSize);
 							if (blowRight && blowBelow) {
 
 								// Can't blow up both at once. Randomly select which

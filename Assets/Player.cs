@@ -231,8 +231,8 @@ partial class World : IAdvancing {
 
 			XScale = dx > 0.0f ? -1.0f : 1.0f;
 
-			if (world.checkGround(X - (XScale * 18.0f) + dx, Y - 25.0f) ||
-			    world.checkGround(X - (XScale * 18.0f) + dx, Y + 24.0f)) {
+			if (world.CheckGround(X - (XScale * 18.0f) + dx, Y - 25.0f) ||
+			    world.CheckGround(X - (XScale * 18.0f) + dx, Y + 24.0f)) {
 
 				vSpeed = Mathf.Min(vSpeed, 0.0f);
 				wallStick = 3;
@@ -244,9 +244,9 @@ partial class World : IAdvancing {
 
 		// Fall
 		void fall() {
-			if (world.checkGround(X, Y + 33.0f + vSpeed) ||
-			    world.checkGround(X - 18.0f, Y + 33.0f + vSpeed) ||
-			    world.checkGround(X + 18.0f, Y + 33.0f + vSpeed)) {
+			if (world.CheckGround(X, Y + 33.0f + vSpeed) ||
+			    world.CheckGround(X - 18.0f, Y + 33.0f + vSpeed) ||
+			    world.CheckGround(X + 18.0f, Y + 33.0f + vSpeed)) {
 
 				if (vSpeed > 0.0f) {
 					Y = Mathf.Floor((Y - floorLevel) / blockSize) * blockSize + floorLevel + 39.0f;
@@ -266,8 +266,8 @@ partial class World : IAdvancing {
 				
 				// Check for head-hitting
 				if (vSpeed < 0.0f) {
-					if (world.checkGround(X - 18.0f, Y - 25.0f + vSpeed) ||
-					    world.checkGround(X + 18.0f, Y - 25.0f + vSpeed)) {
+					if (world.CheckGround(X - 18.0f, Y - 25.0f + vSpeed) ||
+					    world.CheckGround(X + 18.0f, Y - 25.0f + vSpeed)) {
 
 						// Has hit head
 						vSpeed = 0.0f;

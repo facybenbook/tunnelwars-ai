@@ -426,8 +426,8 @@ DONE
 			temp = player1.localScale;
 			temp.x = 1;
 			player1.localScale = temp;
-			if (checkGround(player1.position.x - 18 - player1_speed, player1.position.y - 25) ||
-			    checkGround(player1.position.x - 18 - player1_speed, player1.position.y + 24))
+			if (CheckGround(player1.position.x - 18 - player1_speed, player1.position.y - 25) ||
+			    CheckGround(player1.position.x - 18 - player1_speed, player1.position.y + 24))
 			{
 				player1_vspeed = Mathf.Min(player1_vspeed, 0);
 				player1_wallstick = 3;
@@ -447,8 +447,8 @@ DONE
 			temp = player2.localScale;
 			temp.x = 1;
 			player2.localScale = temp;
-			if (checkGround(player2.position.x - 18 - player2_speed, player2.position.y - 25) ||
-			    checkGround(player2.position.x - 18 - player2_speed, player2.position.y + 24))
+			if (CheckGround(player2.position.x - 18 - player2_speed, player2.position.y - 25) ||
+			    CheckGround(player2.position.x - 18 - player2_speed, player2.position.y + 24))
 			{
 				player2_vspeed = Mathf.Min(player2_vspeed, 0);
 				player2_wallstick = 3;
@@ -465,8 +465,8 @@ DONE
 			temp = player1.localScale;
 			temp.x = -1;
 			player1.localScale = temp;
-			if (checkGround(player1.position.x + 18 + player1_speed, player1.position.y - 25) ||
-			    checkGround(player1.position.x + 18 + player1_speed, player1.position.y + 24))
+			if (CheckGround(player1.position.x + 18 + player1_speed, player1.position.y - 25) ||
+			    CheckGround(player1.position.x + 18 + player1_speed, player1.position.y + 24))
 			{
 				player1_vspeed = Mathf.Min(player1_vspeed, 0);
 				player1_wallstick = 3;
@@ -483,8 +483,8 @@ DONE
 			temp = player2.localScale;
 			temp.x = -1;
 			player2.localScale = temp;
-			if (checkGround(player2.position.x + 18 + player2_speed, player2.position.y - 25) ||
-			    checkGround(player2.position.x + 18 + player2_speed, player2.position.y + 24))
+			if (CheckGround(player2.position.x + 18 + player2_speed, player2.position.y - 25) ||
+			    CheckGround(player2.position.x + 18 + player2_speed, player2.position.y + 24))
 			{
 				player2_vspeed = Mathf.Min(player2_vspeed, 0);
 				player2_wallstick = 3;
@@ -500,9 +500,9 @@ DONE
 DONE
 
 		// Falling
-		if (checkGround(player1.position.x, player1.position.y + 33 + player1_vspeed) ||
-		    checkGround(player1.position.x - 18, player1.position.y + 33 + player1_vspeed) ||
-		    checkGround(player1.position.x + 18, player1.position.y + 33 + player1_vspeed))
+		if (CheckGround(player1.position.x, player1.position.y + 33 + player1_vspeed) ||
+		    CheckGround(player1.position.x - 18, player1.position.y + 33 + player1_vspeed) ||
+		    CheckGround(player1.position.x + 18, player1.position.y + 33 + player1_vspeed))
 		{
 			if (player1_vspeed > 0)
 			{
@@ -524,8 +524,8 @@ DONE
 			// Check for head-hitting
 			if (player1_vspeed < 0)
 			{
-				if (checkGround(player1.position.x - 18, player1.position.y - 25 + player1_vspeed) ||
-				    checkGround(player1.position.x + 18, player1.position.y - 25 + player1_vspeed))
+				if (CheckGround(player1.position.x - 18, player1.position.y - 25 + player1_vspeed) ||
+				    CheckGround(player1.position.x + 18, player1.position.y - 25 + player1_vspeed))
 				{
 					// Has hit head
 					player1_vspeed = 0;
@@ -535,9 +535,9 @@ DONE
 				}
 			}
 		}
-		if (checkGround(player2.position.x, player2.position.y + 33 + player2_vspeed) ||
-		    checkGround(player2.position.x - 18, player2.position.y + 33 + player2_vspeed) ||
-		    checkGround(player2.position.x + 18, player2.position.y + 33 + player2_vspeed))
+		if (CheckGround(player2.position.x, player2.position.y + 33 + player2_vspeed) ||
+		    CheckGround(player2.position.x - 18, player2.position.y + 33 + player2_vspeed) ||
+		    CheckGround(player2.position.x + 18, player2.position.y + 33 + player2_vspeed))
 		{
 			if (player2_vspeed > 0)
 			{
@@ -559,8 +559,8 @@ DONE
 			// Check for head-hitting
 			if (player2_vspeed < 0)
 			{
-				if (checkGround(player2.position.x - 18, player2.position.y - 25 + player2_vspeed) ||
-				    checkGround(player2.position.x + 18, player2.position.y - 25 + player2_vspeed))
+				if (CheckGround(player2.position.x - 18, player2.position.y - 25 + player2_vspeed) ||
+				    CheckGround(player2.position.x + 18, player2.position.y - 25 + player2_vspeed))
 				{
 					// Has hit head
 					player2_vspeed = 0;
@@ -670,7 +670,7 @@ DONE
 			{
 				if (ammo_vspeed[i] != -1)
 				{
-					if (!(checkGround(x, y + 65 + vspeed) || checkGround(x + 64, y + 65 + vspeed)))
+					if (!(CheckGround(x, y + 65 + vspeed) || CheckGround(x + 64, y + 65 + vspeed)))
 					{
 						temp = obj.position;
 						temp.y += vspeed;
@@ -953,7 +953,7 @@ DONE DONE DONE DONE
 				}
 				
 				// Ground collide
-				if (checkGround(x - 6, y))
+				if (CheckGround(x - 6, y))
 				{
 					// Destroy ground
 					Transform other2 = getGroundSprite(x - 6, y);
@@ -966,7 +966,7 @@ DONE DONE DONE DONE
 					
 					AudioSource.PlayClipAtPoint(clickSound, Camera.main.transform.position);
 				}
-				else if (checkGround(x + 6, y))
+				else if (CheckGround(x + 6, y))
 				{
 					// Destroy ground
 					Transform other2 = getGroundSprite(x + 6, y);
@@ -1043,7 +1043,7 @@ DONE DONE DONE DONE
 				}
 				
 				// Ground collide
-				if (checkGround(x + (projectile[i] as Transform).localScale.x * 16, y - 8))
+				if (CheckGround(x + (projectile[i] as Transform).localScale.x * 16, y - 8))
 				{
 					// Destroy ground
 					Transform other2 = getGroundSprite(x + (projectile[i] as Transform).localScale.x * 16, y - 8);
@@ -1057,7 +1057,7 @@ DONE DONE DONE DONE
 					}
 					destroy = true;
 				}
-				else if (checkGround(x + (projectile[i] as Transform).localScale.x * 16, y + 8))
+				else if (CheckGround(x + (projectile[i] as Transform).localScale.x * 16, y + 8))
 				{
 					// Destroy ground
 					Transform other2 = getGroundSprite(x + (projectile[i] as Transform).localScale.x * 16, y + 8);
@@ -1089,9 +1089,9 @@ DONE DONE DONE DONE
 				// Minions
 			case 3: {
 				// Check ground collision
-				bool  falling = !(checkGround(x - 9.0f, y + 36.0f + speed) || checkGround(x + 9.0f, y + 36.0f + speed));
-				bool  pushing_into_wall = (checkGround(x + speed2 + (projectile[i] as Transform).localScale.x * 18, y + 8) ||
-				                           checkGround(x + speed2 + (projectile[i] as Transform).localScale.x * 18, y - 15));
+				bool  falling = !(CheckGround(x - 9.0f, y + 36.0f + speed) || CheckGround(x + 9.0f, y + 36.0f + speed));
+				bool  pushing_into_wall = (CheckGround(x + speed2 + (projectile[i] as Transform).localScale.x * 18, y + 8) ||
+				                           CheckGround(x + speed2 + (projectile[i] as Transform).localScale.x * 18, y - 15));
 				
 				bool destroy = false;
 				
@@ -1145,8 +1145,8 @@ DONE DONE DONE DONE
 							// Check if either ground is non-blowupable
 							Transform sprite_right = getGroundSprite(x + 128 * (projectile[i] as Transform).localScale.x, y);
 							Transform sprite_below = getGroundSprite(x, y + 64);
-							bool  blow_right = (null != sprite_right && checkGround(x + 128 * (projectile[i] as Transform).localScale.x, y));
-							bool  blow_below = (null != sprite_below && checkGround(x, y + 64));
+							bool  blow_right = (null != sprite_right && CheckGround(x + 128 * (projectile[i] as Transform).localScale.x, y));
+							bool  blow_below = (null != sprite_below && CheckGround(x, y + 64));
 							if (blow_right && blow_below)
 							{
 								// Can't blow up both at once. Randomly select which
@@ -1215,7 +1215,7 @@ DONE DONE DONE DONE
 							if ((x - other_x)*(x - other_x)+(y - other_y)*(y - other_y) < 1024)
 							{
 								// Collided. Blow below
-								if (checkGround(x, y + 64))
+								if (CheckGround(x, y + 64))
 								{
 									Transform sprite_below = getGroundSprite(x, y + 64);
 									if (sprite_below != null)
@@ -1488,7 +1488,7 @@ DONE
 
 DONE
 	
-	private bool checkGround ( float x ,   float y  ){
+	private bool CheckGround ( float x ,   float y  ){
 		if (x <= 0.0f || x >= 2944.0f) return true;
 		if (x >= 1408.0f && x <= 1536.0f && y <= 1152.0f) return true;
 		if (y < floor_level) return false;
