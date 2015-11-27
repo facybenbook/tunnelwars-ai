@@ -68,8 +68,8 @@ partial class World : IAdvancing {
 
 				if (vSpeed != -1.0f) {
 
-					if (!(world.checkGround(X, Y + 65.0f + vSpeed) ||
-					      world.checkGround(X + 64.0f, Y + 65.0f + vSpeed))) {
+					if (!(world.CheckGround(X, Y + 65.0f + vSpeed) ||
+					      world.CheckGround(X + 64.0f, Y + 65.0f + vSpeed))) {
 
 						Y += vSpeed;
 						vSpeed = Mathf.Min(vSpeed + 1.0f, 45.0f);

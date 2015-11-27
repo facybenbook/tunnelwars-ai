@@ -100,7 +100,7 @@ public partial class World : IAdvancing {
 	}
 	
 	// Whether or not the world is terminal
-	bool isTerminal() {
+	public bool IsTerminal() {
 
 		if (!Player1.IsAlive || !Player2.IsAlive) return true;
 		return false;
@@ -108,13 +108,14 @@ public partial class World : IAdvancing {
 
 	// The winner of a terminal world, returned as a float.
 	// Player 2 is -1, player 1 is 1. 0 if not yet finished
-	float terminalUtility() {
+	public float TerminalUtility() {
 
 		if (Player1.IsAlive && !Player2.IsAlive) {
 			return 1.0f;
 		} else if (Player2.IsAlive && !Player1.IsAlive) {
 			return -1.0f;
 		}
+		return 0.0f;
 	}
 
 	// Checks the ground at a point
