@@ -58,8 +58,7 @@ partial class World : IAdvancing {
 			if (lightningChanceSample == 0) type = PowerupType.Lightning;
 
 			// Create instances
-			Powerup powerup = parent.CreatePowerup(spawnX, spawnY, type);
-			parent.powerups.Add(powerup);
+			parent.createPowerup(spawnX, spawnY, type);
 		}
 
 		virtual public void Advance(List<WorldAction> actions) {

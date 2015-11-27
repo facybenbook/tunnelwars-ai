@@ -727,6 +727,8 @@ DONE
 							player1_ammo = 1;
 						}
 					}
+
+DONE
 					if (checkRectIntersect(x + 10, y + 7, x + 54, y + 57, player2.position.x - 32, player2.position.y - 32, player2.position.x + 32, player2.position.y + 32))
 					{
 						// Collided with player 2. Delete.
@@ -843,7 +845,63 @@ DONE
 		}
 
 DONE
-		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+DONE DONE DONE DONE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 		// Make projectiles move and collide
 		for (int i = 0; i < projectile.Count; i++)
 		{

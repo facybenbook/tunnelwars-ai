@@ -137,6 +137,15 @@ partial class World : IAdvancing {
 			collectPowerups();
 		}
 
+		public bool CheckPlayerPointIntersect(float x, float y) {
+			return ((x > X - 18.0f) && (x < X + 18.0f) && (y > Y - 25.0f) && (y < Y + 25.0f));
+		}
+		
+		public bool CheckPlayerRectIntersect(float x1, float y1, float x2, float y2) {
+			return (CheckPlayerPointIntersect(x1, y1) || CheckPlayerPointIntersect(x2, y2) ||
+			        CheckPlayerPointIntersect(x1, y2) || CheckPlayerPointIntersect(x2, y1));
+		}
+
 
 
 		World world;
@@ -270,9 +279,7 @@ partial class World : IAdvancing {
 		void fire() {
 
 			if (Ammo > 0 || IsMaster) {
-
-				Projectile  projectile = new Projectile(X, Y, XScale > 0.0f, Weapon, playerNum);
-				world.projectiles.Add(projectile);
+				world.createProjectile(X, Y, XScale > 0.0f, Weapon, playerNum);
 			}
 		}
 
@@ -292,7 +299,7 @@ partial class World : IAdvancing {
 				                                       X - 32.0f, Y - 32.0f, X + 32.0f, Y + 32.0f)) {
 
 					// Collided with player - delete powerup
-					world.DestroyPowerup(powerup);
+					world.destroyPowerup(powerup);
 					
 					// Switch mastermode?
 					if (Random.Range(0, 30) == 0) { // 1 in 30 odds
@@ -313,10 +320,10 @@ partial class World : IAdvancing {
 						Weapon = powerup.Weapon;
 					}
 
-				} else if (isSpeedGrav && checkPlayerRectIntersect(x - 8.0f, y - 8.0f, x + 8.0f, y + 8.0f)) {
+				} else if (isSpeedGrav && CheckPlayerRectIntersect(x - 8.0f, y - 8.0f, x + 8.0f, y + 8.0f)) {
 				
 					// Collided with player - delete powerup
-					world.DestroyPowerup(powerup);
+					world.destroyPowerup(powerup);
 
 					if (powerup.Type == PowerupType.Speed) {
 						if (Speed < 28.0f) Speed *= 2.0f;
@@ -328,15 +335,6 @@ partial class World : IAdvancing {
 					}
 				}
 			}
-		}
-
-		bool checkPlayerPointIntersect(float x, float y) {
-			return ((x > X - 18.0f) && (x < X + 18.0f) && (y > Y - 25.0f) && (y < Y + 25.0f));
-		}
-
-		bool checkPlayerRectIntersect(float x1, float y1, float x2, float y2) {
-			return (checkPlayerPointIntersect(x1, y1) || checkPlayerPointIntersect(x2, y2) ||
-			        checkPlayerPointIntersect(x1, y2) || checkPlayerPointIntersect(x2, y1));
 		}
 	}
 }

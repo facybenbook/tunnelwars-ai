@@ -101,7 +101,9 @@ class RenderedWorld : World {
 	}
 
 	override protected void setGroundByIndex(int i, int j, bool value) {
-		ground[i, j] = value;
+
+		// Do functionality
+		base.setGroundByIndex(i, j, value);
 
 		// Do nothing if not setup to render
 		if (!isSetup) return;
@@ -210,16 +212,18 @@ class RenderedWorld : World {
 			ObjectTransform.position = new Vector3(X, Y);
 		}
 	}
-	override public Powerup CreatePowerup(float x, float y, PowerupType type) {
-		return new RenderedPowerup(this, x, y, type, resourceScript);
+	override protected Powerup createPowerup(float x, float y, PowerupType type) {
+		RenderedPowerup rendered = new RenderedPowerup(this, x, y, type, resourceScript);
+		powerups.Add(rendered as Powerup);
+		return rendered;
 	}
-	override public void DestroyPowerup(Powerup powerup) {
+	override protected void destroyPowerup(Powerup powerup) {
 
 		RenderedPowerup rendered = powerup as RenderedPowerup;
 
 		// Remove Unity object
 		Object.Destroy(rendered.ObjectTransform.gameObject);
-		base.DestroyPowerup(powerup);
+		base.destroyPowerup(powerup);
 	}
 
 	override protected void postUpdate() {

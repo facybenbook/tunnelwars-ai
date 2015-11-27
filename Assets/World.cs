@@ -61,6 +61,11 @@ public partial class World : IAdvancing {
 			powerup.Advance(null);
 		}
 
+		// Advance projectiles
+		foreach (Projectile projectile in projectiles) {
+			projectile.Advance(null);
+		}
+
 		postUpdate();
 	}
 
@@ -85,8 +90,8 @@ public partial class World : IAdvancing {
 	int startedAsMaster;
 
 	// List of powerups/projectiles
-	List<Powerup> powerups;
-	List<Projectile> projectiles;
+	protected List<Powerup> powerups;
+	protected List<Projectile> projectiles;
 
 	// The spawning timer
 	int spawnTimer;
@@ -126,8 +131,7 @@ public partial class World : IAdvancing {
 			else if (i == 2) x = 1088.0f;
 			else x = 928.0f;
 			y = floorLevel - 64.0f;
-			Powerup powerup = CreatePowerup(x, y, PowerupType.Bombs);
-			powerups.Add(powerup);
+			createPowerup(x, y, PowerupType.Bombs);
 		};
 
 		// Fill in regular ground with caves
@@ -191,7 +195,16 @@ public partial class World : IAdvancing {
 
 	// Sets the ground at indices i, j
 	virtual protected void setGroundByIndex(int i, int j, bool value) {
+
+		if (i < 0 || i >= blocksWidth || j < 0 || j >= blocksHeight) return;
 		ground[i, j] = value;
+	}
+
+	// Set the ground at a position
+	protected void setGround(float x, float y, bool state) {
+		int i = Mathf.FloorToInt(x / blockSize);
+		int j = (int) (Mathf.FloorToInt(y - floorLevel) / blockSize);
+		setGroundByIndex(i, j, state);
 	}
 
 	// Player creation
@@ -199,12 +212,28 @@ public partial class World : IAdvancing {
 		return new Player(this, isMaster, actionSet);
 	}
 
+	
+
 	// Powerup creation/deletion
-	virtual public Powerup CreatePowerup(float x, float y, PowerupType type) {
-		return new Powerup(this, x, y, type);
+	virtual protected Powerup createPowerup(float x, float y, PowerupType type) {
+
+		Powerup powerup = new Powerup(this, x, y, type);
+		powerups.Add(powerup);
+		return powerup;
 	}
-	virtual public void DestroyPowerup(Powerup powerup) {
+	virtual protected void destroyPowerup(Powerup powerup) {
 		powerups.Remove(powerup);
+	}
+
+	// Projectile
+	virtual protected Projectile createProjectile(float x, float y, bool facingRight, WeaponType type, int playerNum) {
+
+		Projectile projectile = new Projectile(this, x, y, facingRight, type, playerNum);
+		projectiles.Add(projectile);
+		return projectile;
+	}
+	virtual protected void destroyProjectile(Projectile projectile) {
+		projectiles.Remove(projectile);
 	}
 
 	// Called at the end of each world creation/advance
