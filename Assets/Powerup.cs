@@ -50,7 +50,7 @@ partial class World : IAdvancing {
 			// Determine powerup type
 			List<PowerupType> types = PowerupType.GetValues(typeof(PowerupType)).Cast<PowerupType>().ToList();
 			types.Remove(PowerupType.Lightning);
-			int randIndex = Random.Range(0, types.Count - 1);
+			int randIndex = Random.Range(0, types.Count);
 			PowerupType type = types[randIndex];
 
 			// Lightning should be more rare

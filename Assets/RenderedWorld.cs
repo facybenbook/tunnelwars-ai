@@ -102,6 +102,9 @@ class RenderedWorld : World {
 
 	override protected void setGroundByIndex(int i, int j, bool value) {
 
+		// Re-check if out of bounds
+		if (i < 0 || i >= World.blocksWidth || j < 0 || j >= World.blocksHeight) return;
+
 		// Do functionality
 		base.setGroundByIndex(i, j, value);
 
@@ -120,7 +123,9 @@ class RenderedWorld : World {
 
 			// Destroy Unity object for ground
 			Transform transform = groundTransforms[i, j];
-			UnityEngine.Object.Destroy(transform.gameObject);
+			if (transform) {
+				UnityEngine.Object.Destroy(transform.gameObject);
+			}
 		}
 	}
 
@@ -224,6 +229,70 @@ class RenderedWorld : World {
 		// Remove Unity object
 		Object.Destroy(rendered.ObjectTransform.gameObject);
 		base.destroyPowerup(powerup);
+	}
+
+	// Override projectile class to render
+	public class RenderedProjectile : Projectile {
+		
+		public Transform ObjectTransform { get; set; }
+		
+		public RenderedProjectile(World parent, float x, float y, bool facingRight, WeaponType type, int playerNum, Game resourceScript)
+			: base(parent, x, y, facingRight, type, playerNum) {
+
+			// Create the unity object
+			GameObject cloneSource = null;
+			switch (type) {
+				
+			case WeaponType.Bombs:
+				cloneSource = resourceScript.Protobomb;
+				break;
+			case WeaponType.Lightning:
+				cloneSource = resourceScript.Protolightning;
+				break;
+			case WeaponType.Minions:
+
+				// Determine if player is master so that their minions are darker
+				Player sourcePlayer = playerNum == 1 ? parent.Player1 : parent.Player2;
+				bool master = sourcePlayer.IsMaster;
+				cloneSource = master ? resourceScript.Protomasterminion : resourceScript.Protominion;
+				break;
+
+			case WeaponType.Rockets:
+				cloneSource = resourceScript.Protorocket;
+				break;
+			}
+
+			// Instantiate object
+			ObjectTransform = Object.Instantiate(cloneSource.transform);
+			ObjectTransform.position = new Vector3(x, y);
+
+			// Set object position
+			float xScale = facingRight ? 1.0f : -1.0f;
+			if (type == WeaponType.Minions) {
+				ObjectTransform.localScale = new Vector3(xScale / 2.0f, 0.5f);
+			} else {
+				ObjectTransform.localScale = new Vector3(xScale, 1.0f);
+			}
+		}
+		
+		public override void Advance(List<WorldAction> actions) {
+			
+			base.Advance(actions);
+			ObjectTransform.position = new Vector3(X, Y);
+		}
+	}
+	override protected Projectile createProjectile(float x, float y, bool facingRight, WeaponType type, int playerNum) {
+		RenderedProjectile rendered = new RenderedProjectile(this, x, y, facingRight, type, playerNum, resourceScript);
+		projectiles.Add(rendered as Projectile);
+		return rendered;
+	}
+	override protected void destroyProjectile(Projectile projectile) {
+		
+		RenderedProjectile rendered = projectile as RenderedProjectile;
+		
+		// Remove Unity object
+		Object.Destroy(rendered.ObjectTransform.gameObject);
+		base.destroyProjectile(projectile);
 	}
 
 	override protected void postUpdate() {

@@ -43,7 +43,7 @@ partial class World : IAdvancing {
 				}
 			}
 		}
-		public bool Alive {
+		public bool IsAlive {
 			get { return health > 0.0f; }
 		}
 
@@ -54,9 +54,13 @@ partial class World : IAdvancing {
 				return weapon;
 			}
 			set {
+
 				// Set ammo as side effect of setting the weapon
 				weapon = value;
-				if (IsMaster) return;
+				if (IsMaster) {
+					Ammo = -1;
+					return;
+				}
 				if (weapon == WeaponType.Bombs ||
 				    weapon == WeaponType.Rockets ||
 				    weapon == WeaponType.Minions) {
@@ -101,7 +105,7 @@ partial class World : IAdvancing {
 			if (speedTimer == 0) Speed = defaultSpeed;
 
 			// Handle action input if alive
-			if (Alive) {
+			if (IsAlive) {
 
 				bool left = false;
 				bool right = false;
@@ -277,9 +281,9 @@ partial class World : IAdvancing {
 
 		// Fire weapon
 		void fire() {
-
-			if (Ammo > 0 || IsMaster) {
-				world.createProjectile(X, Y, XScale > 0.0f, Weapon, playerNum);
+			if ((Ammo > 0 || IsMaster) && fireWait == 0) {;
+				world.createProjectile(X, Y, XScale < 0.0f, Weapon, playerNum);
+				if (!IsMaster) Ammo -= 1;
 			}
 		}
 
@@ -295,7 +299,7 @@ partial class World : IAdvancing {
 				bool isSpeedGrav = powerup.Weapon == WeaponType.None;
 
 				// Collide with player
-				if (!isSpeedGrav && Util.checkRectIntersect(x + 10.0f, y + 7.0f, x + 54.0f, y + 57.0f,
+				if (!isSpeedGrav && Util.CheckRectIntersect(x + 10.0f, y + 7.0f, x + 54.0f, y + 57.0f,
 				                                       X - 32.0f, Y - 32.0f, X + 32.0f, Y + 32.0f)) {
 
 					// Collided with player - delete powerup
@@ -316,7 +320,7 @@ partial class World : IAdvancing {
 					// Switch weapon
 					if (powerup.Weapon != WeaponType.None) {
 
-						powerup.Weapon = WeaponType.None; // Make sure setter is invoked
+						Weapon = WeaponType.None; // Make sure setter is invoked
 						Weapon = powerup.Weapon;
 					}
 

@@ -32,6 +32,10 @@ public interface IAdvancing {
 
 public partial class World : IAdvancing {
 
+	// Players
+	public Player Player1 { get; set; }
+	public Player Player2 { get; set; }
+
 	// Get the initial world state
 	public World() {
 		init();
@@ -46,8 +50,8 @@ public partial class World : IAdvancing {
 	virtual public void Advance(List<WorldAction> actions) {
 
 		// Advance players
-		player1.Advance(actions);
-		player2.Advance(actions);
+		Player1.Advance(actions);
+		Player2.Advance(actions);
 
 		// Advance spawn timer and spawn powerups
 		spawnTimer -= 1;
@@ -62,7 +66,33 @@ public partial class World : IAdvancing {
 		}
 
 		// Advance projectiles
-		foreach (Projectile projectile in projectiles) {
+		int len = projectiles.Count;
+
+		for (int i = len - 1; i >= 0; i--) {
+			Projectile projectile = projectiles[i];
+
+			if (projectile.Type == WeaponType.Minions) {
+
+				// Destroy if marked for deletion with a HACK
+				if (projectile.Type == WeaponType.None) {
+					destroyProjectile(projectile);
+				
+				// Collide with all other projectiles (that are minions)
+				} else if (i != 0) {
+
+					for (int j = i - 1; j >= 0; j--) {
+						Projectile other = projectiles[j];
+						bool didCollide = projectile.CollideWith(other);
+						if (didCollide) {
+
+							// Destroy both parties involved
+							destroyProjectile(projectile);
+							other.Type = WeaponType.None; // Mark other for deletion
+						}
+					}
+				}
+			}
+
 			projectile.Advance(null);
 		}
 
@@ -80,11 +110,6 @@ public partial class World : IAdvancing {
 	
 	// The y coordinate of the floor
 	protected const float floorLevel = blockSize * 14.0f;
-
-
-	// Players
-	protected Player player1;
-	protected Player player2;
 
 	// The number of the player that started as master
 	int startedAsMaster;
@@ -114,12 +139,12 @@ public partial class World : IAdvancing {
 		projectiles = new List<Projectile>();
 
 		// Add players
-		player1 = createPlayer(masterPlayer == 1, actionSet: 1);
-		player2 = createPlayer(masterPlayer == 2, actionSet: 2);
-		player1.X = 1344.0f;
-		player1.Y = 864.0f;
-		player2.X = 1600.0f;
-		player2.Y = 864.0f;
+		Player1 = createPlayer(masterPlayer == 1, actionSet: 1);
+		Player2 = createPlayer(masterPlayer == 2, actionSet: 2);
+		Player1.X = 1344.0f;
+		Player1.Y = 864.0f;
+		Player2.X = 1600.0f;
+		Player2.Y = 864.0f;
 
 		// Create bombs that are there at the start
 		for (int i = 0; i < 4; i++)
@@ -131,7 +156,7 @@ public partial class World : IAdvancing {
 			else if (i == 2) x = 1088.0f;
 			else x = 928.0f;
 			y = floorLevel - 64.0f;
-			createPowerup(x, y, PowerupType.Bombs);
+			createPowerup(x, y, PowerupType.Minions);
 		};
 
 		// Fill in regular ground with caves
@@ -167,6 +192,19 @@ public partial class World : IAdvancing {
 		};
 
 		postUpdate();
+	}
+
+	// Explodes at a point and hurts a player
+	protected void explode(float x, float y, float radius, float maxStrength, Player target) {
+
+		float d;
+		if (target.IsAlive && maxStrength > 0.0f) {
+
+			d = Util.Distance(x, y, target.X, target.Y);
+			if (d < radius) {
+				target.Health -= (radius - d) / radius * maxStrength;
+			}
+		}
 	}
 
 	// Checks the ground at a point
@@ -211,8 +249,6 @@ public partial class World : IAdvancing {
 	virtual protected Player createPlayer(bool isMaster, int actionSet) {
 		return new Player(this, isMaster, actionSet);
 	}
-
-	
 
 	// Powerup creation/deletion
 	virtual protected Powerup createPowerup(float x, float y, PowerupType type) {
