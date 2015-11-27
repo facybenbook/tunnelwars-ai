@@ -28,7 +28,7 @@ public class Game : MonoBehaviour {
 	public GameObject Protospeed;
 	public GameObject Protoexplosion;
 	public Transform Dead;
-	public GameObject Gui;
+	public GUIControl Gui;
 	
 	public AudioClip ClickSound;
 	public AudioClip HurtSound;
@@ -52,9 +52,10 @@ public class Game : MonoBehaviour {
 		currentWorld.Display();
 		Gui.GetComponent<GUIControl>().SetMode(0);
 
-		// Create a keyboard control agent for player 2
+		// Create a keyboard control agent for both players
 		agentList = new List<IAgent>();
 		agentList.Add(new WASDFAgent(2));
+		agentList.Add(new WASDFAgent(1));
 	}
 
 	// Called every frame

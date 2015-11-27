@@ -1264,6 +1264,18 @@ DONE DONE DONE DONE
 				
 				// Lightning
 			case 6: {
+
+
+DONE
+DONE
+DONE
+
+DONE
+DONE
+DONE
+
+
+
 				projectile_aux[i] = aux - 1;
 				if (aux == 20)
 				{
@@ -1316,6 +1328,12 @@ DONE DONE DONE DONE
 			}
 			}
 		};
+
+
+
+DONE!!
+
+
 		
 		// Kill players
 		if (player1_hh <= 0)
@@ -1358,7 +1376,9 @@ DONE DONE DONE DONE
 			dead.position = player2.position;
 		}
 	}
-	
+
+DONE
+
 	private void  createProjectile ( int type ,   int parent  ){
 		Transform creator = player1;
 		if (parent == 1)
@@ -1465,6 +1485,8 @@ DONE DONE DONE DONE
 		}
 		redo_health();
 	}
+
+DONE
 	
 	private bool checkGround ( float x ,   float y  ){
 		if (x <= 0.0f || x >= 2944.0f) return true;
@@ -1479,7 +1501,9 @@ DONE DONE DONE DONE
 		return ground[index];
 	}
 	
-	
+
+DONE
+
 	private bool  checkRectIntersect ( float x1 ,   float y1 ,   float x2 ,   float y2 ,   float x3 ,   float y3 ,   float x4 ,   float y4  ){
 		// Note: this cheats
 		if ((x1 >= x3 && x1 < x4) || (x2 >= x3 && x2 < x4))

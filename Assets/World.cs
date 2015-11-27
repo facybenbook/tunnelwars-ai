@@ -156,7 +156,7 @@ public partial class World : IAdvancing {
 			else if (i == 2) x = 1088.0f;
 			else x = 928.0f;
 			y = floorLevel - 64.0f;
-			createPowerup(x, y, PowerupType.Minions);
+			createPowerup(x, y, PowerupType.Bombs);
 		};
 
 		// Fill in regular ground with caves
@@ -195,7 +195,7 @@ public partial class World : IAdvancing {
 	}
 
 	// Explodes at a point and hurts a player
-	protected void explode(float x, float y, float radius, float maxStrength, Player target) {
+	virtual protected void explode(float x, float y, float radius, float maxStrength, Player target) {
 
 		float d;
 		if (target.IsAlive && maxStrength > 0.0f) {

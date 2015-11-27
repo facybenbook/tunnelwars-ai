@@ -132,8 +132,9 @@ class RenderedWorld : World {
 	// Create renderable subclass of Player and use it when creating players
 	public class RenderedPlayer : Player {
 
-		public RenderedPlayer(World parent, bool isMaster, int actionSet) {
+		public RenderedPlayer(World parent, bool isMaster, int actionSet, Game resourceScript) {
 
+			this.resourceScript = resourceScript;
 			getTransform(actionSet);
 			base.init(parent, isMaster, actionSet);
 		}
@@ -154,10 +155,35 @@ class RenderedWorld : World {
 			base.Advance(actions);
 			playerTransform.position = new Vector3(X, Y);
 			playerTransform.localScale = new Vector3(XScale, 1.0f);
+
+			// Update health bars
+			if (playerNum == 1) {
+				resourceScript.Gui.SupplyHealth1(Health);
+			} else {
+				resourceScript.Gui.SupplyHealth2(Health);
+			}
+
+			// Check if dead
+			if (Health <= 0.0f)
+			{
+				if (!deadTransform.gameObject.GetComponent<BodyControl>().visible) {
+
+					// TODO: Playing the ground
+					deadTransform.gameObject.SendMessage("SetMaster", IsMaster);
+					playerTransform.gameObject.GetComponent<Renderer>().enabled = false;
+				}
+				
+				deadTransform.position = playerTransform.position;
+			}
 		}
 
 		// The player's unity transform
 		Transform playerTransform;
+
+		// The dead object
+		Transform deadTransform;
+
+		Game resourceScript;
 
 		// Get transform variable
 		void getTransform(int playerNum) {
@@ -169,11 +195,12 @@ class RenderedWorld : World {
 				t = GameObject.Find("Player 2").transform;
 			}
 			playerTransform = t;
+			deadTransform = GameObject.Find("Dead").transform;
 		}
 
 	}
 	override protected Player createPlayer(bool isMaster, int actionSet) {
-		return new RenderedPlayer(this, isMaster, actionSet);
+		return new RenderedPlayer(this, isMaster, actionSet, resourceScript);
 	}
 	
 	// Override powerup class to render
@@ -270,6 +297,8 @@ class RenderedWorld : World {
 			float xScale = facingRight ? 1.0f : -1.0f;
 			if (type == WeaponType.Minions) {
 				ObjectTransform.localScale = new Vector3(xScale / 2.0f, 0.5f);
+			} else if (type == WeaponType.Lightning) {
+				ObjectTransform.localScale = new Vector3(xScale, (Y + 32.0f) / 320.0f);
 			} else {
 				ObjectTransform.localScale = new Vector3(xScale, 1.0f);
 			}
@@ -293,6 +322,13 @@ class RenderedWorld : World {
 		// Remove Unity object
 		Object.Destroy(rendered.ObjectTransform.gameObject);
 		base.destroyProjectile(projectile);
+	}
+
+	// Make a graphic explosion
+	override protected void explode(float x, float y, float radius, float maxStrength, Player target) {
+		base.explode(x, y, radius, maxStrength, target);
+		GameObject explosion = Object.Instantiate(resourceScript.Protoexplosion);
+		explosion.transform.position = new Vector3(x, y, 5.0f);
 	}
 
 	override protected void postUpdate() {

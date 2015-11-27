@@ -195,59 +195,45 @@ partial class World : IAdvancing {
 				
 				break;
 			}
-			/*	
+
 			// Lightning
-			case 6: {
-				projectile_aux[i] = aux - 1;
-				if (aux == 20)
-				{
-					// Play sound
-					AudioSource.PlayClipAtPoint(lightningSound, Camera.main.transform.position);
+			case WeaponType.Lightning: {
+
+				// At the outset
+				timer -= 1;
+				if (timer == 20) {
 					
 					// Break blocks above by cycling through
-					for (int j = 0; j < 46; j++)
-					{
-						for (int k = 0; k < 16; k++)
-						{
-							float xx = j * 64;
-							float yy = k * 64 + floor_level;
-							if (yy < y && xx + 64 > x - 16 && xx < x + 16)
-							{
+					for (int j = 0; j < blocksWidth; j++) {
+
+						for (int k = 0; k < blocksHeight; k++) {
+
+							float xx = j * blockSize;
+							float yy = k * blockSize + floorLevel;
+							if (yy < Y && xx + blockSize > X - 16.0f && xx < X + 16.0f) {
 								// Get rid of ground
-								Transform temp_transform = (ground_sprite[j * 46 + k] as Transform);
-								if (temp_transform != null) UnityEngine.Object.Destroy(temp_transform.gameObject);
-								ground[j * 46 + k] = false;
+								world.setGroundByIndex(j, k, false);
 							}
-						};
-					};
-				}
-				else if (aux == 0)
-				{
+						}
+					}
+				
+				// Go away after a certain amount of time
+				} else if (timer == 0) {
+
 					// Destroy self
-					UnityEngine.Object.Destroy((projectile[i] as Transform).gameObject);
-					projectile.RemoveAt(i);
-					projectile_speed.RemoveAt(i);
-					projectile_type.RemoveAt(i);
-					projectile_parent.RemoveAt(i);
-					projectile_speed2.RemoveAt(i);
-					projectile_aux.RemoveAt(i);
-					i -= 1;
+					world.destroyProjectile(this);
 				}
+
 				// Do some damage to players
-				if (parent == 1 && Player2.position.x > x - 34 && Player2.position.x < x + 34 && Player2.position.y < y)
-				{
+				if (TargetPlayer.X > X - 34.0f && TargetPlayer.X < X + 34.0f
+				    && TargetPlayer.Y < Y) {
+
 					// Zap!
-					Player2_hh = 0;
-					Player2_vspeed -= 10;
-				}
-				else if (parent == 2 && Player1.position.x > x - 34 && Player1.position.x < x + 34 && Player1.position.y < y)
-				{
-					// Zap!
-					Player1_hh = 0;
-					Player1_vspeed -= 10;
+					TargetPlayer.Health = 0.0f;
+					TargetPlayer.Zap(); // Shoots the player up in the air
 				}
 				break;
-			}*/
+			}
 			}
 		}
 
@@ -286,14 +272,14 @@ partial class World : IAdvancing {
 		float hSpeed;
 		float vSpeed;
 
-		// Minions-only
+		// Minions, lightning only
 		int timer;
 
 		// Init
 		void init(World parent, float x, float y, bool facingRight, WeaponType type, int playerNum) {
 
 			world = parent;
-			timer = 12;
+			timer = type == WeaponType.Lightning ? 20 : 12;
 
 			hSpeed = 0.0f;
 			vSpeed = 0.0f;

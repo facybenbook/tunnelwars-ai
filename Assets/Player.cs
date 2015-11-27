@@ -40,6 +40,7 @@ partial class World : IAdvancing {
 				health = value;
 				if (health <= 0.0f) {
 					// Kill player
+					Zap();
 				}
 			}
 		}
@@ -103,6 +104,7 @@ partial class World : IAdvancing {
 
 			// Fire off timer events
 			if (speedTimer == 0) Speed = defaultSpeed;
+			if (gravityTimer == 0) Gravity = 1.0f;
 
 			// Handle action input if alive
 			if (IsAlive) {
@@ -150,11 +152,15 @@ partial class World : IAdvancing {
 			        CheckPlayerPointIntersect(x1, y2) || CheckPlayerPointIntersect(x2, y1));
 		}
 
+		public void Zap() {
+			vSpeed -= 10.0f;
+		}
+
 
 
 		World world;
 		bool isMaster;
-		int playerNum;
+		protected int playerNum;
 		WeaponType weapon;
 
 		// Constants
@@ -281,7 +287,14 @@ partial class World : IAdvancing {
 
 		// Fire weapon
 		void fire() {
-			if ((Ammo > 0 || IsMaster) && fireWait == 0) {;
+			if ((Ammo > 0 || IsMaster) && fireWait == 0) {
+
+				// Set amount of time to wait before firing can occur again
+				if (Weapon == WeaponType.Lightning) fireWait = 30;
+				else if (Weapon == WeaponType.Minions) fireWait = 3;
+				else if (Weapon == WeaponType.Rockets) fireWait = 2;
+				else fireWait = 1;
+
 				world.createProjectile(X, Y, XScale < 0.0f, Weapon, playerNum);
 				if (!IsMaster) Ammo -= 1;
 			}
