@@ -128,8 +128,8 @@ public partial class World : IAdvancing {
 		float relY = (y - floorLevel) / blockSize;
 		int xIndex = Mathf.FloorToInt(relX);
 		int yIndex = Mathf.FloorToInt(relY);
-		if (xIndex < 0 || xIndex > blocksWidth) return true;
-		if (yIndex > blocksHeight) return true;
+		if (xIndex < 0 || xIndex >= blocksWidth) return true;
+		if (yIndex >= blocksHeight) return true;
 		return ground[xIndex, yIndex];
 	}
 

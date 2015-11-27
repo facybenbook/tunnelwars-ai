@@ -156,6 +156,28 @@ partial class World : IAdvancing {
 			vSpeed -= 10.0f;
 		}
 
+		// Check if an action is applicable
+		bool CheckActionApplicable(WorldAction action) {
+
+			// Note this code is redundant but cost is negligible
+
+			if (action == jumpAction) {
+				return noFall || wallStick > 0;
+			} else if (action == fireAction) {
+				return (Ammo > 0 || IsMaster) && fireWait == 0;
+			} else if (action == rightAction) {
+				if (wallStick == 3 && XScale < 0.0f && vSpeed <= 0.0f) {
+					return false;
+				}
+			} else if (action == leftAction) {
+				if (wallStick == 3 && XScale > 0.0f && vSpeed <= 0.0f) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
 
 
 		World world;

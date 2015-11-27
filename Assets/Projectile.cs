@@ -279,7 +279,7 @@ partial class World : IAdvancing {
 		void init(World parent, float x, float y, bool facingRight, WeaponType type, int playerNum) {
 
 			world = parent;
-			timer = type == WeaponType.Lightning ? 20 : 12;
+			timer = type == WeaponType.Lightning ? 21 : 12;
 
 			hSpeed = 0.0f;
 			vSpeed = 0.0f;
