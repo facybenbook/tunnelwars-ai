@@ -65,8 +65,8 @@ public class WASDFAgent : PlayerAgentBase {
 		fPrev = f;
 
 		w = Input.GetAxis("Player 2 Jump") > 0.25f;
-		a = Input.GetAxis("Player 2 Horizontal") > 0.25f;
-		d = Input.GetAxis("Player 2 Horizontal") < -0.25f;
+		a = Input.GetAxis("Player 2 Horizontal") < -0.25f;
+		d = Input.GetAxis("Player 2 Horizontal") > 0.25f;
 		f = Input.GetAxis("Player 2 Fire") > 0.25f;
 
 		List<WorldAction> actions = new List<WorldAction>();

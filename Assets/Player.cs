@@ -161,9 +161,9 @@ partial class World : IAdvancing {
 				if (firing) fire();
 				if (jumping) jump();
 				if (left && !right) {
-					moveHorizontally(-Speed);
-				} else if (right) {
 					moveHorizontally(Speed);
+				} else if (right) {
+					moveHorizontally(-Speed);
 				}
 			}
 
@@ -191,23 +191,41 @@ partial class World : IAdvancing {
 		// are by default applicable.
 		public bool CheckActionApplicable(WorldAction action) {
 
-			// Note this code is redundant but cost is negligible
+			// Note this code is redundant but cost is negligible?
 
 			if (action == jumpAction) {
 				return noFall || wallStick > 0;
 			} else if (action == fireAction) {
 				return (Ammo > 0 || IsMaster) && fireWait == 0;
 			} else if (action == rightAction) {
-				if (wallStick == 3 && XScale < 0.0f && vSpeed <= 0.0f) {
-					return false;
-				}
+				return (!world.CheckGround(X + (-18.0f) - Speed, Y - 25.0f) &&
+						!world.CheckGround(X + (-18.0f) - Speed, Y + 24.0f)) ||
+					vSpeed > 0; // TODO Double-check this
+
 			} else if (action == leftAction) {
-				if (wallStick == 3 && XScale > 0.0f && vSpeed <= 0.0f) {
-					return false;
-				}
+				return (!world.CheckGround(X + (18.0f) + Speed, Y - 25.0f) &&
+				        !world.CheckGround(X + (18.0f) + Speed, Y + 24.0f)) ||
+					vSpeed > 0;
 			}
 
 			return true;
+		}
+
+		// Returns all possible actions for the player
+		public List<WorldAction> GetPossibleActions() {
+			List<WorldAction> possibleActions = new List<WorldAction>();
+			WorldAction[] allPlayerActions = {
+				leftAction,
+				rightAction,
+				fireAction,
+				jumpAction,
+				WorldAction.NoAction
+			};
+			foreach (WorldAction action in allPlayerActions) {
+				if (CheckActionApplicable(action)) possibleActions.Add(action);
+			}
+
+			return possibleActions;
 		}
 
 
@@ -276,17 +294,17 @@ partial class World : IAdvancing {
 		// Attempt to jump
 		void jump() {
 			if (noFall || wallStick > 0) {
-				vSpeed = -14.0f;
+				vSpeed = -16.0f;
 			}
 		}
 
 		// Attempt to move horizontally
 		void moveHorizontally(float dx) {
 
-			XScale = dx > 0.0f ? -1.0f : 1.0f;
+			XScale = dx > 0.0f ? 1.0f : -1.0f;
 
-			if (world.CheckGround(X - (XScale * 18.0f) + dx, Y - 25.0f) ||
-			    world.CheckGround(X - (XScale * 18.0f) + dx, Y + 24.0f)) {
+			if (world.CheckGround(X + (XScale * 18.0f) + dx, Y - 25.0f) ||
+			    world.CheckGround(X + (XScale * 18.0f) + dx, Y + 24.0f)) {
 
 				vSpeed = Mathf.Min(vSpeed, 0.0f);
 				wallStick = 3;
@@ -349,7 +367,7 @@ partial class World : IAdvancing {
 				else if (Weapon == WeaponType.Rockets) fireWait = 2;
 				else fireWait = 1;
 
-				world.createProjectile(X, Y, XScale < 0.0f, Weapon, playerNum);
+				world.createProjectile(X, Y, XScale > 0.0f, Weapon, playerNum);
 				if (!IsMaster) Ammo -= 1;
 			}
 		}

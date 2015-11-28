@@ -93,8 +93,6 @@ class RenderedWorld : World {
 
 	override public void Advance(List<WorldAction> actions) {
 		base.Advance(actions);
-
-		//if (actions.Contains(WorldAction.NoAction)) Debug.Log ("NOT GOOD");
 	}
 
 	override protected void setGroundByIndex(int i, int j, bool value) {
@@ -151,7 +149,7 @@ class RenderedWorld : World {
 
 			base.Advance(actions);
 			playerTransform.position = new Vector3(X, Y);
-			playerTransform.localScale = new Vector3(XScale, 1.0f);
+			playerTransform.localScale = new Vector3(-XScale, 1.0f);
 
 			// Update health bars
 			if (playerNum == 1) {

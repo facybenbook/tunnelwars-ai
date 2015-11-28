@@ -17,10 +17,16 @@ public static class Util {
 		return false;
 	}
 
-	public static float Distance(float x1, float x2, float y1, float y2) {
+	public static float Distance(float x1, float y1, float x2, float y2) {
 		float dx = x2 - x1;
 		float dy = y2 - y1;
 		return Mathf.Sqrt(dx * dx + dy * dy);
+	}
+
+	public static float ManhattanDistance(float x1, float y1, float x2, float y2) {
+		float dx = x2 - x1;
+		float dy = y2 - y1;
+		return Mathf.Abs(dx) + Mathf.Abs (dy);
 	}
 
 	// Deep cloning

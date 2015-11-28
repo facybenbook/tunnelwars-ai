@@ -82,10 +82,15 @@ public partial class World : IAdvancing {
 
 	// Takes an input list of world actions and updates the state
 	virtual public void Advance(List<WorldAction> actions) {
+		Advance(actions, true);
+	}
+	virtual public void Advance(List<WorldAction> actions, bool advancePlayers) {
 
 		// Advance players
-		Player1.Advance(actions);
-		Player2.Advance(actions);
+		if (advancePlayers) {
+			Player1.Advance(actions);
+			Player2.Advance(actions);
+		}
 
 		// Advance spawn timer and spawn powerups
 		spawnTimer -= 1;
@@ -237,7 +242,7 @@ public partial class World : IAdvancing {
 			for (int j = 0; j < blocksHeight; j++) {
 				
 				// Default chance
-				float chance = 0.02f;
+				float chance = 0.25f;//0.02f;
 				
 				if (j != 0) {
 					// Up chance
