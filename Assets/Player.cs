@@ -93,6 +93,37 @@ partial class World : IAdvancing {
 			init(parent, isMaster, actionSet);
 		}
 
+		// Clone - I really shouldn't have to write this method. C# sucks
+		public Player Clone(World cloneWorld) {
+
+			Player player = new Player();
+			player.X = X;
+			player.Y = Y;
+			player.XScale = XScale;
+			player.Speed = Speed;
+			player.Gravity = Gravity;
+			player.health = health;
+			player.Ammo = Ammo;
+			player.world = cloneWorld;
+			player.isMaster = isMaster;
+			player.playerNum = playerNum;
+			player.weapon = weapon;
+			player.vSpeed = vSpeed;
+			player.noFall = noFall;
+			player.wallStick = wallStick;
+			player.fireWait = fireWait;
+			player.speedTimer = speedTimer;
+			player.gravityTimer = gravityTimer;
+			player.leftAction = leftAction;
+			player.rightAction = rightAction;
+			player.jumpAction = jumpAction;
+			player.fireAction = fireAction;
+
+			// Any more fields properties you add must also go here...
+
+			return player;
+		}
+
 		// Takes an input list of world actions and updates the state
 		virtual public void Advance(List<WorldAction> actions) {
 

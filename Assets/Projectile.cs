@@ -30,6 +30,25 @@ partial class World : IAdvancing {
 			init(parent, x, y, facingRight, type, playerNum);
 		}
 
+		// Clone - can specify target player references
+		public Projectile Clone(World cloneWorld, Player player1, Player player2) {
+			Projectile p = new Projectile();
+			p.X = X;
+			p.Y = Y;
+			p.FacingRight = FacingRight;
+			p.Type = Type;
+			p.TargetPlayer = targetPlayerNum == 1 ? player1 : player2;
+			p.targetPlayerNum = targetPlayerNum;
+			p.world = cloneWorld;
+			p.hSpeed = hSpeed;
+			p.vSpeed = vSpeed;
+			p.timer = timer;
+
+			// Any other fields or properties you add go here...
+
+			return p;
+		}
+
 		// Takes an input list of world actions and updates the state
 		virtual public void Advance(List<WorldAction> actions) {
 
@@ -267,6 +286,7 @@ partial class World : IAdvancing {
 
 
 		World world;
+		int targetPlayerNum;
 
 		// Kinematics
 		float hSpeed;
@@ -280,6 +300,7 @@ partial class World : IAdvancing {
 
 			world = parent;
 			timer = type == WeaponType.Lightning ? 21 : 12;
+			targetPlayerNum = playerNum == 1 ? 2 : 1;
 
 			hSpeed = 0.0f;
 			vSpeed = 0.0f;

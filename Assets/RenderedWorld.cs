@@ -10,6 +10,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+
 class RenderedWorld : World {
 
 	public RenderedWorld() {}
@@ -93,11 +94,7 @@ class RenderedWorld : World {
 	override public void Advance(List<WorldAction> actions) {
 		base.Advance(actions);
 
-		// Delete objects in list
-		/*foreach (Transform obj in ToDestroy) {
-			Debug.Log ("DESTROY");
-			Object.Destroy(obj.gameObject);
-		}*/
+		//if (actions.Contains(WorldAction.NoAction)) Debug.Log ("NOT GOOD");
 	}
 
 	override protected void setGroundByIndex(int i, int j, bool value) {
@@ -176,6 +173,8 @@ class RenderedWorld : World {
 				deadTransform.position = playerTransform.position;
 			}
 		}
+
+
 
 		// The player's unity transform
 		Transform playerTransform;

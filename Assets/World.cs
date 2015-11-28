@@ -19,7 +19,8 @@ public enum WorldAction {
 	P2Left,
 	P2Right,
 	P2Jump,
-	P2Fire
+	P2Fire,
+	NoAction
 }
 
 // An interface for all objects that can "advance" in the same sense that a world does
@@ -30,6 +31,7 @@ public interface IAdvancing {
 	void Advance(List<WorldAction> actions);
 }
 
+[System.Serializable]
 public partial class World : IAdvancing {
 
 	// Players
@@ -44,6 +46,38 @@ public partial class World : IAdvancing {
 		if (!empty) {
 			init();
 		}
+	}
+
+	// Clone the world with a deep copy
+	public World Clone() {
+
+		// Clone self
+		World w = new World(empty: true);
+
+		// Clone players
+		Player p1 = w.Player1 = this.Player1.Clone(w);
+		Player p2 = w.Player2 = this.Player2.Clone(w);
+
+		// Clone powerups
+		w.powerups = new List<Powerup>();
+		foreach (Powerup powerup in powerups) {
+			w.powerups.Add(powerup.Clone(w));
+		}
+
+		// Clone projectiles
+		w.projectiles = new List<Projectile>();
+		foreach (Projectile projectile in projectiles) {
+			w.projectiles.Add(projectile.Clone(w, p1, p2));
+		}
+
+		// Clone other properties
+		w.startedAsMaster = startedAsMaster;
+		w.spawnTimer = spawnTimer;
+		w.ground = (bool[,]) ground.Clone();
+
+		// Any other properties you add to the world go here...
+
+		return w;
 	}
 
 	// Takes an input list of world actions and updates the state

@@ -19,7 +19,10 @@ public class AdversarialSearch : PlayerAgentBase {
 	// The center of the AI: get an action for a state
 	override public List<WorldAction> GetAction(World world) {
 
-		WorldAction bestAction;
+		WorldAction bestAction = WorldAction.NoAction;
+
+		// Clone the world
+		World state = world.Clone();
 
 		// Determine which actions are possible
 		List<WorldAction> possibleActions = new List<WorldAction>();
@@ -27,19 +30,36 @@ public class AdversarialSearch : PlayerAgentBase {
 			leftAction,
 			rightAction,
 			fireAction,
-			jumpAction
+			jumpAction/*,
+			WorldAction.NoAction*/
 		};
 		foreach (WorldAction action in allPlayerActions) {
-			if (world.CheckActionApplicable(action)) possibleActions.Add(action);
+			if (state.CheckActionApplicable(action)) possibleActions.Add(action);
 		}
 
-		// Choose an action at random
-		int randIndex = Random.Range(0, possibleActions.Count);
-		bestAction = possibleActions[randIndex];
+		// Choose maximum-utility action
+		float bestActionUtility = -100000.0f;
+		foreach (WorldAction action in possibleActions) {
+
+			float utility = calculateUtility(action, state);
+			if (utility > bestActionUtility) {
+				bestAction = action;
+				bestActionUtility = utility;
+			}
+		}
 		
 		// Return a single-element list with the best action
 		return new List<WorldAction>() {
 			bestAction
 		};
+	}
+
+
+
+	// Determines the utility of an action given the state
+	float calculateUtility(WorldAction action, World state) {
+
+		state.Advance(new List<WorldAction>() {WorldAction.NoAction});
+		return 0.0f;
 	}
 }

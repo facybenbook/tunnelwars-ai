@@ -37,6 +37,22 @@ partial class World : IAdvancing {
 			init(parent, x, y, type);
 		}
 
+		// Clone
+		public Powerup Clone(World cloneWorld) {
+
+			Powerup p = new Powerup();
+			p.X = X;
+			p.Y = Y;
+			p.Type = Type;
+			p.Weapon = Weapon;
+			p.world = cloneWorld;
+			p.vSpeed = vSpeed;
+
+			// Any other properties you add go here...
+
+			return p;
+		}
+
 		// Spawns a random powerup
 		public static void SpawnRandom(World parent) {
 
