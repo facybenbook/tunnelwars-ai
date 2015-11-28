@@ -55,7 +55,7 @@ public class AdversarialSearch : PlayerAgentBase {
 
 		decisionTimer -= 1;
 
-		if (decisionTimer == 0) {
+		if (decisionTimer == 0 || true) {
 
 			// Determine which actions are possible
 			World.Player currentPlayer = playerNum == 1 ? world.Player1 : world.Player2;
@@ -107,7 +107,7 @@ public class AdversarialSearch : PlayerAgentBase {
 	WorldAction previousDecision;
 
 	// The maximum search depth
-	const int maxDepth = 7;
+	const int maxDepth = 6;
 
 	// The number of steps to repeat for moves
 	const int moveSteps = 3;
@@ -123,9 +123,10 @@ public class AdversarialSearch : PlayerAgentBase {
 
 		// Heuristic for over max depth
 		if (depth > maxDepth) {
-			float h = utilHealthHeuristic(state);
-			if (h > 1.0f || h < -1.0f) Debug.LogWarning("Heuristic has magnitude greater than 1!");
-			return h;
+			//float h = utilHealthHeuristic(state);
+			//if (h > 1.0f || h < -1.0f) Debug.LogWarning("Heuristic has magnitude greater than 1!");
+			//return h;
+			return utilHealthHeuristic(state);
 		}
 
 		if (isOpponentsTurn) {
@@ -133,6 +134,7 @@ public class AdversarialSearch : PlayerAgentBase {
 			// Determine which actions are possible
 			World.Player currentPlayer = playerNum == 1 ? state.Player2 : state.Player1;
 			List<WorldAction> possibleActions = currentPlayer.GetPossibleActions();
+			//List<WorldAction> possibleActions = new List<WorldAction>(){WorldAction.NoAction};
 
 			// Minimize utility
 			float minUtil = 100000.0f;
