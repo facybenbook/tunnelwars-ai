@@ -302,8 +302,11 @@ class RenderedWorld : World {
 		}
 		
 		public override void Advance(List<WorldAction> actions) {
-			
 			base.Advance(actions);
+			ObjectTransform.position = new Vector3(X, Y);
+		}
+		public override void Advance(List<WorldAction> actions, bool enlarge) {
+			base.Advance(actions, enlarge);
 			ObjectTransform.position = new Vector3(X, Y);
 		}
 	}

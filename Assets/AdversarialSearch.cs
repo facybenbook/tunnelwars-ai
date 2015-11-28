@@ -70,7 +70,7 @@ public class AdversarialSearch : PlayerAgentBase {
 				World.Player newCurrentPlayer = playerNum == 1 ? newState.Player1 : newState.Player2;
 				World.Player newOpponentPlayer = playerNum == 1 ? newState.Player2 : newState.Player1;
 
-				int reps = (action == leftAction || action == rightAction) ? moveSteps : 1;
+				int reps = moveSteps;
 				for (int i = 0; i < reps; i++) {
 					newCurrentPlayer.Advance(new List<WorldAction>(){action});
 				}
@@ -85,9 +85,9 @@ public class AdversarialSearch : PlayerAgentBase {
 
 			}
 
-			previousDecision = bestAction;
-			if (bestAction == leftAction || bestAction == rightAction) decisionTimer = moveSteps;
-			else decisionTimer = 1;
+			if (bestAction == leftAction || bestAction == rightAction) previousDecision = bestAction;
+			// Otherwise keeping doing what you're doing
+			decisionTimer = moveSteps;
 
 		} else {
 			
@@ -110,7 +110,7 @@ public class AdversarialSearch : PlayerAgentBase {
 	const int maxDepth = 6;
 
 	// The number of steps to repeat for moves
-	const int moveSteps = 3;
+	const int moveSteps = 5;
 
 	// Determines the utility of a given state
 	float calculateUtility(World state, int depth, bool isOpponentsTurn, float alpha, float beta) {
@@ -134,6 +134,7 @@ public class AdversarialSearch : PlayerAgentBase {
 			// Determine which actions are possible
 			World.Player currentPlayer = playerNum == 1 ? state.Player2 : state.Player1;
 			List<WorldAction> possibleActions = currentPlayer.GetPossibleActions();
+
 			//List<WorldAction> possibleActions = new List<WorldAction>(){WorldAction.NoAction};
 
 			// Minimize utility
@@ -146,10 +147,11 @@ public class AdversarialSearch : PlayerAgentBase {
 				World newState = state.Clone();
 				World.Player newCurrentPlayer = playerNum == 1 ? newState.Player2 : newState.Player1;
 
-				int reps = (action == leftAction || action == rightAction) ? moveSteps : 1;
-				for (int i = 0; i < reps; i++) {
+				for (int i = 0; i < moveSteps; i++) {
 					newCurrentPlayer.Advance(new List<WorldAction>(){action});
-					newState.Advance(new List<WorldAction>(), false); // Advance the world here too
+
+					// Conform with World.Advance execution order
+					if (playerNum == 1) newState.Advance(new List<WorldAction>(), false);
 				}
 				
 				float utility = calculateUtility(newState, depth + 1, false, alpha, beta);
@@ -182,9 +184,11 @@ public class AdversarialSearch : PlayerAgentBase {
 				World newState = state.Clone();
 				World.Player newCurrentPlayer = playerNum == 1 ? newState.Player1 : newState.Player2;
 
-				int reps = (action == leftAction || action == rightAction) ? moveSteps : 1;
-				for (int i = 0; i < reps; i++) {
+				for (int i = 0; i < moveSteps; i++) {
 					newCurrentPlayer.Advance(new List<WorldAction>(){action});
+
+					// Conform with World.Advance execution order
+					if (playerNum == 2) newState.Advance(new List<WorldAction>(), false);
 				}
 				
 				float utility = calculateUtility(newState, depth + 1, true, alpha, beta);
@@ -214,17 +218,18 @@ public class AdversarialSearch : PlayerAgentBase {
 		float d = Util.ManhattanDistance(currentPlayer.X, currentPlayer.Y, opponentPlayer.X, opponentPlayer.Y);
 
 		// Determine whether to charge the player
-		bool wantDistance = false;
+		float distanceScalar = 0.0f;
 		if (opponentPlayer.IsMaster && !currentPlayer.IsMaster) {
-			wantDistance = true;
+			distanceScalar = 1.0f;
 		} else if (currentPlayer.IsMaster && !opponentPlayer.IsMaster) {
-			wantDistance = false;
+			distanceScalar = -1.0f;
 		} else if (currentPlayer.Ammo < opponentPlayer.Ammo) {
-			wantDistance = true;
+			distanceScalar = 1.0f;
+		} else if (currentPlayer.Ammo >= opponentPlayer.Ammo) {
+			distanceScalar = -1.0f;
 		}
 
-		float scaledDistance = wantDistance ? d : -d;
-		return scaledDistance / 3000.0f;
+		return d * distanceScalar / 3000.0f;
 	}
 
 	float utilHealthHeuristic(World state) {
@@ -232,7 +237,9 @@ public class AdversarialSearch : PlayerAgentBase {
 		World.Player currentPlayer = playerNum == 1 ? state.Player1 : state.Player2;
 		World.Player opponentPlayer = playerNum == 1 ? state.Player2 : state.Player1;
 
-		return currentPlayer.Health / 200.0f - opponentPlayer.Health / 200.0f + 
-			utilDistanceHeuristic(state) * 0.1f + (currentPlayer.Ammo - opponentPlayer.Ammo) / 3.0f * 0.2f;
+		float util = currentPlayer.Health / 200.0f - opponentPlayer.Health / 200.0f + 
+			utilDistanceHeuristic(state) * 0.1f;
+		if (!currentPlayer.IsMaster && !opponentPlayer.IsMaster) util += (currentPlayer.Ammo - opponentPlayer.Ammo) / 3.0f * 0.2f;
+		return util;
 	}
 }

@@ -51,8 +51,13 @@ partial class World : IAdvancing {
 
 		// Takes an input list of world actions and updates the state
 		virtual public void Advance(List<WorldAction> actions) {
+			Advance(actions, false);
+		}
+		virtual public void Advance(List<WorldAction> actions, bool enlarge) {
 
 			float normalized = FacingRight ? 1.0f : -1.0f;
+
+			float eFactor = enlarge ? 1.25f : 1.0f;
 
 			switch(Type) {
 				
@@ -65,7 +70,8 @@ partial class World : IAdvancing {
 				bool destroy = false;
 				
 				// Player collide
-				if (TargetPlayer.CheckPlayerRectIntersect(X - 12.0f, Y - 12.0f, X + 12.0f, Y + 12.0f)) {
+				if (TargetPlayer.CheckPlayerRectIntersect(X - 12.0f * eFactor, Y - 12.0f * eFactor,
+				                                          X + 12.0f * eFactor, Y + 12.0f * eFactor)) {
 					destroy = true;
 				}
 				
@@ -98,7 +104,8 @@ partial class World : IAdvancing {
 				bool destroy = false;
 				
 				// Player collide
-				if (TargetPlayer.CheckPlayerRectIntersect(X - 16.0f, Y - 12.0f, X + 16.0f, Y + 12.0f)) {
+				if (TargetPlayer.CheckPlayerRectIntersect(X - 16.0f * eFactor, Y - 12.0f * eFactor,
+				                                          X + 16.0f * eFactor, Y + 12.0f * eFactor)) {
 					// Go boom
 					TargetPlayer.Health -= 42.0f;
 					destroy = true;
@@ -202,7 +209,8 @@ partial class World : IAdvancing {
 				}
 				
 				// Check player collision
-				if (TargetPlayer.CheckPlayerRectIntersect(X - 18.0f, Y - 18.0f, X + 18.0f, Y + 18.0f)) {
+				if (TargetPlayer.CheckPlayerRectIntersect(X - 18.0f * eFactor, Y - 18.0f * eFactor,
+				                                          X + 18.0f * eFactor, Y + 18.0f * eFactor)) {
 					TargetPlayer.Health -= 42.0f;
 					world.explode(X, Y, 10.0f, 0.0f, TargetPlayer);
 					destroy = true;
@@ -229,7 +237,7 @@ partial class World : IAdvancing {
 
 							float xx = j * blockSize;
 							float yy = k * blockSize + floorLevel;
-							if (yy < Y && xx + blockSize > X - 16.0f && xx < X + 16.0f) {
+							if (yy < Y && xx + blockSize > X - 16.0f * eFactor && xx < X + 16.0f * eFactor) {
 								// Get rid of ground
 								world.setGroundByIndex(j, k, false);
 							}

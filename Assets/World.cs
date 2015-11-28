@@ -132,7 +132,9 @@ public partial class World : IAdvancing {
 				}
 			}
 
-			projectile.Advance(null);
+			// In an AI situation, enlarge players
+			bool enlarge = advancePlayers == false;
+			projectile.Advance(null, enlarge);
 		}
 
 		postUpdate();
@@ -234,7 +236,7 @@ public partial class World : IAdvancing {
 			else if (i == 2) x = 1088.0f;
 			else x = 928.0f;
 			y = floorLevel - 64.0f;
-			createPowerup(x, y, PowerupType.Bombs);
+			createPowerup(x, y, PowerupType.Rockets);
 		};
 
 		// Fill in regular ground with caves
