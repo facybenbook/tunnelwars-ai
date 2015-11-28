@@ -196,7 +196,7 @@ partial class World : IAdvancing {
 			if (action == jumpAction) {
 				return noFall || wallStick > 0;
 			} else if (action == fireAction) {
-				return (Ammo > 0 || IsMaster) && fireWait == 0;
+				return (Ammo > 0 || IsMaster) && fireWait == 0 && weapon != WeaponType.None;
 			} else if (action == rightAction) {
 				return (!world.CheckGround(X + (-18.0f) - Speed, Y - 25.0f) &&
 						!world.CheckGround(X + (-18.0f) - Speed, Y + 24.0f)) ||
@@ -359,7 +359,7 @@ partial class World : IAdvancing {
 
 		// Fire weapon
 		void fire() {
-			if ((Ammo > 0 || IsMaster) && fireWait == 0) {
+			if ((Ammo > 0 || IsMaster) && fireWait == 0 && weapon != WeaponType.None) {
 
 				// Set amount of time to wait before firing can occur again
 				if (Weapon == WeaponType.Lightning) fireWait = 30;
