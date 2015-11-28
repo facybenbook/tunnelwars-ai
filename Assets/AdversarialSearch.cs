@@ -46,6 +46,7 @@ public class AdversarialSearch : PlayerAgentBase {
 	public AdversarialSearch(int player) : base(player) {
 		playerNum = player;
 		decisionTimer = 1;
+		fillerAction = WorldAction.NoAction;
 	}
 
 	// The center of the AI: get an action for a state
@@ -55,7 +56,7 @@ public class AdversarialSearch : PlayerAgentBase {
 
 		decisionTimer -= 1;
 
-		if (decisionTimer == 0 || true) {
+		if (decisionTimer == 0) {
 
 			// Determine which actions are possible
 			World.Player currentPlayer = playerNum == 1 ? world.Player1 : world.Player2;
@@ -70,28 +71,34 @@ public class AdversarialSearch : PlayerAgentBase {
 				World.Player newCurrentPlayer = playerNum == 1 ? newState.Player1 : newState.Player2;
 				World.Player newOpponentPlayer = playerNum == 1 ? newState.Player2 : newState.Player1;
 
-				int reps = moveSteps;
-				for (int i = 0; i < reps; i++) {
-					newCurrentPlayer.Advance(new List<WorldAction>(){action});
+				newCurrentPlayer.Advance(new List<WorldAction>(){action});
+				if (playerNum == 2) newState.Advance(new List<WorldAction>(), false);
+
+				// Decide filler action and do it - should never be jumping or firing
+				WorldAction potentialFillerAction = getFillerAction(action, fillerAction);
+				List<WorldAction> FillerActionList = new List<WorldAction>(){potentialFillerAction};
+				for (int i = 0; i < moveSteps - 1; i++) {
+					newCurrentPlayer.Advance(FillerActionList);
+					if (playerNum == 2) newState.Advance(new List<WorldAction>(), false);
 				}
 
-				float utility = calculateUtility(newState, 0, true, -100000.0f, 100000.0f);
+				float utility = calculateUtility(newState, 0, true, -100000.0f, 100000.0f, potentialFillerAction);
 				//float utility = utilDistanceHeuristic(newState);
 				//float utility = Util.Distance(newCurrentPlayer.X, newCurrentPlayer.Y, newOpponentPlayer.X, newOpponentPlayer.Y);
+
 				if (utility > bestActionUtility) {
 					bestAction = action;
 					bestActionUtility = utility;
+					fillerAction = potentialFillerAction;
 				}
 
 			}
 
-			if (bestAction == leftAction || bestAction == rightAction) previousDecision = bestAction;
-			// Otherwise keeping doing what you're doing
+			// Set timer for new decision
 			decisionTimer = moveSteps;
 
 		} else {
-			
-			bestAction = previousDecision;
+			bestAction = fillerAction;
 		}
 
 		// Return a single-element list with the best action
@@ -104,25 +111,26 @@ public class AdversarialSearch : PlayerAgentBase {
 	int playerNum;
 
 	int decisionTimer;
-	WorldAction previousDecision;
+	WorldAction fillerAction;
 
 	// The maximum search depth
-	const int maxDepth = 6;
+	const int maxDepth = 5;
 
 	// The number of steps to repeat for moves
-	const int moveSteps = 5;
+	const int moveSteps = 4; // Example 15 is make decision 4 times a second
 
 	// Determines the utility of a given state
-	float calculateUtility(World state, int depth, bool isOpponentsTurn, float alpha, float beta) {
+	float calculateUtility(World state, int depth, bool isOpponentsTurn, float alpha, float beta, WorldAction prevFillerAction) {
 
 		// Check if terminal and return terminal utility
 		if (state.IsTerminal()) {
 			float p1sTermUtil = state.TerminalUtility();
-			return (playerNum == 1 ? p1sTermUtil : -p1sTermUtil);
+			return (playerNum == 1 ? p1sTermUtil : -p1sTermUtil); // Tested. This works
 		}
 
 		// Heuristic for over max depth
 		if (depth > maxDepth) {
+			// Uncomment below to check heuristic bounds between -1 and 1
 			//float h = utilHealthHeuristic(state);
 			//if (h > 1.0f || h < -1.0f) Debug.LogWarning("Heuristic has magnitude greater than 1!");
 			//return h;
@@ -147,14 +155,18 @@ public class AdversarialSearch : PlayerAgentBase {
 				World newState = state.Clone();
 				World.Player newCurrentPlayer = playerNum == 1 ? newState.Player2 : newState.Player1;
 
-				for (int i = 0; i < moveSteps; i++) {
-					newCurrentPlayer.Advance(new List<WorldAction>(){action});
+				newCurrentPlayer.Advance(new List<WorldAction>(){action});
+				if (playerNum == 1) newState.Advance(new List<WorldAction>(), false);
 
-					// Conform with World.Advance execution order
+				// Decide filler action and do it - should never be jumping or firing
+				WorldAction potentialFillerAction = getFillerAction(action, prevFillerAction);
+				List<WorldAction> fillerActionList = new List<WorldAction>(){potentialFillerAction};
+				for (int i = 0; i < moveSteps - 1; i++) {
+					newCurrentPlayer.Advance(fillerActionList);
 					if (playerNum == 1) newState.Advance(new List<WorldAction>(), false);
 				}
 				
-				float utility = calculateUtility(newState, depth + 1, false, alpha, beta);
+				float utility = calculateUtility(newState, depth + 1, false, alpha, beta, potentialFillerAction);
 				if (utility < minUtil) {
 					minUtil = utility;
 
@@ -184,14 +196,18 @@ public class AdversarialSearch : PlayerAgentBase {
 				World newState = state.Clone();
 				World.Player newCurrentPlayer = playerNum == 1 ? newState.Player1 : newState.Player2;
 
-				for (int i = 0; i < moveSteps; i++) {
-					newCurrentPlayer.Advance(new List<WorldAction>(){action});
+				newCurrentPlayer.Advance(new List<WorldAction>(){action});
+				if (playerNum == 2) newState.Advance(new List<WorldAction>(), false);
 
-					// Conform with World.Advance execution order
-					if (playerNum == 2) newState.Advance(new List<WorldAction>(), false);
+				// Decide filler action and do it - should never be jumping or firing
+				WorldAction potentialFillerAction = getFillerAction(action, prevFillerAction);
+				List<WorldAction> fillerActionList = new List<WorldAction>(){potentialFillerAction};
+				for (int i = 0; i < moveSteps; i++) {
+					newCurrentPlayer.Advance(fillerActionList);
+					if (playerNum == 2) newState.Advance(fillerActionList, false);
 				}
 				
-				float utility = calculateUtility(newState, depth + 1, true, alpha, beta);
+				float utility = calculateUtility(newState, depth + 1, true, alpha, beta, potentialFillerAction);
 
 				if (utility > maxUtil) {
 					maxUtil = utility;
@@ -229,7 +245,18 @@ public class AdversarialSearch : PlayerAgentBase {
 			distanceScalar = -1.0f;
 		}
 
+
+		//Debug.Log(d * distanceScalar / 3000.0f);
+
 		return d * distanceScalar / 3000.0f;
+	}
+
+	float utilRunAwayHeuristic(World state) {
+
+		World.Player currentPlayer = playerNum == 1 ? state.Player1 : state.Player2;
+		World.Player opponentPlayer = playerNum == 1 ? state.Player2 : state.Player1;
+
+		return Util.ManhattanDistance(currentPlayer.X, currentPlayer.Y, opponentPlayer.X, opponentPlayer.Y);
 	}
 
 	float utilHealthHeuristic(World state) {
@@ -241,5 +268,16 @@ public class AdversarialSearch : PlayerAgentBase {
 			utilDistanceHeuristic(state) * 0.1f;
 		if (!currentPlayer.IsMaster && !opponentPlayer.IsMaster) util += (currentPlayer.Ammo - opponentPlayer.Ammo) / 3.0f * 0.2f;
 		return util;
+	}
+
+	// Returns the filler action coupled with an initial action
+	WorldAction getFillerAction(WorldAction action, WorldAction prevFillerAction) {
+
+		// Decide filler action - should never be jumping or firing
+		if (action == leftAction || action == rightAction || action == WorldAction.NoAction) {
+			return action;
+		} else {
+			return prevFillerAction;
+		}
 	}
 }

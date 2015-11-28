@@ -244,7 +244,7 @@ public partial class World : IAdvancing {
 			for (int j = 0; j < blocksHeight; j++) {
 				
 				// Default chance
-				float chance = 0.25f;//0.02f;
+				float chance = 1.0f;//0.25f;//0.02f;
 				
 				if (j != 0) {
 					// Up chance
