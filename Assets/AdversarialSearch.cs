@@ -72,14 +72,14 @@ public class AdversarialSearch : PlayerAgentBase {
 				World.Player newOpponentPlayer = playerNum == 1 ? newState.Player2 : newState.Player1;
 
 				newCurrentPlayer.Advance(new List<WorldAction>(){action});
-				if (playerNum == 2) newState.Advance(new List<WorldAction>(), false);
+				newState.Advance(new List<WorldAction>(), false);
 
 				// Decide filler action and do it - should never be jumping or firing
 				WorldAction potentialFillerAction = getFillerAction(action, fillerAction);
 				List<WorldAction> FillerActionList = new List<WorldAction>(){potentialFillerAction};
 				for (int i = 0; i < moveSteps - 1; i++) {
 					newCurrentPlayer.Advance(FillerActionList);
-					if (playerNum == 2) newState.Advance(new List<WorldAction>(), false);
+					newState.Advance(new List<WorldAction>(), false);
 				}
 
 				float utility = calculateUtility(newState, 0, true, -100000.0f, 100000.0f, potentialFillerAction);
@@ -142,7 +142,6 @@ public class AdversarialSearch : PlayerAgentBase {
 			// Determine which actions are possible
 			World.Player currentPlayer = playerNum == 1 ? state.Player2 : state.Player1;
 			List<WorldAction> possibleActions = currentPlayer.GetPossibleActions();
-
 			//List<WorldAction> possibleActions = new List<WorldAction>(){WorldAction.NoAction};
 
 			// Minimize utility
@@ -156,14 +155,12 @@ public class AdversarialSearch : PlayerAgentBase {
 				World.Player newCurrentPlayer = playerNum == 1 ? newState.Player2 : newState.Player1;
 
 				newCurrentPlayer.Advance(new List<WorldAction>(){action});
-				if (playerNum == 1) newState.Advance(new List<WorldAction>(), false);
 
 				// Decide filler action and do it - should never be jumping or firing
 				WorldAction potentialFillerAction = getFillerAction(action, prevFillerAction);
 				List<WorldAction> fillerActionList = new List<WorldAction>(){potentialFillerAction};
 				for (int i = 0; i < moveSteps - 1; i++) {
 					newCurrentPlayer.Advance(fillerActionList);
-					if (playerNum == 1) newState.Advance(new List<WorldAction>(), false);
 				}
 				
 				float utility = calculateUtility(newState, depth + 1, false, alpha, beta, potentialFillerAction);
@@ -197,19 +194,20 @@ public class AdversarialSearch : PlayerAgentBase {
 				World.Player newCurrentPlayer = playerNum == 1 ? newState.Player1 : newState.Player2;
 
 				newCurrentPlayer.Advance(new List<WorldAction>(){action});
-				if (playerNum == 2) newState.Advance(new List<WorldAction>(), false);
+				newState.Advance(new List<WorldAction>(), false);
 
 				// Decide filler action and do it - should never be jumping or firing
 				WorldAction potentialFillerAction = getFillerAction(action, prevFillerAction);
 				List<WorldAction> fillerActionList = new List<WorldAction>(){potentialFillerAction};
 				for (int i = 0; i < moveSteps; i++) {
 					newCurrentPlayer.Advance(fillerActionList);
-					if (playerNum == 2) newState.Advance(fillerActionList, false);
+					newState.Advance(fillerActionList, false);
 				}
 				
 				float utility = calculateUtility(newState, depth + 1, true, alpha, beta, potentialFillerAction);
 
 				if (utility > maxUtil) {
+
 					maxUtil = utility;
 
 					// Beta check
