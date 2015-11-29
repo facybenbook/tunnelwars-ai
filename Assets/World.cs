@@ -38,6 +38,12 @@ public partial class World : IAdvancing {
 	public Player Player1 { get; set; }
 	public Player Player2 { get; set; }
 
+	// The enlargement factor for projectile collisions without players
+	public const float EnlargementFactor = 1.1f; // This shouldn't be too big or else
+												 // players can slip through the middle
+												 // of the projectiles
+												
+
 	// Get the initial world state
 	public World() {
 		init();
@@ -84,6 +90,10 @@ public partial class World : IAdvancing {
 	virtual public void Advance(List<WorldAction> actions) {
 		Advance(actions, true);
 	}
+
+	// A world can be advanced without the players being advanced too. If this is the case
+	// then projectile collision boundaries are enlarged automatically to account for
+	// lack of knowledge about where players are
 	virtual public void Advance(List<WorldAction> actions, bool advancePlayers) {
 
 		// Advance players

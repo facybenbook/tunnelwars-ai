@@ -57,7 +57,7 @@ partial class World : IAdvancing {
 
 			float normalized = FacingRight ? 1.0f : -1.0f;
 
-			float eFactor = enlarge ? 1.1f : 1.0f;
+			float eFactor = enlarge ? EnlargementFactor : 1.0f;
 
 			switch(Type) {
 				
