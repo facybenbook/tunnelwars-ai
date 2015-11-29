@@ -13,14 +13,14 @@ using System.Collections.Generic;
 // An enumeration of all possible actions between world states
 public enum WorldAction {
 	NoAction = 0,
-	P1Left,
-	P1Right,
 	P1Jump,
 	P1Fire,
+	P1Left,
+	P1Right,
+	P2Jump,
+	P2Fire,
 	P2Left,
 	P2Right,
-	P2Jump,
-	P2Fire
 }
 
 // An interface for all objects that can "advance" in the same sense that a world does
