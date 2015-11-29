@@ -69,7 +69,7 @@ public class AdversarialSearch : PlayerAgentBase {
 				// Make a new clone of the world to run a simulated step
 				World newState = world.Clone();
 				World.Player newCurrentPlayer = playerNum == 1 ? newState.Player1 : newState.Player2;
-				World.Player newOpponentPlayer = playerNum == 1 ? newState.Player2 : newState.Player1;
+				//World.Player newOpponentPlayer = playerNum == 1 ? newState.Player2 : newState.Player1;
 
 				newCurrentPlayer.Advance(new List<WorldAction>(){action});
 				newState.Advance(new List<WorldAction>(), false);
@@ -114,13 +114,13 @@ public class AdversarialSearch : PlayerAgentBase {
 	WorldAction fillerAction;
 
 	// The maximum search depth
-	const int maxDepth = 5;
+	protected int maxDepth = 5;
 
 	// The number of steps to repeat for moves
-	const int moveSteps = 4; // Example 15 is make decision 4 times a second
+	protected int moveSteps = 4; // Example 15 is make decision 4 times a second
 
 	// Determines the utility of a given state
-	float calculateUtility(World state, int depth, bool isOpponentsTurn, float alpha, float beta, WorldAction prevFillerAction) {
+	virtual protected float calculateUtility(World state, int depth, bool isOpponentsTurn, float alpha, float beta, WorldAction prevFillerAction) {
 
 		// Check if terminal and return terminal utility
 		if (state.IsTerminal()) {

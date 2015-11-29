@@ -31,7 +31,6 @@ public interface IAdvancing {
 	void Advance(List<WorldAction> actions);
 }
 
-[System.Serializable]
 public partial class World : IAdvancing {
 
 	// Players
@@ -231,7 +230,7 @@ public partial class World : IAdvancing {
 		// Add players
 		Player1 = createPlayer(masterPlayer == 1, actionSet: 1);
 		Player2 = createPlayer(masterPlayer == 2, actionSet: 2);
-		Player1.X = 1344.0f;
+		Player1.X = 2400;//1344.0f;
 		Player1.Y = 864.0f;
 		Player2.X = 1600.0f;
 		Player2.Y = 864.0f;
@@ -254,7 +253,7 @@ public partial class World : IAdvancing {
 			for (int j = 0; j < blocksHeight; j++) {
 				
 				// Default chance
-				float chance = 1.0f;//0.25f;//0.02f;
+				float chance = 0.02f;
 				
 				if (j != 0) {
 					// Up chance
