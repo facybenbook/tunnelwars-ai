@@ -47,6 +47,7 @@ public class AdversarialSearch : PlayerAgentBase {
 		playerNum = player;
 		decisionTimer = 1;
 		fillerAction = WorldAction.NoAction;
+		emptyList = new List<WorldAction>();
 	}
 
 	// The center of the AI: get an action for a state
@@ -72,14 +73,14 @@ public class AdversarialSearch : PlayerAgentBase {
 				//World.Player newOpponentPlayer = playerNum == 1 ? newState.Player2 : newState.Player1;
 
 				newCurrentPlayer.Advance(new List<WorldAction>(){action});
-				newState.Advance(new List<WorldAction>(), false);
+				newState.Advance(emptyList, false, false);
 
 				// Decide filler action and do it - should never be jumping or firing
 				WorldAction potentialFillerAction = getFillerAction(action, fillerAction);
 				List<WorldAction> FillerActionList = new List<WorldAction>(){potentialFillerAction};
 				for (int i = 0; i < moveSteps - 1; i++) {
 					newCurrentPlayer.Advance(FillerActionList);
-					newState.Advance(new List<WorldAction>(), false);
+					newState.Advance(emptyList, false, false);
 				}
 
 				float utility = calculateUtility(newState, 0, true, -100000.0f, 100000.0f, potentialFillerAction);
@@ -107,10 +108,15 @@ public class AdversarialSearch : PlayerAgentBase {
 
 
 
+	List<WorldAction> emptyList;
+
 	// The number of the player
 	int playerNum;
 
+	// Number of steps before a new decision must be made
 	int decisionTimer;
+
+	// The action to do in the meantime
 	WorldAction fillerAction;
 
 	// The maximum search depth
@@ -194,14 +200,14 @@ public class AdversarialSearch : PlayerAgentBase {
 				World.Player newCurrentPlayer = playerNum == 1 ? newState.Player1 : newState.Player2;
 
 				newCurrentPlayer.Advance(new List<WorldAction>(){action});
-				newState.Advance(new List<WorldAction>(), false);
+				newState.Advance(emptyList, false, false);
 
 				// Decide filler action and do it - should never be jumping or firing
 				WorldAction potentialFillerAction = getFillerAction(action, prevFillerAction);
 				List<WorldAction> fillerActionList = new List<WorldAction>(){potentialFillerAction};
 				for (int i = 0; i < moveSteps; i++) {
 					newCurrentPlayer.Advance(fillerActionList);
-					newState.Advance(fillerActionList, false);
+					newState.Advance(emptyList, false, false);
 				}
 				
 				float utility = calculateUtility(newState, depth + 1, true, alpha, beta, potentialFillerAction);
@@ -249,6 +255,7 @@ public class AdversarialSearch : PlayerAgentBase {
 		return d * distanceScalar / 3000.0f;
 	}
 
+	// Runs away
 	float utilRunAwayHeuristic(World state) {
 
 		World.Player currentPlayer = playerNum == 1 ? state.Player1 : state.Player2;
@@ -257,14 +264,15 @@ public class AdversarialSearch : PlayerAgentBase {
 		return Util.ManhattanDistance(currentPlayer.X, currentPlayer.Y, opponentPlayer.X, opponentPlayer.Y);
 	}
 
+	// The most robust heuristic, drawing upon the distance heuristic
 	float utilHealthHeuristic(World state) {
 
 		World.Player currentPlayer = playerNum == 1 ? state.Player1 : state.Player2;
 		World.Player opponentPlayer = playerNum == 1 ? state.Player2 : state.Player1;
 
 		float util = currentPlayer.Health / 200.0f - opponentPlayer.Health / 200.0f + 
-			utilDistanceHeuristic(state) * 0.1f;
-		if (!currentPlayer.IsMaster && !opponentPlayer.IsMaster) util += (currentPlayer.Ammo - opponentPlayer.Ammo) / 3.0f * 0.2f;
+			utilDistanceHeuristic(state) * 0.05f;
+		if (!currentPlayer.IsMaster && !opponentPlayer.IsMaster) util += (currentPlayer.Ammo - opponentPlayer.Ammo) / 3.0f * 0.1f;
 		return util;
 	}
 

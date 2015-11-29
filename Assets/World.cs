@@ -87,13 +87,13 @@ public partial class World : IAdvancing {
 
 	// Takes an input list of world actions and updates the state
 	virtual public void Advance(List<WorldAction> actions) {
-		Advance(actions, true);
+		Advance(actions, true ,true);
 	}
 
 	// A world can be advanced without the players being advanced too. If this is the case
 	// then projectile collision boundaries are enlarged automatically to account for
 	// lack of knowledge about where players are
-	virtual public void Advance(List<WorldAction> actions, bool advancePlayers) {
+	virtual public void Advance(List<WorldAction> actions, bool advancePlayers, bool spawnPowerups) {
 
 		// Advance players
 		if (advancePlayers) {
@@ -102,10 +102,12 @@ public partial class World : IAdvancing {
 		}
 
 		// Advance spawn timer and spawn powerups
-		spawnTimer -= 1;
-		if (spawnTimer <= 0 && powerups.Count < 64) {
-			Powerup.SpawnRandom(this);
-			spawnTimer = spawnTimerMax;
+		if (spawnPowerups) {
+			spawnTimer -= 1;
+			if (spawnTimer <= 0 && powerups.Count < 64) {
+				Powerup.SpawnRandom(this);
+				spawnTimer = spawnTimerMax;
+			}
 		}
 
 		// Advance powerups
