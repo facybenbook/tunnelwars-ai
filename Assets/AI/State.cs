@@ -13,13 +13,14 @@ using System.Collections.Generic;
 using System.Linq;
 
 // enum which specifies how positively or negatively close an enemy is to the player
-public enum Closeness {
-	PosSmall,
-	PosMedium,
-	PosFar,
-	NegSmall,
-	NegMedium,
-	NegFar
+public enum XCloseness {
+	Small,
+	Medium,
+	Far
+}
+
+public enum YCloseness {
+
 }
 
 // class which takes in a world and creates a simplified state
@@ -65,8 +66,68 @@ public class State {
 	}
 
 	// returns all possible states
-	public List<State> allPossible () {
+	static public List<State> AllPossible () {
 
+		// create empty list
+		List<State> stateList = new List<State>();
+
+		// iterate through each property
+		WeaponType[] weaponArray = new WeaponType[] {
+			WeaponType.None,
+			WeaponType.Bombs,
+			WeaponType.Rockets,
+			WeaponType.Minions,
+			WeaponType.Lightning
+		};
+
+		int[] ammoArray = new int[]{-1,0,1,2,3};
+
+		Closeness[] closenessArray = new Closeness[] { 
+			Closeness.PosSmall,
+			Closeness.PosMedium,
+			Closeness.PosFar,
+			Closeness.NegSmall,
+			Closeness.NegMedium,
+			Closeness.NegFar
+		};
+
+		// weapon
+		foreach (WeaponType tempWeapon in weaponArray) {
+
+			// ammoAmount
+			foreach (int tempAmmoAmount in ammoArray) {
+
+				// enemyWeapon
+				foreach (WeaponType tempEnemyWeapon in weaponArray) {
+
+					// enemyAmmoAmount
+					foreach (int tempEnemyAmmoAmount in ammoArray) {
+
+						// xDistanceToEnemy
+						foreach (Closeness tempXDistanceToEnemy in closenessArray) {
+
+							// yDistanceToEnemy
+							foreach (Closeness tempYDistanceToEnemy in closenessArray) {
+
+								// create new state class with the above properties
+								State newState = new State ();
+								newState.weapon = tempWeapon;
+								newState.ammoAmount = tempAmmoAmount;
+								newState.enemyWeapon = tempEnemyWeapon;
+								newState.enemyAmmoAmount = tempEnemyAmmoAmount;
+								newState.xDistanceToEnemy = tempXDistanceToEnemy;
+								newState.yDistanceToEnemy = tempYDistanceToEnemy;
+
+								// add newState to stateList
+								stateList.Add (newState);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return stateList;
 	}
 
 	// helper method which takes in a distance and returns how a closeness type

@@ -11,6 +11,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System
 
 public enum Strategy {
 	Attack,
@@ -23,13 +24,30 @@ public enum Strategy {
 // class used in QLearning
 public class QLearning {
 	
-	Dictionary<Dictionary<State,float>, Strategy> beliefs;
+	Dictionary <Dictionary <State,float>, Strategy> beliefs;
 	float epsilon;
 	float gamma;
-
-	// Initialization method which sets all qValues to 0
+	
 	public QLearning () {
 		
+	}
+
+	// sets all beliefs to 0
+	public void initializeQValuesToZero () {
+
+		Strategy[] strategyArray = new Strategy[] {
+			Strategy.Attack,
+			Strategy.RunAway,
+			Strategy.GetAmmo,
+			Strategy.DigDown
+		};
+
+		// iterate through every strategy and state
+		foreach (Strategy strategy in strategyArray) {
+			foreach (State state in State.allPossible()) {
+
+			}
+		}
 	}
 	
 	// returns the QValue of a state, action tuple
