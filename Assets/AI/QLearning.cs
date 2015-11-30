@@ -19,11 +19,13 @@ public enum Strategy {
 	DigDown
 }
 
+
+// class used in QLearning
 public class QLearning {
 	
-	Dictionary<Dictionary<State,float>, Strategy> beliefs
-	float epsilon
-	float gamma
+	Dictionary<Dictionary<State,float>, Strategy> beliefs;
+	float epsilon;
+	float gamma;
 
 	// Initialization method which sets all qValues to 0
 	public QLearning () {
@@ -54,6 +56,8 @@ public class QLearning {
 	public void saveData (string fileName) {
 
 	}
+
+	float reward (state,)
 }
 
 
