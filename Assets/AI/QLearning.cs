@@ -11,6 +11,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using System.IO
 
 public enum Strategy {
 	Attack,
@@ -28,24 +29,56 @@ public class QLearning {
 	// Near vs far sighted factor
 	public float Gamma { get; set; }
 
+	public float Discount { get; set; }
+
 	// Constructor
-	public QLearning () {
+	public QLearning (float alpha, float gamma, float discount) {
+		Alpha = alpha;
+		Gamma = gamma;
+		Discount = discount;
 		initializeQValuesToZero ();
 	}
 
 	// Saves the Q function to the disk
 	public void SaveData (string fileName) {
-		
+
+
+
 	}
 
 	// Returns the optimal action at a state
 	public Strategy ComputeStrategyFromQValues (State state) {
-		return Strategy.Attack;
+
+		Strategy currentStrategy = Strategy.Attack;
+		float currentQValue = 0.0;
+
+		// Iterate through all possible strategies
+		foreach (Strategy strategy in allStrategies) {
+
+			Dictionary<State,Strategy> key = new Dictionary<State, Strategy>(){{state, strategy}};
+
+			// If the utility for this strategy is higher than the current best
+			if (utilities[key] > currentQValue) {
+				currentQValue = utilities[key];
+				currentStrategy = strategy;
+			}
+		}
+
+		return currentStrategy;
 	}
 
 	// Updates the q value of a state-action tuple
-	public void Learn (State state, Strategy action, State nextState, float reward) {
-		
+	public void UpdateQValue (State state, Strategy strategy, State nextState, float reward) {
+
+		// Get the key to utility dictionary
+		Dictionary<State,Strategy> key = new Dictionary<State, Strategy>(){{state, strategy}};
+
+		// Get the current QValue
+		float qValue = utilities [key];
+
+		// Update the QValue
+		utilities [key] = qValue + Alpha * (reward + Discount * computeValueFromQValues (nextState) - qValue);
+
 	}
 
 
@@ -83,6 +116,32 @@ public class QLearning {
 		Strategy.GetAmmo,
 		Strategy.DigDown
 	};
+
+	void Serialize(Dictionary<string, int> dictionary, Stream stream)
+	{
+		BinaryWriter writer = new BinaryWriter(stream);
+		writer.Write(dictionary.Count);
+		foreach (var kvp in dictionary)
+		{
+			writer.Write(kvp.Key);
+			writer.Write(kvp.Value);
+		}
+		writer.Flush();
+	}
+	
+	Dictionary<string, int> Deserialize(Stream stream)
+	{
+		BinaryReader reader = new BinaryReader(stream);
+		int count = reader.ReadInt32();
+		var dictionary = new Dictionary<string,int>(count);
+		for (int n = 0; n < count; n++)
+		{
+			var key = reader.ReadString();
+			var value = reader.ReadInt32();
+			dictionary.Add(key, value);
+		}
+		return dictionary;                
+	}
 
 	// Map of state-action dictionary to estimated utilities
 	Dictionary <Dictionary <State,Strategy>, float> utilities;
