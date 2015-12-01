@@ -20,19 +20,24 @@ public enum XCloseness {
 }
 
 public enum YCloseness {
-
+	PosSmall,
+	PosMedium,
+	PosFar,
+	NegSmall,
+	NegMedium,
+	NegFar
 }
 
 // class which takes in a world and creates a simplified state
 public class State {
 
 	// State Properties
-	public PowerupType weapon;
-	public int	ammoAmount;
-	public PowerupType enemyWeapon;
-	public int enemyAmmoAmount;
-	public Closeness xDistanceToEnemy;
-	public Closeness yDistanceToEnemy;
+	public PowerupType Weapon;
+	public int	AmmoAmount;
+	public PowerupType EnemyWeapon;
+	public int EnemyAmmoAmount;
+	public Closeness XDistanceToEnemy;
+	public Closeness YDistanceToEnemy;
 	
 	// initialization method that simplifies a world into a state
 	public State (World world, int playerNum) {
