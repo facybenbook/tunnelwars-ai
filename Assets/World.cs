@@ -190,6 +190,11 @@ public partial class World : IAdvancing {
 		return ground[xIndex, yIndex];
 	}
 
+	// Checks the ground at an index
+	public bool CheckGroundByIndex(int i, int j) {
+		return ground[i, j];
+	}
+
 
 
 	// Width and height of worlds in blocks
