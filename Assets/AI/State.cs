@@ -12,11 +12,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-// enum which specifies how positively or negatively close an enemy is to the player
+// Enum which specifies how positively or negatively close an enemy is to the player
 public enum XCloseness {
 	Small,
 	Medium,
-	Far
+	Far,
+	WallBetween
 }
 
 public enum YCloseness {
@@ -25,27 +26,38 @@ public enum YCloseness {
 	PosFar,
 	NegSmall,
 	NegMedium,
-	NegFar
+	NegFar,
+	WallBetween
 }
 
-// class which takes in a world and creates a simplified state
+// Class which takes in a world and creates a simplified state
 public class State {
 
-	// State Properties
-	public PowerupType Weapon;
-	public int	AmmoAmount;
-	public PowerupType EnemyWeapon;
-	public int EnemyAmmoAmount;
-	public Closeness XDistanceToEnemy;
-	public Closeness YDistanceToEnemy;
+	// Players Weapon Type
+	public WeaponType Weapon { get; set; }
+
+	// Players Ammo
+	public int	AmmoAmount { get; set; }
+
+	// Enemy Weapon Type
+	public WeaponType EnemyWeapon { get; set; }
+
+	// Enemy Ammo
+	public int EnemyAmmoAmount { get; set; }
+
+	// XCloseness to Enemy
+	public XCloseness XDistanceToEnemy { get; set; }
+
+	// YCloseness to Enemy
+	public YCloseness YDistanceToEnemy { get; set; }
 	
-	// initialization method that simplifies a world into a state
+	// Initialization method that simplifies a world into a state
 	public State (World world, int playerNum) {
 
 		World.Player player;
 		World.Player enemy;
 
-		// set the player and enemy
+		// Set the player and enemy
 		if (playerNum == 1) {
 			player = world.Player1;
 			enemy = world.Player2;
@@ -55,28 +67,34 @@ public class State {
 			enemy = world.Player1;
 		}
 
-		// set the player and enemy weapons and ammo amounts
-		weapon = player.Weapon;
-		ammoAmount = player.Ammo;
-		enemyWeapon = enemy.Weapon;
-		enemyAmmoAmount = enemy.Ammo;
+		// Set the player and enemy weapons and ammo amounts
+		Weapon = player.Weapon;
+		AmmoAmount = player.Ammo;
+		EnemyWeapon = enemy.Weapon;
+		EnemyAmmoAmount = enemy.Ammo;
 
-		// calculate the x and y distance to the enemy
-		float xDist = enemy.X - player.X;
-		float yDist = enemy.Y - player.Y;
-
-		// convert these distances into closeness types
-		xDistanceToEnemy = HowClose (xDist);
-		yDistanceToEnemy = HowClose (yDist);
+		// Convert these distances into closeness types
+		XDistanceToEnemy = HowXClose (world,playerNum);
+		YDistanceToEnemy = HowYClose (world,playerNum);
 	}
 
-	// returns all possible states
+	public State () {
+
+		Weapon = WeaponType.None;
+		AmmoAmount = 0;
+		EnemyWeapon = WeaponType.None;
+		EnemyAmmoAmount = 0;
+		XDistanceToEnemy = XCloseness.WallBetween;
+		YDistanceToEnemy = YCloseness.WallBetween;
+	}
+
+	// Returns all possible states
 	static public List<State> AllPossible () {
 
-		// create empty list
+		// Create empty list
 		List<State> stateList = new List<State>();
 
-		// iterate through each property
+		// Iterate through each property
 		WeaponType[] weaponArray = new WeaponType[] {
 			WeaponType.None,
 			WeaponType.Bombs,
@@ -87,13 +105,21 @@ public class State {
 
 		int[] ammoArray = new int[]{-1,0,1,2,3};
 
-		Closeness[] closenessArray = new Closeness[] { 
-			Closeness.PosSmall,
-			Closeness.PosMedium,
-			Closeness.PosFar,
-			Closeness.NegSmall,
-			Closeness.NegMedium,
-			Closeness.NegFar
+		XCloseness[] xClosenessArray = new XCloseness[] { 
+			XCloseness.Small,
+			XCloseness.Medium,
+			XCloseness.Far,
+			XCloseness.WallBetween
+		};
+
+		YCloseness[] yClosenessArray = new YCloseness[] { 
+			YCloseness.PosSmall,
+			YCloseness.PosMedium,
+			YCloseness.PosFar,
+			YCloseness.NegSmall,
+			YCloseness.NegMedium,
+			YCloseness.NegFar,
+			YCloseness.WallBetween
 		};
 
 		// weapon
@@ -109,19 +135,19 @@ public class State {
 					foreach (int tempEnemyAmmoAmount in ammoArray) {
 
 						// xDistanceToEnemy
-						foreach (Closeness tempXDistanceToEnemy in closenessArray) {
+						foreach (XCloseness tempXDistanceToEnemy in xClosenessArray) {
 
 							// yDistanceToEnemy
-							foreach (Closeness tempYDistanceToEnemy in closenessArray) {
+							foreach (YCloseness tempYDistanceToEnemy in yClosenessArray) {
 
 								// create new state class with the above properties
 								State newState = new State ();
-								newState.weapon = tempWeapon;
-								newState.ammoAmount = tempAmmoAmount;
-								newState.enemyWeapon = tempEnemyWeapon;
-								newState.enemyAmmoAmount = tempEnemyAmmoAmount;
-								newState.xDistanceToEnemy = tempXDistanceToEnemy;
-								newState.yDistanceToEnemy = tempYDistanceToEnemy;
+								newState.Weapon = tempWeapon;
+								newState.AmmoAmount = tempAmmoAmount;
+								newState.EnemyWeapon = tempEnemyWeapon;
+								newState.EnemyAmmoAmount = tempEnemyAmmoAmount;
+								newState.XDistanceToEnemy = tempXDistanceToEnemy;
+								newState.YDistanceToEnemy = tempYDistanceToEnemy;
 
 								// add newState to stateList
 								stateList.Add (newState);
@@ -135,26 +161,126 @@ public class State {
 		return stateList;
 	}
 
-	// helper method which takes in a distance and returns how a closeness type
-	Closeness HowClose (float dist) {
+	// Helper method which takes in a world and playerNum and returns the XCloseness of the player and the enemy
+	public XCloseness HowXClose (World world, int playerNum) {
 
-		if (dist >= 0) {
-			if (0 <= dist < 2) {
-				return Closeness.PosSmall;
-			} else if (2 <= dist < 8) {
-				return Closeness.PosMedium;
-			} else {
-				return Closeness.PosFar;
-			}
+		World.Player player;
+		World.Player enemy;
+
+		// Set the player and enemy
+		if (playerNum == 1) {
+			player = world.Player1;
+			enemy = world.Player2;
 		} else {
-			if (0 <= dist < 2) {
-				return Closeness.NegSmall;
-			} else if (2 <= dist < 8) {
-				return Closeness.NegMedium;
+			player = world.Player2;
+			enemy = world.Player1;
+		}
+
+		// Calculate the x distance to the enemy
+		float xDist = enemy.X - player.X;
+		
+		if (IsGroundBetween (world,"y",playerNum)) {
+			return XCloseness.WallBetween;
+		} else {
+
+			if (0 <= xDist && xDist <= 2) {
+				return XCloseness.Small;
+			} else if (2 < xDist && xDist <= 8) {
+				return XCloseness.Medium;
 			} else {
-				return Closeness.NegFar;
+				return XCloseness.Far;
+			}
+
+		}
+	}
+	
+	// Helper method which takes in a world and playerNum and returns the XCloseness of the player and the enemy
+	public YCloseness HowYClose (World world, int playerNum) {
+
+		World.Player player;
+		World.Player enemy;
+		
+		// Set the player and enemy
+		if (playerNum == 1) {
+			player = world.Player1;
+			enemy = world.Player2;
+		} else {
+			player = world.Player2;
+			enemy = world.Player1;
+		}
+
+		float yDist = enemy.Y - player.Y;
+
+		if (IsGroundBetween (world,"y",playerNum)) {
+			return YCloseness.WallBetween;
+		} else {
+
+			// If its a positive distance
+			if (yDist >= 0) {
+				if (0 <= yDist && yDist <= 2) {
+					return YCloseness.PosSmall;
+				} else if (2 < yDist && yDist <= 8) {
+					return YCloseness.PosMedium;
+				} else {
+					return YCloseness.PosFar;
+				}
+			} else {
+				if (0 <= yDist && yDist <= 2) {
+					return YCloseness.NegSmall;
+				} else if (2 < yDist && yDist <= 8) {
+					return YCloseness.NegMedium;
+				} else {
+					return YCloseness.NegFar;
+				}
 			}
 		}
 	}
+
+
+
+
+
+	// Takes in a world and a direction and checks if there is a ground between the two players in that direction
+	bool IsGroundBetween (World world, string direction, int player) {
+
+		float[] pos1;
+		float[] pos2;
+
+		// Check the Player
+		if (player == 1) {
+			pos1 = new float[]{world.Player1.X,world.Player2.Y};
+			pos2 = new float[]{world.Player2.X,world.Player2.Y};
+		} else {
+			pos2 = new float[]{world.Player1.X,world.Player2.Y};
+			pos1 = new float[]{world.Player2.X,world.Player2.Y};
+		}
+
+		// Check the Direction
+		if (direction == "x") {
+
+			// Iterate through each x
+			foreach (float x in Enumerable.Range((int)pos1[0],(int)pos2[0])) {
+				
+				if (world.CheckGround(x,pos1[1])) {
+					return true;
+				}
+			}
+			
+		} else if (direction == "y") {
+
+			// Iterate through each y
+			foreach (float y in Enumerable.Range((int)pos1[1],(int)pos2[1])) {
+				
+				if (world.CheckGround(pos1[0],y)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
 }
+
+
+
 

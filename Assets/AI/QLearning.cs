@@ -28,8 +28,9 @@ public class QLearning {
 	// Near vs far sighted factor
 	public float Gamma { get; set; }
 
-	// Constructors
+	// Constructor
 	public QLearning () {
+		initializeQValuesToZero ();
 	}
 
 	// Saves the Q function to the disk
@@ -39,7 +40,7 @@ public class QLearning {
 
 	// Returns the optimal action at a state
 	public Strategy ComputeStrategyFromQValues (State state) {
-		
+		return Strategy.Attack;
 	}
 
 	// Updates the q value of a state-action tuple
@@ -54,32 +55,37 @@ public class QLearning {
 	void initializeQValuesToZero () {
 
 		// Iterate through every strategy and state
-		foreach (Strategy strategy in allStrategies) {
-			foreach (State state in State.allPossible()) {
+		foreach (State state in State.AllPossible()) {
+			foreach (Strategy strategy in allStrategies) {
+
+				// Get the key for the dictionary and enter in 0.0
+				Dictionary<State,Strategy> key = new Dictionary<State, Strategy>(){{state, strategy}};
+				utilities.Add(key,0.0f);
 
 			}
 		}
 	}
 	
 	// Returns the q value of a state-action tuple
-	float getQValue (State state, Strategy action) {
-
+	float getQValue (State state, Strategy strategy) {
+		Dictionary<State,Strategy> key = new Dictionary<State, Strategy>(){{state, strategy}};
+		return utilities [key];
 	}
 
 	// Returns the max q value at a state
 	float computeValueFromQValues (State state) {
-		
+		return 0.0f;
 	}
 
-	const Strategy[] allStrategies = new Strategy[] {
+	Strategy[] allStrategies = new Strategy[] {
 		Strategy.Attack,
 		Strategy.RunAway,
 		Strategy.GetAmmo,
 		Strategy.DigDown
 	};
 
-	// Map of state-action tuples to estimated utilities
-	Dictionary <Dictionary <State,float>, Strategy> utilities;
+	// Map of state-action dictionary to estimated utilities
+	Dictionary <Dictionary <State,Strategy>, float> utilities;
 }
 
 
