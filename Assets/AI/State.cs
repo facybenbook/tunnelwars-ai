@@ -190,11 +190,10 @@ public class State {
 			} else {
 				return XCloseness.Far;
 			}
-
 		}
 	}
 	
-	// Helper method which takes in a world and playerNum and returns the XCloseness of the player and the enemy
+	// Method which takes in a world and playerNum and returns the XCloseness of the player and the enemy
 	public YCloseness HowYClose (World world, int playerNum) {
 
 		World.Player player;
@@ -280,7 +279,3 @@ public class State {
 		return false;
 	}
 }
-
-
-
-
