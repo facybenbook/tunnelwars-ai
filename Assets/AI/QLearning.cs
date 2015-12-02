@@ -36,7 +36,6 @@ public class QLearning {
 		Alpha = alpha;
 		Gamma = gamma;
 		Discount = discount;
-		initializeQValuesToZero ();
 	}
 
 	// Saves the Q function to the disk
@@ -48,7 +47,7 @@ public class QLearning {
 
 	// Returns the q value of a state-action tuple
 	public float getQValue (State state, Strategy strategy) {
-		Dictionary<State,Strategy> key = new Dictionary<State, Strategy>(){{state, strategy}};
+		Util.Key key = new Util.Key (state, strategy);
 		return utilities [key];
 	}
 
@@ -95,11 +94,18 @@ public class QLearning {
 	// Updates the q value of a state-action tuple
 	public void UpdateQValue (State state, Strategy strategy, State nextState, float reward) {
 
-		// Get the current QValue
-		float qValue = getQValue (state, strategy);
+		// Get the key
+		float qValue;
+		Util.Key key = new Util.Key(state,strategy);
+
+		// If the key is already in the dictionary then get the current QValue otherwise set the current QValue to 0
+		if (utilities.ContainsKey (key)) {
+			qValue = getQValue (state, strategy);
+		} else {
+			qValue = 0.0f;
+		}
 
 		// Update the QValue
-		Dictionary<State,Strategy> key = new Dictionary<State, Strategy>(){{state, strategy}};
 		utilities [key] = qValue + Alpha * (reward + Discount * ComputeValueFromQValues (nextState) - qValue);
 	}
 
@@ -114,7 +120,7 @@ public class QLearning {
 			foreach (Strategy strategy in allStrategies) {
 
 				// Get the key for the dictionary and enter in 0.0
-				Dictionary<State,Strategy> key = new Dictionary<State, Strategy>(){{state, strategy}};
+				Util.Key key = new Util.Key(state,strategy);
 				utilities.Add(key,0.0f);
 
 			}
@@ -129,7 +135,7 @@ public class QLearning {
 	};
 
 	// Map of state-action dictionary to estimated utilities
-	Dictionary <Dictionary <State,Strategy>, float> utilities;
+	Dictionary <Util.Key, float> utilities = new Dictionary <Util.Key, float>();
 }
 
 

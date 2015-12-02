@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using System;
 
 public static class Util {
@@ -31,5 +32,18 @@ public static class Util {
 	public static float BoundedManhattanDistance(float x1, float y1, float x2, float y2, float k=600) {
 
 		return 1.0f - 1.0f / ((ManhattanDistance(x1, y1, x2, y2) / k) + 1.0f);
+	}
+
+	// Key class that stores a state and a strategy
+	public class Key {
+
+		public State state { get; set; }
+		public Strategy strategy { get; set; }
+
+		// Constructor
+		public Key (State state1, Strategy strategy1) {
+			state = state1;
+			strategy = strategy1;
+		}
 	}
 }
