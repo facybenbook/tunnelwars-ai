@@ -29,6 +29,7 @@ public class QLearning {
 	// Near vs far sighted factor
 	public float Gamma { get; set; }
 
+	// Gamma factor
 	public float Discount { get; set; }
 
 	// Constructor
@@ -41,7 +42,10 @@ public class QLearning {
 	// Saves the Q function to the disk
 	public void SaveData (string fileName) {
 
+	}
 
+	// Open the Q function thats been saved to the disk
+	public void OpenSavedData (string fileName) {
 
 	}
 
@@ -126,7 +130,7 @@ public class QLearning {
 			}
 		}
 	}
-
+	
 	Strategy[] allStrategies = new Strategy[] {
 		Strategy.Attack,
 		Strategy.RunAway,
