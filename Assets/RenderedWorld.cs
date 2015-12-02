@@ -33,9 +33,9 @@ class RenderedWorld : World {
 		isSetup = true;
 
 		// Add grounds
-		for (int i = 0; i < blocksWidth; i++) {
+		for (int i = 0; i < BlocksWidth; i++) {
 
-			for (int j = 0; j < blocksHeight; j++) {
+			for (int j = 0; j < BlocksHeight; j++) {
 				if (ground[i, j]) setGroundByIndex(i, j, true);
 			}
 		}
@@ -89,7 +89,7 @@ class RenderedWorld : World {
 	bool isSetup;
 
 	// The ground transforms
-	Transform[,] groundTransforms = new Transform[blocksWidth, blocksHeight];
+	Transform[,] groundTransforms = new Transform[BlocksWidth, BlocksHeight];
 
 	override public void Advance(List<WorldAction> actions) {
 		base.Advance(actions);
@@ -98,7 +98,7 @@ class RenderedWorld : World {
 	override protected void setGroundByIndex(int i, int j, bool value) {
 
 		// Re-check if out of bounds
-		if (i < 0 || i >= World.blocksWidth || j < 0 || j >= World.blocksHeight) return;
+		if (i < 0 || i >= World.BlocksWidth || j < 0 || j >= World.BlocksHeight) return;
 
 		// Do functionality
 		base.setGroundByIndex(i, j, value);
@@ -110,8 +110,8 @@ class RenderedWorld : World {
 
 			// Add Unity object for ground
 			Transform clone = Object.Instantiate(resourceScript.Protoground.transform);
-			float size = World.blockSize;
-			clone.position = new Vector3(i * size, j * size + floorLevel);
+			float size = World.BlockSize;
+			clone.position = new Vector3(i * size, j * size + FloorLevel);
 			groundTransforms[i, j] = clone;
 
 		} else {

@@ -158,7 +158,7 @@ partial class World : IAdvancing {
 
 				} else {
 					vSpeed = 0.0f;
-					Y = Mathf.Ceil((Y - floorLevel) / blockSize) * blockSize + floorLevel - 15.0f;
+					Y = Mathf.Ceil((Y - FloorLevel) / BlockSize) * BlockSize + FloorLevel - 15.0f;
 				}
 				
 				if (!pushingIntoWall) {
@@ -167,7 +167,7 @@ partial class World : IAdvancing {
 
 				// Pushing into wall case
 				} else {
-					X = Mathf.Round(X / blockSize) * blockSize - normalized * 14.0f;
+					X = Mathf.Round(X / BlockSize) * BlockSize - normalized * 14.0f;
 
 					// Falling and pushing into wall makes the minions feistier
 					if (falling) {
@@ -189,8 +189,8 @@ partial class World : IAdvancing {
 
 							// Check if either ground is non-blowupable
 							// TODO: Reveal ground should be blowupable too
-							bool blowRight = world.CheckGround(X + blockSize * normalized, Y);
-							bool blowBelow = world.CheckGround(X, Y + blockSize);
+							bool blowRight = world.CheckGround(X + BlockSize * normalized, Y);
+							bool blowBelow = world.CheckGround(X, Y + BlockSize);
 							if (blowRight && blowBelow) {
 
 								// Can't blow up both at once. Randomly select which
@@ -199,10 +199,10 @@ partial class World : IAdvancing {
 								if (r == 1) blowBelow = false;
 							}
 							if (blowRight) {
-								world.setGround(X + blockSize * normalized, Y, false);
+								world.setGround(X + BlockSize * normalized, Y, false);
 							}
 							if (blowBelow) {
-								world.setGround(X, Y + blockSize, false);
+								world.setGround(X, Y + BlockSize, false);
 							}
 						}
 					}
@@ -231,13 +231,13 @@ partial class World : IAdvancing {
 				if (timer == 20) {
 					
 					// Break blocks above by cycling through
-					for (int j = 0; j < blocksWidth; j++) {
+					for (int j = 0; j < BlocksWidth; j++) {
 
-						for (int k = 0; k < blocksHeight; k++) {
+						for (int k = 0; k < BlocksHeight; k++) {
 
-							float xx = j * blockSize;
-							float yy = k * blockSize + floorLevel;
-							if (yy < Y && xx + blockSize > X - 16.0f * eFactor && xx < X + 16.0f * eFactor) {
+							float xx = j * BlockSize;
+							float yy = k * BlockSize + FloorLevel;
+							if (yy < Y && xx + BlockSize > X - 16.0f * eFactor && xx < X + 16.0f * eFactor) {
 								// Get rid of ground
 								world.setGroundByIndex(j, k, false);
 							}
@@ -280,7 +280,7 @@ partial class World : IAdvancing {
 			if (dx * dx + dy * dy < 1024.0f) {
 
 				// Collided. Blow below
-				world.setGround(X, Y + blockSize, false);
+				world.setGround(X, Y + BlockSize, false);
 
 				// Harm nearby players
 				world.explode(X, Y, 100.0f, 48.0f, TargetPlayer);

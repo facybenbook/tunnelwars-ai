@@ -33,6 +33,16 @@ public interface IAdvancing {
 
 public partial class World : IAdvancing {
 
+	// Width and height of worlds in blocks
+	public const int BlocksWidth = 46;
+	public const int BlocksHeight = 16;
+	
+	// The dimensions of one square block
+	public const float BlockSize = 64.0f;
+	
+	// The y coordinate of the floor
+	public const float FloorLevel = BlockSize * 14.0f;
+
 	// Players
 	public Player Player1 { get; set; }
 	public Player Player2 { get; set; }
@@ -179,33 +189,26 @@ public partial class World : IAdvancing {
 	public bool CheckGround(float x, float y) {
 		if (x <= 0.0f || x >= 2944.0f) return true;
 		if (x >= 1408.0f && x <= 1536.0f && y <= 1152.0f) return true;
-		if (y < floorLevel) return false;
+		if (y < FloorLevel) return false;
 		if (y > 1920.0f) return true;
-		float relX = x / blockSize;
-		float relY = (y - floorLevel) / blockSize;
+		float relX = x / BlockSize;
+		float relY = (y - FloorLevel) / BlockSize;
 		int xIndex = Mathf.FloorToInt(relX);
 		int yIndex = Mathf.FloorToInt(relY);
-		if (xIndex < 0 || xIndex >= blocksWidth) return true;
-		if (yIndex >= blocksHeight) return true;
+		if (xIndex < 0 || xIndex >= BlocksWidth) return true;
+		if (yIndex >= BlocksHeight) return true;
 		return ground[xIndex, yIndex];
 	}
 
-	// Checks the ground at an index
-	public bool CheckGroundByIndex(int i, int j) {
-		return ground[i, j];
+	// Coordinate conversion
+	public static int XToI(float x) {
+		return Mathf.FloorToInt(x / BlockSize);
 	}
-
-
-
-	// Width and height of worlds in blocks
-	protected const int blocksWidth = 46;
-	protected const int blocksHeight = 16;
+	public static int YToJ(float y) {
+		return Mathf.FloorToInt((y - FloorLevel) / BlockSize);
+	}
 	
-	// The dimensions of one square block
-	protected const float blockSize = 64.0f;
-	
-	// The y coordinate of the floor
-	protected const float floorLevel = blockSize * 14.0f;
+
 
 	// The number of the player that started as master
 	int startedAsMaster;
@@ -219,7 +222,7 @@ public partial class World : IAdvancing {
 	const int spawnTimerMax = 60;
 
 	// An array of bools determining whether ground is filled in
-	protected bool[,] ground = new bool[blocksWidth, blocksHeight];
+	protected bool[,] ground = new bool[BlocksWidth, BlocksHeight];
 
 	// Sets up a new world
 	protected void init() {
@@ -251,13 +254,13 @@ public partial class World : IAdvancing {
 			else if (i == 1) x = 1952.0f;
 			else if (i == 2) x = 1088.0f;
 			else x = 928.0f;
-			y = floorLevel - 64.0f;
+			y = FloorLevel - 64.0f;
 			createPowerup(x, y, PowerupType.Rockets);
 		};
 
 		// Fill in regular ground with caves
-		for (int i = 0; i < blocksWidth; i++) {
-			for (int j = 0; j < blocksHeight; j++) {
+		for (int i = 0; i < BlocksWidth; i++) {
+			for (int j = 0; j < BlocksHeight; j++) {
 				
 				// Default chance
 				float chance = 0.02f;
@@ -265,19 +268,19 @@ public partial class World : IAdvancing {
 				if (j != 0) {
 					// Up chance
 					if (!ground[i, j - 1]
-					    && !(i == blocksWidth / 2 - 1 && j == 4)
-					    && !(i == blocksWidth / 2 && j == 4)) chance += 0.4f;
+					    && !(i == BlocksWidth / 2 - 1 && j == 4)
+					    && !(i == BlocksWidth / 2 && j == 4)) chance += 0.4f;
 				} else {
 					chance += 0.15f; // Surface level chance
 				}
 				
 				if (i != 0) {
 					if (!ground[i - 1, j] 
-					    && !(i == blocksWidth / 2 + 1 && j < 4)) chance += 0.4f; // Left chance
+					    && !(i == BlocksWidth / 2 + 1 && j < 4)) chance += 0.4f; // Left chance
 				}
 				
 				float val = Random.Range(0.0f, 1.0f);
-				if ((i >= blocksWidth / 2 - 1 && i < blocksWidth / 2 + 1 && j <= 3) || (val <= chance)) {
+				if ((i >= BlocksWidth / 2 - 1 && i < BlocksWidth / 2 + 1 && j <= 3) || (val <= chance)) {
 					setGroundByIndex(i, j, false);
 					continue;
 				}
@@ -306,14 +309,14 @@ public partial class World : IAdvancing {
 	// Sets the ground at indices i, j
 	virtual protected void setGroundByIndex(int i, int j, bool value) {
 
-		if (i < 0 || i >= blocksWidth || j < 0 || j >= blocksHeight) return;
+		if (i < 0 || i >= BlocksWidth || j < 0 || j >= BlocksHeight) return;
 		ground[i, j] = value;
 	}
 
 	// Set the ground at a position
 	protected void setGround(float x, float y, bool state) {
-		int i = Mathf.FloorToInt(x / blockSize);
-		int j = (int) (Mathf.FloorToInt(y - floorLevel) / blockSize);
+		int i = Mathf.FloorToInt(x / BlockSize);
+		int j = (int) (Mathf.FloorToInt(y - FloorLevel) / BlockSize);
 		setGroundByIndex(i, j, state);
 	}
 

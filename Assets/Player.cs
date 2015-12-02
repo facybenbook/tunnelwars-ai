@@ -23,6 +23,9 @@ partial class World : IAdvancing {
 
 	public class Player : IAdvancing {
 
+		// Constants
+		public const float DefaultSpeed = 7.0f;
+
 		// Transformation
 		public float X { get; set; }
 		public float Y { get; set; }
@@ -134,7 +137,7 @@ partial class World : IAdvancing {
 			if (gravityTimer >= 0) gravityTimer -= 1;
 
 			// Fire off timer events
-			if (speedTimer == 0) Speed = defaultSpeed;
+			if (speedTimer == 0) Speed = DefaultSpeed;
 			if (gravityTimer == 0) Gravity = 1.0f;
 
 			// Handle action input if alive
@@ -235,9 +238,6 @@ partial class World : IAdvancing {
 		protected int playerNum;
 		WeaponType weapon;
 
-		// Constants
-		const float defaultSpeed = 7.0f;
-
 		// Kinematics
 		float vSpeed;
 		bool noFall;
@@ -263,7 +263,7 @@ partial class World : IAdvancing {
 			Ammo = 0;
 			Weapon = WeaponType.None;
 			IsMaster = isMaster;
-			Speed = defaultSpeed;
+			Speed = DefaultSpeed;
 			Gravity = 1.0f;
 
 			vSpeed = 0.0f;
@@ -294,7 +294,7 @@ partial class World : IAdvancing {
 		// Attempt to jump
 		void jump() {
 			if (noFall || wallStick > 0) {
-				vSpeed = -16.0f;
+				vSpeed = -15.0f;
 			}
 		}
 
@@ -321,7 +321,7 @@ partial class World : IAdvancing {
 			    world.CheckGround(X + 18.0f, Y + 33.0f + vSpeed)) {
 
 				if (vSpeed > 0.0f) {
-					Y = Mathf.Floor((Y - floorLevel) / blockSize) * blockSize + floorLevel + 39.0f;
+					Y = Mathf.Floor((Y - FloorLevel) / BlockSize) * BlockSize + FloorLevel + 39.0f;
 				}
 				vSpeed = Mathf.Min(vSpeed, 0.0f);
 				noFall = true;
@@ -343,12 +343,12 @@ partial class World : IAdvancing {
 
 						// Has hit head
 						vSpeed = 0.0f;
-						Y = Mathf.Ceil((Y - floorLevel) / blockSize) * blockSize + floorLevel - 39.0f;
+						Y = Mathf.Ceil((Y - FloorLevel) / BlockSize) * BlockSize + FloorLevel - 39.0f;
 					}
 				}
 
 				// Don't let player get blasted through the ceiling
-				float minY = World.blockSize / 2;
+				float minY = World.BlockSize / 2;
 				if (Y < minY)
 				{
 					Y = minY;

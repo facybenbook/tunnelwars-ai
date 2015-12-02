@@ -92,7 +92,7 @@ partial class World : IAdvancing {
 
 					} else {
 						vSpeed = -1.0f;
-						Y = Mathf.Ceil(Y / World.blockSize) * World.blockSize;
+						Y = Mathf.Ceil(Y / World.BlockSize) * World.BlockSize;
 					}
 				}
 			}
