@@ -56,7 +56,7 @@ public class AIAgent : PlayerAgentBase {
 		WorldAction bestAction = WorldAction.NoAction;
 
 		// Calculate new level 1 action if timer is up
-		if (decisionTimer == 0) {
+		if (decisionTimer <= 0) {
 
 			ActionWithFiller decision = level1Searcher.ComputeBestAction(world, fillerAction);
 			bestAction = decision.Action;
@@ -67,21 +67,22 @@ public class AIAgent : PlayerAgentBase {
 		// Otherwise do the filler action
 		} else {
 			bestAction = fillerAction;
-			decisionTimer--;
+
+			// Update level three in a fast frame
+			if (level3Timer <= 0) {
+				
+				BlockWorld blockWorld = new BlockWorld(playerNum, world);
+				
+				dangerZone = new DangerZone(2, world, blockWorld);
+				
+				dangerZone.Render(ResourceScript);
+				dangerZone.RenderPlayerBeliefs(ResourceScript);
+				level3Timer = Level3StepSize;
+			}
 		}
-
-		if (level3Timer == 0) {
-
-			BlockWorld blockWorld = new BlockWorld(playerNum, world);
-
-			dangerZone = new DangerZone(2, world, blockWorld);
-
-			dangerZone.Render(ResourceScript);
-			dangerZone.RenderPlayerBeliefs(ResourceScript);
-			level3Timer = Level3StepSize;
-		} else {
-			level3Timer--;
-		}
+	
+		decisionTimer--;
+		level3Timer--;
 
 		// Return a single-valued list with the best action
 		return new List<WorldAction>() {bestAction};
