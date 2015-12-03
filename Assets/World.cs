@@ -235,7 +235,7 @@ public partial class World : WorldWithGround, IAdvancing {
 			else if (i == 2) x = 1088.0f;
 			else x = 928.0f;
 			y = FloorLevel - 64.0f;
-			createPowerup(x, y, PowerupType.Rockets);
+			createPowerup(x, y, PowerupType.Minions);
 		};
 
 		// Fill in regular ground with caves

@@ -277,24 +277,31 @@ public class DangerZone {
 
 				} else {
 					// Recursively add values to the danger zone 2D array
-					addDangerToBlockAndNeighbors(sourceI, sourceJ, weaponType, sourceProbability, sourceAmmo, true);
-					addDangerToBlockAndNeighbors(sourceI, sourceJ, weaponType, sourceProbability, sourceAmmo, false);
+
+					// Use same blockworld for both directions since paths won't cross
+					BlockWorld newBlockWorld = blockWorld.Clone();
+					addDangerToBlockAndNeighbors(sourceI, sourceJ, weaponType, sourceProbability, sourceAmmo, true, newBlockWorld);
+					addDangerToBlockAndNeighbors(sourceI, sourceJ, weaponType, sourceProbability, sourceAmmo, false, newBlockWorld);
 				}
 			}
 		}
 	}
 
-	// Recursively add danger to the 2D array 
+	// Probabilities below this are ignored
 	const float epsilon = 0.01f;
-	const float groundBlowoutFactor = 0.75f;
+
+	// Reduce probability with more grounds for performance
+	const float groundBlowoutFactor = 1.0f;
+
+	// Recursively add danger to the 2D array 
 	void addDangerToBlockAndNeighbors(int i, int j, WeaponType type, float probability, int ammo,
-	                                  bool facingRight) {
+	                                  bool facingRight, BlockWorld blockWorld, bool isFalling=false) {
 
 		// Base cases
 		if (probability < epsilon) return;
 		if (ammo == 0) return; // Master mode has negative ammo - do not return
 
-		// Blow out ground if there is any at the current position
+		// Blow out ground if there is any at the current position. If there is 
 		if (blockWorld.CheckGroundByIndex(i, j)) {
 
 			// Another base case for immutable ground
@@ -303,7 +310,8 @@ public class DangerZone {
 
 			// Blow out ground otherwise
 			blockWorld.SetGroundByIndex(i, j, false);
-			addDangerToBlockAndNeighbors(i, j, type, probability * groundBlowoutFactor, ammo - 1, facingRight);
+			addDangerToBlockAndNeighbors(i, j, type, probability * groundBlowoutFactor, ammo - 1,
+			                             facingRight, blockWorld);
 			return;
 
 		} else {
@@ -314,40 +322,60 @@ public class DangerZone {
 			case WeaponType.Rockets: {
 
 				addDanger(i, j, probability * RocketsDangerWeight);
-				addDangerToBlockAndNeighbors(i + normalized, j, type, probability, ammo, facingRight);
+				addDangerToBlockAndNeighbors(i + normalized, j, type, probability, ammo,
+				                             facingRight, blockWorld);
 				break;
 			}
 			
 			case WeaponType.Bombs: {
 				addDanger(i, j, probability * BombsDangerWeight);
-				addDangerToBlockAndNeighbors(i, j + 1, type, probability, ammo, facingRight);
+				addDangerToBlockAndNeighbors(i, j + 1, type, probability, ammo, facingRight, blockWorld);
 				break;
 			}
 
 			case WeaponType.Minions: {
 				addDanger(i, j, probability * MinionsDangerWeight);
 
-				// Check fall
-				if (blockWorld.CheckGroundByIndex(i, j + 1)) {
+				bool groundDown = blockWorld.CheckGroundByIndex(i, j + 1);
+				bool groundRight = blockWorld.CheckGroundByIndex(i + normalized, j);
+				bool goRight = false;
+				bool goDown = false;
 
-					addDangerToBlockAndNeighbors(i, j + 1, type, probability, ammo, facingRight);
+				// Do natural motion - right first unless hasn't fallen
+				if (!groundRight && !groundDown) {
 
+					if (isFalling && blockWorld.CheckGroundByIndex(i + normalized, j + 1)) {
+						goRight = true;
+					} else {
+						goDown = true;
+					}
+
+				} else if (!groundRight && groundDown) {
+					goRight = true;
+				} else if (groundRight && !groundDown) {
+					goDown = true;
 				} else {
 
-					bool blowRight = blockWorld.CheckGroundByIndex(i + normalized, j);
-					bool blowBelow = blockWorld.CheckGroundByIndex(i, j + 1);
+					// Block worlds diverge, so make a new one
+					BlockWorld newBlockWorld = blockWorld.Clone();
 
-					int options = 0;
-					if (blowRight) options++;
-					if (blowBelow) options++;
-					float newProb = probability / options;
-
-					if (blowRight) {
-						addDangerToBlockAndNeighbors(i + normalized, j, type, newProb, ammo, facingRight);
-					}
-					if (blowBelow) {
-						addDangerToBlockAndNeighbors(i, j + 1, type, newProb, ammo, facingRight);
-					}
+					// Go both directions
+					addDangerToBlockAndNeighbors(i + normalized, j, type, probability / 2.0f,
+					                             ammo, facingRight, blockWorld, false);
+					addDangerToBlockAndNeighbors(i, j + 1, type, probability / 2.0f,
+					                             ammo, facingRight, newBlockWorld, true);
+				}
+					
+				// Do sole motions
+				if (goRight) {
+					addDangerToBlockAndNeighbors(i + normalized, j, type, probability,
+					                             ammo, facingRight, blockWorld, false);
+					return;
+				}
+				if (goDown) {
+					addDangerToBlockAndNeighbors(i, j + 1, type, probability,
+					                             ammo, facingRight, blockWorld, true);
+					return;
 				}
 
 				break;

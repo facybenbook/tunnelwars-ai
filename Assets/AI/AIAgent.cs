@@ -77,7 +77,7 @@ public class AIAgent : PlayerAgentBase {
 			dangerZone = new DangerZone(2, world, blockWorld);
 
 			dangerZone.Render(ResourceScript);
-			dangerZone.RenderPlayerBeliefs(ResourceScript);
+			//dangerZone.RenderPlayerBeliefs(ResourceScript);
 			level3Timer = Level3StepSize;
 		} else {
 			level3Timer--;
