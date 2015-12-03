@@ -23,23 +23,24 @@ public class BlockPlayer {
 	// Used for tunneling simulation
 	public int Ammo { get; set; }
 	public WeaponType Weapon { get; set; }
-	public bool IsMaster { get { return IsMaster; } }
 
 	// Constructor takes a real player to simplify
 	public BlockPlayer(World.Player realPlayer) {
+		UpdateWithPlayer(realPlayer);
+	}
+
+	// Updates with a real player
+	public void UpdateWithPlayer(World.Player realPlayer) {
 		I = World.XToI(realPlayer.X);
 		J = World.YToJ(realPlayer.Y);
 		Ammo = realPlayer.Ammo;
 		Weapon = realPlayer.Weapon;
-		this.isMaster = realPlayer.IsMaster;
 	}
 
 	// Clone
 	public BlockPlayer Clone() {
 		return (BlockPlayer)this.MemberwiseClone();
 	}
-
-	bool isMaster;
 }
 
 // Make a class for a simplified powerup. Coordinates stored as both types
@@ -49,16 +50,23 @@ public class BlockPowerup {
 	public float Y { get; set; }
 	public WeaponType Weapon { get; set; }
 	public PowerupType Type { get; set; }
+	public bool Falling { get { return isFalling; } }
 
 	public float I { get { return World.XToI(X); } }
 	public float J { get { return World.YToJ(Y); } }
 
 	// Constructor from real powerup
 	public BlockPowerup (World.Powerup powerup) {
+		UpdateWithPowerup(powerup);
+	}
+
+	// Update with a real powerup
+	public void UpdateWithPowerup(World.Powerup powerup) {
 		X = powerup.X;
 		Y = powerup.Y;
 		Weapon = powerup.Weapon;
 		Type = powerup.Type;
+		isFalling = powerup.VSpeed > 0.0f;
 	}
 
 	// Clone
@@ -68,6 +76,9 @@ public class BlockPowerup {
 
 	// Projects the powerup position downwards to rest on the ground
 	public void ProjectDownwards(BlockWorld world) {
+
+		// Don't project downwards if not falling anymore!
+		if (!isFalling) return;
 
 		// Speed and gravity fall
 		if (Type != PowerupType.Speed && Type != PowerupType.Gravity) return;
@@ -86,10 +97,15 @@ public class BlockPowerup {
 			y += World.BlockSize;
 		}
 	}
+
+	bool isFalling;
 }
 
 // The main class
 public class BlockWorld: WorldWithGround {
+
+	// Whether to exclude speed/gravity powerups from the block world
+	const bool excludeSpeedGrav = true;
 
 	// The AI player
 	public BlockPlayer Player { get; set; }
@@ -114,7 +130,16 @@ public class BlockWorld: WorldWithGround {
 		// Turn powerups to BlockPowerups
 		Powerups = new List<BlockPowerup>();
 		for (int i = 0; i < world.NumPowerups; i++) {
-			Powerups.Add(new BlockPowerup(world.GetPowerup(i)));
+
+			World.Powerup powerup = world.GetPowerup(i);
+
+			// Conditionally exclude speed and gravity
+			if (excludeSpeedGrav && powerup.Type == PowerupType.Gravity || 
+			    powerup.Type == PowerupType.Speed) continue;
+
+			BlockPowerup blockPowerup = new BlockPowerup(powerup);
+			blockPowerup.ProjectDownwards(this);
+			Powerups.Add(blockPowerup);
 		}
 
 	}

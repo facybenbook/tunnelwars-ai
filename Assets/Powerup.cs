@@ -27,6 +27,7 @@ partial class World : IAdvancing {
 		public float X { set; get; }
 		public float Y { set; get; }
 		public PowerupType Type { set; get; }
+		public float VSpeed { get { return vSpeed; } }
 
 		// The weapon that the player gets by collecting the powerup
 		public WeaponType Weapon { set; get; }
