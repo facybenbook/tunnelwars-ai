@@ -37,7 +37,7 @@ public class AIAgent : PlayerAgentBase {
 
 	// Agent parameters
 	public const int Level1StepSize = 4;
-	public const int Level3StepSize = 60 * 4;
+	public const int Level3StepSize = 30;
 	public Game ResourceScript { get; set; }
 
 	public AIAgent(int player) : base(player) {
@@ -77,7 +77,7 @@ public class AIAgent : PlayerAgentBase {
 			dangerZone = new DangerZone(2, world, blockWorld);
 
 			dangerZone.Render(ResourceScript);
-			//dangerZone.RenderPlayerBeliefs(ResourceScript);
+			dangerZone.RenderPlayerBeliefs(ResourceScript);
 			level3Timer = Level3StepSize;
 		} else {
 			level3Timer--;

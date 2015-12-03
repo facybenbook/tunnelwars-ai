@@ -222,7 +222,7 @@ public partial class World : WorldWithGround, IAdvancing {
 		Player2 = createPlayer(masterPlayer == 2, actionSet: 2);
 		Player1.X = 1344.0f;
 		Player1.Y = 864.0f;
-		Player2.X = 1600.0f;
+		Player2.X = 400.0f;//1600.0f;
 		Player2.Y = 864.0f;
 
 		// Create bombs that are there at the start

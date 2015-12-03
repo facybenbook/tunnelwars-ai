@@ -21,6 +21,12 @@ public class DangerZone {
 	public const float BombsDangerWeight = 1.0f;
 	public const float MinionsDangerWeight = 1.0f;
 
+	// Probabilities below this are ignored
+	const float epsilon = 0.05f;
+	
+	// Reduce probability with more grounds for performance
+	const float groundBlowoutFactor = 0.9f;
+
 	// Number of block steps to simulate in initial source distribution calculation
 	public const int DistributionSteps = 5;
 
@@ -286,12 +292,6 @@ public class DangerZone {
 			}
 		}
 	}
-
-	// Probabilities below this are ignored
-	const float epsilon = 0.01f;
-
-	// Reduce probability with more grounds for performance
-	const float groundBlowoutFactor = 1.0f;
 
 	// Recursively add danger to the 2D array 
 	void addDangerToBlockAndNeighbors(int i, int j, WeaponType type, float probability, int ammo,
