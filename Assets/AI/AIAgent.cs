@@ -37,12 +37,15 @@ public class AIAgent : PlayerAgentBase {
 
 	// Agent parameters
 	public const int Level1StepSize = 4;
+	public const int Level3StepSize = 60 * 4;
+	public Game ResourceScript { get; set; }
 
 	public AIAgent(int player) : base(player) {
 		playerNum = player;
 		level1Searcher = new DiscreteAdversarialSearch(playerNum, utilHealthHeuristic,
 		                                               getFillerAction, Level1StepSize, 4);
 		decisionTimer = 0;
+		level3Timer = Level3StepSize;
 		fillerAction = WorldAction.NoAction;
 	}
 
@@ -58,12 +61,27 @@ public class AIAgent : PlayerAgentBase {
 			ActionWithFiller decision = level1Searcher.ComputeBestAction(world, fillerAction);
 			bestAction = decision.Action;
 			fillerAction = decision.FillerAction;
+
+			decisionTimer = Level1StepSize;
 		
 		// Otherwise do the filler action
 		} else {
 			bestAction = fillerAction;
+			decisionTimer--;
 		}
 
+		if (level3Timer == 0) {
+
+			BlockWorld blockWorld = new BlockWorld(playerNum, world);
+
+			dangerZone = new DangerZone(2, world, blockWorld);
+
+			dangerZone.Render(ResourceScript);
+			dangerZone.RenderPlayerBeliefs(ResourceScript);
+			level3Timer = Level3StepSize;
+		} else {
+			level3Timer--;
+		}
 
 		// Return a single-valued list with the best action
 		return new List<WorldAction>() {bestAction};
@@ -77,9 +95,15 @@ public class AIAgent : PlayerAgentBase {
 	// Our adversarial searcher for level 1
 	DiscreteAdversarialSearch level1Searcher;
 
-	// Time until next level 1 decision must be made, and filler action for meantime
+	// Level 1 - Time until next decision must be made, and filler action for meantime
 	int decisionTimer;
 	WorldAction fillerAction;
+
+	// Level 2 - The danger zone of the opponent
+	DangerZone dangerZone;
+
+	// Time until action must end TODO take out
+	int level3Timer;
 
 	// Defines the association between level 1 actions and filler actions
 	WorldAction getFillerAction(WorldAction action, WorldAction prevFillerAction) {

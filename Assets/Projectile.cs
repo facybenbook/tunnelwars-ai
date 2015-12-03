@@ -194,7 +194,7 @@ partial class World : IAdvancing {
 							if (blowRight && blowBelow) {
 
 								// Can't blow up both at once. Randomly select which
-								int r = Random.Range(0,2);
+								int r = Random.Range(0, 2);
 								if (r == 0) blowRight = false;
 								if (r == 1) blowBelow = false;
 							}

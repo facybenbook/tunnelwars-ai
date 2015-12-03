@@ -34,6 +34,11 @@ public class BlockPlayer {
 		this.isMaster = realPlayer.IsMaster;
 	}
 
+	// Clone
+	public BlockPlayer Clone() {
+		return (BlockPlayer)this.MemberwiseClone();
+	}
+
 	bool isMaster;
 }
 
@@ -56,6 +61,11 @@ public class BlockPowerup {
 		Type = powerup.Type;
 	}
 
+	// Clone
+	public BlockPowerup Clone() {
+		return (BlockPowerup)this.MemberwiseClone();
+	}
+
 	// Projects the powerup position downwards to rest on the ground
 	public void ProjectDownwards(BlockWorld world) {
 
@@ -69,7 +79,7 @@ public class BlockPowerup {
 		// Increase y until hit ground
 		float y = World.FloorLevel;
 		for (int j = 0; j < World.BlocksHeight; j++) {
-			if (world.Ground[i1, j] || world.Ground[i2, j]) {
+			if (world.CheckGroundByIndex(i1, j) || world.CheckGroundByIndex(i2, j)) {
 				break;
 			}
 
@@ -79,10 +89,7 @@ public class BlockPowerup {
 }
 
 // The main class
-public class BlockWorld {
-
-	// The World's ground arrangement
-	public bool[,] Ground{ get; set; }
+public class BlockWorld: WorldWithGround {
 
 	// The AI player
 	public BlockPlayer Player { get; set; }
@@ -90,26 +97,43 @@ public class BlockWorld {
 	// The powerups
 	List<BlockPowerup> Powerups { get; set; }
 	
-	// A reference to the danger zone
-	DangerZone enemyDangerZone;
+	// Constructors
+	public BlockWorld() {}
+	public BlockWorld(int playerNum, World world) {
 
-	// Checks ground at an i, j coordinate
-	public bool CheckGround(int i, int j) {
+		ground = new bool[World.BlocksWidth, World.BlocksHeight];
+		for (int i = 0; i < World.BlocksWidth; i++) {
+			for (int j = 0; j < World.BlocksHeight; j++) {
+				ground[i, j] = world.CheckGroundByIndex(i, j);
+			}
+		}
 
-		// TODO: This can be 10 times faster
-		float x = i * World.BlockSize + 0.01f;
-		float y = j * World.BlockSize + World.FloorLevel + 0.01f;
-		if (x <= 0.0f || x >= 2944.0f) return true;
-		if (x >= 1408.0f && x <= 1536.0f && y <= 1152.0f) return true;
-		if (y < World.FloorLevel) return false;
-		if (y > 1920.0f) return true;
-		float relX = x / World.BlockSize;
-		float relY = (y - World.FloorLevel) / World.BlockSize;
-		int xIndex = Mathf.FloorToInt(relX);
-		int yIndex = Mathf.FloorToInt(relY);
-		if (xIndex < 0 || xIndex >= World.BlocksWidth) return true;
-		if (yIndex >= World.BlocksHeight) return true;
-		return Ground[xIndex, yIndex];
+		// Turn player to BlockPlayer
+		Player = new BlockPlayer(playerNum == 1 ? world.Player1 : world.Player2);
+
+		// Turn powerups to BlockPowerups
+		Powerups = new List<BlockPowerup>();
+		for (int i = 0; i < world.NumPowerups; i++) {
+			Powerups.Add(new BlockPowerup(world.GetPowerup(i)));
+		}
+
+	}
+
+	// Clone
+	public BlockWorld Clone() {
+
+		BlockWorld world = new BlockWorld();
+
+		world.Player = Player.Clone();
+		world.Powerups = new List<BlockPowerup>();
+		foreach (BlockPowerup powerup in Powerups) {
+			world.Powerups.Add(powerup.Clone());
+		}
+		world.ground = (bool[,])ground.Clone();
+
+		// Any other members should go here...
+
+		return world;
 	}
 
 	// A method checking whether a position is supported - meaning it can serve
@@ -117,14 +141,20 @@ public class BlockWorld {
 	public bool CheckPositionSupported(int i, int j) {
 
 		// Ground below means good to jump
-		if (CheckGround(i, j + 1)) return true;
-		if (CheckGround(i + 1, j + 1) || CheckGround(i - 1, j + 1)) return true;
+		if (CheckGroundByIndex(i, j + 1)) return true;
+		if (CheckGroundByIndex(i + 1, j + 1) || CheckGroundByIndex(i - 1, j + 1)) return true;
 
 		// Ground to the sides means good to jump
-		if (CheckGround(i + 1, j) || CheckGround(i - 1, j)) return true;
+		if (CheckGroundByIndex(i + 1, j) || CheckGroundByIndex(i - 1, j)) return true;
 
 		return false;
 	}
+
+	// Allow mutability of ground
+	public void SetGroundByIndex(int i, int j, bool val) {
+		setGroundByIndex(i, j, val);
+	}
+
 
 	// Checks for ammo at a certain position and returns its type. Returns type None otherwise
 	// NOTE: Fails to recognize multiple ammos in same area

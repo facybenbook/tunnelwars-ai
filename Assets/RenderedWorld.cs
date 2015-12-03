@@ -44,32 +44,27 @@ class RenderedWorld : World {
 
 		// Add immutable ground
 		// Left edge
-		for (int i = 0; i < 31; i++)
-		{
+		for (int i = 0; i < 31; i++) {
 			Transform clone = Object.Instantiate(resourceScript.ProtogroundImmutable.transform);
 			clone.position = new Vector3(-64.0f, i * 64.0f);
 		};
 		// Right edge
-		for (int i = 0; i < 31; i++)
-		{
+		for (int i = 0; i < 31; i++) {
 			Transform clone = Object.Instantiate(resourceScript.ProtogroundImmutable.transform);
 			clone.position = new Vector3(2944.0f, i * 64.0f);
 		};
 		// Top edge
-		for (int i = -1; i < 47; i++)
-		{
+		for (int i = -1; i < 47; i++) {
 			Transform clone = Object.Instantiate(resourceScript.ProtogroundImmutable.transform);
 			clone.position = new Vector3(i * 64.0f, -64.0f);
 		};
 		// Bottom edge
-		for (int i = -1; i < 47; i++)
-		{
+		for (int i = -1; i < 47; i++) {
 			Transform clone = Object.Instantiate(resourceScript.ProtogroundImmutable.transform);
 			clone.position = new Vector3(i * 64.0f, 1920.0f);
 		};
 		// Middle wall
-		for (int i = 0; i < 18; i++)
-		{
+		for (int i = 0; i < 18; i++) {
 			Transform clone = Object.Instantiate(resourceScript.ProtogroundImmutable.transform);
 			clone.position = new Vector3(1408.0f, 64.0f * i);
 			clone = Object.Instantiate(resourceScript.ProtogroundImmutable.transform);

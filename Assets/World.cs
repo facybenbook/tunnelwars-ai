@@ -2,7 +2,10 @@
  * World.cs
  * 
  * Defines a World object. These objects are states that encapsulate ALL data
- * from a state that is needed to exactly produce a new state. 
+ * from a state that is needed to exactly produce a new state.
+ * 
+ * Because multiple types of world need to implement the ground checking/setting
+ * features, World inherits from the WorldWithGround class
  *
  */
 
@@ -31,17 +34,7 @@ public interface IAdvancing {
 	void Advance(List<WorldAction> actions);
 }
 
-public partial class World : IAdvancing {
-
-	// Width and height of worlds in blocks
-	public const int BlocksWidth = 46;
-	public const int BlocksHeight = 16;
-	
-	// The dimensions of one square block
-	public const float BlockSize = 64.0f;
-	
-	// The y coordinate of the floor
-	public const float FloorLevel = BlockSize * 14.0f;
+public partial class World : WorldWithGround, IAdvancing {
 
 	// Players
 	public Player Player1 { get; set; }
@@ -185,29 +178,16 @@ public partial class World : IAdvancing {
 		return Player1.CheckActionApplicable(action) && Player2.CheckActionApplicable(action);
 	}
 
-	// Checks the ground at a point
-	public bool CheckGround(float x, float y) {
-		if (x <= 0.0f || x >= 2944.0f) return true;
-		if (x >= 1408.0f && x <= 1536.0f && y <= 1152.0f) return true;
-		if (y < FloorLevel) return false;
-		if (y > 1920.0f) return true;
-		float relX = x / BlockSize;
-		float relY = (y - FloorLevel) / BlockSize;
-		int xIndex = Mathf.FloorToInt(relX);
-		int yIndex = Mathf.FloorToInt(relY);
-		if (xIndex < 0 || xIndex >= BlocksWidth) return true;
-		if (yIndex >= BlocksHeight) return true;
-		return ground[xIndex, yIndex];
+	// Gets the ith powerup
+	public int NumPowerups {
+		get {
+			return powerups.Count;
+		}
+	}
+	public Powerup GetPowerup(int index) {
+		return powerups[index];
 	}
 
-	// Coordinate conversion
-	public static int XToI(float x) {
-		return Mathf.FloorToInt(x / BlockSize);
-	}
-	public static int YToJ(float y) {
-		return Mathf.FloorToInt((y - FloorLevel) / BlockSize);
-	}
-	
 
 
 	// The number of the player that started as master
@@ -221,26 +201,26 @@ public partial class World : IAdvancing {
 	int spawnTimer;
 	const int spawnTimerMax = 60;
 
-	// An array of bools determining whether ground is filled in
-	protected bool[,] ground = new bool[BlocksWidth, BlocksHeight];
-
 	// Sets up a new world
 	protected void init() {
-		initWithMasterPlayer(0);
+		initWithMasterPlayer(2);
 	}
 	protected void initWithMasterPlayer(int masterPlayer) {
+
+		// Create ground array
+		initGroundArray();
 
 		spawnTimer = spawnTimerMax;
 		startedAsMaster = masterPlayer;
 
-		// Initialize lists
+		// Initialize lists/arrays
 		powerups = new List<Powerup>();
 		projectiles = new List<Projectile>();
 
 		// Add players
 		Player1 = createPlayer(masterPlayer == 1, actionSet: 1);
 		Player2 = createPlayer(masterPlayer == 2, actionSet: 2);
-		Player1.X = 2400;//1344.0f;
+		Player1.X = 1344.0f;
 		Player1.Y = 864.0f;
 		Player2.X = 1600.0f;
 		Player2.Y = 864.0f;
@@ -306,20 +286,6 @@ public partial class World : IAdvancing {
 		}
 	}
 
-	// Sets the ground at indices i, j
-	virtual protected void setGroundByIndex(int i, int j, bool value) {
-
-		if (i < 0 || i >= BlocksWidth || j < 0 || j >= BlocksHeight) return;
-		ground[i, j] = value;
-	}
-
-	// Set the ground at a position
-	protected void setGround(float x, float y, bool state) {
-		int i = Mathf.FloorToInt(x / BlockSize);
-		int j = (int) (Mathf.FloorToInt(y - FloorLevel) / BlockSize);
-		setGroundByIndex(i, j, state);
-	}
-
 	// Player creation
 	virtual protected Player createPlayer(bool isMaster, int actionSet) {
 		return new Player(this, isMaster, actionSet);
@@ -349,4 +315,97 @@ public partial class World : IAdvancing {
 
 	// Called at the end of each world creation/advance
 	virtual protected void postUpdate() {}
+}
+
+// World with ground
+public class WorldWithGround {
+
+	// Width and height of worlds in blocks
+	public const int BlocksWidth = 46;
+	public const int BlocksHeight = 16;
+	
+	// The dimensions of one square block
+	public const float BlockSize = 64.0f;
+	
+	// The Y coordinate of the floor
+	public const int FloorLevelJ = 14;
+	public const float FloorLevel = BlockSize * FloorLevelJ;
+
+	// The extension into the ground of the wall
+	public const int WallDepthJ = 4;
+	public const float WallDepth = BlockSize * WallDepthJ;
+
+	// Constructor does nothing. Call init to use
+	public WorldWithGround() {}
+
+	// Coordinate conversion
+	public static int XToI(float x) {
+		return Mathf.FloorToInt(x / BlockSize);
+	}
+	public static int YToJ(float y) {
+		return Mathf.FloorToInt((y - FloorLevel) / BlockSize);
+	}
+
+	// Checks the ground at a point
+	public bool CheckGround(float x, float y) {
+		int i = XToI(x);
+		int j = YToJ(y);
+		return CheckGroundByIndex(i, j);
+	}
+
+	// Checks the ground at index (including immutable)
+	public bool CheckGroundByIndex(int i, int j) {
+
+		if (CheckGroundImmutableByIndex(i, j)) return true;
+
+		// Check within boundaries (most are covered by immutable check)
+		if (j < 0) return false;
+
+		// Check ground
+		return ground[i, j];
+	}
+
+	// Checks for ground immutable
+	public bool CheckGroundImmutable(float x, float y) {
+		int i = XToI(x);
+		int j = YToJ(y);
+		return CheckGroundImmutableByIndex(i, j);
+	}
+
+	// Checks for ground immutabile. Negative indices are accepted
+	public bool CheckGroundImmutableByIndex(int i, int j) {
+
+		// Check normal boundaries
+		if (i < 0 || i >= BlocksWidth) return true; // Left, right
+		if (j >= BlocksHeight) return true; // Bottom
+		if (j + FloorLevelJ < 0) return true; // Top
+
+		// Middle wall
+		if ((i == 22 || i == 23) && j < WallDepthJ) return true;
+
+		return false;
+	}
+
+
+
+	// An array of bools determining whether ground is filled in
+	protected bool[,] ground;
+
+	protected void initGroundArray() {
+		ground = new bool[World.BlocksWidth, World.BlocksHeight];
+	}
+
+	// Set the ground at a position
+	protected void setGround(float x, float y, bool state) {
+		int i = XToI(x);
+		int j = YToJ(y);
+		setGroundByIndex(i, j, state);
+	}
+
+	// Sets the ground at indices i, j
+	virtual protected void setGroundByIndex(int i, int j, bool value) {
+		
+		if (i < 0 || i >= BlocksWidth || j < 0 || j >= BlocksHeight) return;
+		ground[i, j] = value;
+	}
 }

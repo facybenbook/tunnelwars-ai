@@ -27,7 +27,8 @@ public class Game : MonoBehaviour {
 	public GameObject Protogravity;
 	public GameObject Protospeed;
 	public GameObject Protoexplosion;
-	public Transform Dead;
+	public GameObject Protodanger;
+	public GameObject Protobelief;
 	public GUIControl Gui;
 	
 	public AudioClip ClickSound;
@@ -55,7 +56,10 @@ public class Game : MonoBehaviour {
 		// Create a keyboard control agent for both players
 		agentList = new List<IAgent>();
 		agentList.Add(new WASDFAgent(2));
-		agentList.Add(new AIAgent(1));
+		AIAgent ai = new AIAgent(1);
+		ai.ResourceScript = this; // For debug rendering only
+		agentList.Add(ai);
+		//agentList.Add(new WASDFAgent(1));
 	}
 
 	// Called every frame

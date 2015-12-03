@@ -16,20 +16,42 @@ using System.Collections.Generic;
 public class DangerZone {
 
 	// A number of heuristic estimations must be made in computing a danger zone:
+	public const float LightningDangerWeight = 1.5f;
+	public const float RocketsDangerWeight = 1.0f;
+	public const float BombsDangerWeight = 1.0f;
+	public const float MinionsDangerWeight = 1.0f;
 
 	// Number of block steps to simulate in initial source distribution calculation
-	public const int DistributionSteps = 3;
+	public const int DistributionSteps = 5;
 
 	// A player's danger zone must be calculated from a World and a blockWorld
 	public DangerZone(int playerNum, World world, BlockWorld blockWorld) {
 
-		sourceBeliefs = new Dictionary<IJCoords, ProjectileSourceBelief>();
+		// Init danger array
+		dangerZoneArray = new float[World.BlocksWidth, dangerZoneHeight];
+
+		// Init to zero
+		for (int i = 0; i < World.BlocksWidth; i++) {
+			for (int j = 0; j < dangerZoneHeight; j++) {
+				dangerZoneArray[i, j] = 0.0f;
+			}
+		}
+
+		// Store block world as a copy for modification
+		this.blockWorld = blockWorld.Clone();
 
 		// Uses exact filtering to compute a belief distribution for player position
 		// and weapon type/ammo
-		computeSourceBeliefs(playerNum, world, blockWorld);
+		sourceBeliefs = new Dictionary<IJCoords, ProjectileSourceBelief>();
+		computeSourceBeliefs(playerNum, world);
 
+		// For each source belief computed by exact filtering, run the trajectory
+		runTrajectories();
+	}
 
+	// Gets danger zone readings for a point at i,j coordinates
+	public float CheckDanger(int i, int j) {
+		return dangerZoneArray[i, j + World.FloorLevelJ];
 	}
 
 	
@@ -37,20 +59,35 @@ public class DangerZone {
 	// The probability distribution of initial weapon sources / player configurations
 	Dictionary<IJCoords, ProjectileSourceBelief> sourceBeliefs;
 
+	// The block world
+	BlockWorld blockWorld;
+
+	// The danger zone array itself
+	const int dangerZoneHeight = World.FloorLevelJ + World.BlocksHeight;
+	float[,] dangerZoneArray;
+
+	// Sets the danger array using I, J coords
+	void setDanger(int i, int j, float val) {
+		dangerZoneArray[i, j + World.FloorLevelJ] = val;
+	}
+	void addDanger(int i, int j, float delta) {
+		dangerZoneArray[i, j + World.FloorLevelJ] += delta;
+	}
+
 	// Adds a belief to a dictionary given an old belief, derived chance, and block world
 	void addBeliefUsingWorld(Dictionary<IJCoords, ProjectileSourceBelief> dict, int newI, int newJ,
-	                         ProjectileSourceBelief oldBelief, float derivedChance, ref float c, BlockWorld blockWorld) {
-		int newAmmo = oldBelief.Ammo;
-		WeaponType newAmmoType = WeaponType.None;
-		
+	                         ProjectileSourceBelief oldBelief, float derivedChance, ref float c) {
+
+		ProjectileSourceBelief derivedBelief = oldBelief.Clone();
+		derivedBelief.Probability = derivedChance;
+
 		// Check for ammo in new position
 		WeaponType ammoTypeCheckResult = blockWorld.CheckAmmo(newI, newJ);
 		if (ammoTypeCheckResult != WeaponType.None) {
-			newAmmo = 3; // Lightning doesn't matter
-			newAmmoType = ammoTypeCheckResult;
+			derivedBelief.Ammo = 3; // Lightning doesn't matter
+			derivedBelief.PossibleWeapons.Add(ammoTypeCheckResult);
 		}
-		ProjectileSourceBelief derivedBelief = new ProjectileSourceBelief(derivedChance,
-		                                                                  newAmmo, newAmmoType);
+
 		addBelief(dict, newI, newJ, derivedBelief, ref c);
 	}
 
@@ -73,7 +110,7 @@ public class DangerZone {
 	}
 
 	// Computes a belief distribution for the projectile sources
-	void computeSourceBeliefs(int playerNum, World world, BlockWorld blockWorld) {
+	void computeSourceBeliefs(int playerNum, World world) {
 
 		// Find player
 		World.Player player = playerNum == 1 ? world.Player1 : world.Player2;
@@ -105,8 +142,9 @@ public class DangerZone {
 				bool leftPossible = false;
 				bool rightPossible = false;
 				bool downPossible = false;
+				bool stayPossible = false;
 				
-				int numPossibleDirections = 1; // Staying still
+				int numPossibleDirections = 0;
 				bool supported = blockWorld.CheckPositionSupported(i, j);
 				if (!supported) {
 					
@@ -115,20 +153,23 @@ public class DangerZone {
 					downPossible = true;
 					
 				} else {
-					
-					if (!blockWorld.CheckGround(i, j + 1)) {
+
+					stayPossible = true;
+					numPossibleDirections++;
+
+					if (!blockWorld.CheckGroundByIndex(i, j + 1)) {
 						downPossible = true;
 						numPossibleDirections++;
 					}
-					if (!blockWorld.CheckGround(i + 1, j)) {
+					if (!blockWorld.CheckGroundByIndex(i + 1, j)) {
 						leftPossible = true;
 						numPossibleDirections++;
 					}
-					if (!blockWorld.CheckGround(i - 1, j)) {
+					if (!blockWorld.CheckGroundByIndex(i - 1, j)) {
 						rightPossible = true;
 						numPossibleDirections++;
 					}
-					if (!blockWorld.CheckGround(i, j - 1)) {
+					if (!blockWorld.CheckGroundByIndex(i, j - 1)) {
 						upPossible = true;
 						numPossibleDirections++;
 					}
@@ -141,24 +182,21 @@ public class DangerZone {
 				// Update beliefs based on possible directions
 				
 				// Staying in place is always an option
-				if (true) {
-					ProjectileSourceBelief derivedBelief = new ProjectileSourceBelief(derivedChance,
-					                                                                  belief.Ammo,
-					                                                                  WeaponType.None);
-					addBelief(newBeliefs, i, j, derivedBelief, ref newBeliefsTotal);
+				if (stayPossible) {
+					addBeliefUsingWorld(newBeliefs, i, j, belief, derivedChance, ref newBeliefsTotal);
 				}
 				
 				if (upPossible) {
-					addBeliefUsingWorld(newBeliefs, i, j - 1, belief, derivedChance, ref newBeliefsTotal, blockWorld);
+					addBeliefUsingWorld(newBeliefs, i, j - 1, belief, derivedChance, ref newBeliefsTotal);
 				}
 				if (downPossible) {
-						addBeliefUsingWorld(newBeliefs, i, j + 1, belief, derivedChance, ref newBeliefsTotal, blockWorld);
+						addBeliefUsingWorld(newBeliefs, i, j + 1, belief, derivedChance, ref newBeliefsTotal);
 				}
 				if (leftPossible) {
-						addBeliefUsingWorld(newBeliefs, i + 1, j, belief, derivedChance, ref newBeliefsTotal, blockWorld);
+						addBeliefUsingWorld(newBeliefs, i + 1, j, belief, derivedChance, ref newBeliefsTotal);
 				}
 				if (rightPossible) {
-						addBeliefUsingWorld(newBeliefs, i - 1, j, belief, derivedChance, ref newBeliefsTotal, blockWorld);
+						addBeliefUsingWorld(newBeliefs, i - 1, j, belief, derivedChance, ref newBeliefsTotal);
 				}
 			}
 			
@@ -198,6 +236,7 @@ public class DangerZone {
 		public ProjectileSourceBelief(float probability, int ammo, WeaponType initialWeapon) {
 			Ammo = ammo;
 			Probability = probability;
+			PossibleWeapons = new HashSet<WeaponType>();
 			PossibleWeapons.Add(initialWeapon);
 		}
 		
@@ -207,6 +246,144 @@ public class DangerZone {
 			HashSet<WeaponType> newPossibleWeapons = new HashSet<WeaponType>(PossibleWeapons);
 			source.PossibleWeapons = newPossibleWeapons;
 			return source;
+		}
+	}
+
+	// Runs trajectories of projectile source beliefs
+	void runTrajectories() {
+
+		// Iterate through each possibility
+		foreach (KeyValuePair<IJCoords, ProjectileSourceBelief> entry in sourceBeliefs) {
+
+			ProjectileSourceBelief sourceBelief = entry.Value;
+			int sourceI = entry.Key.I;
+			int sourceJ = entry.Key.J;
+
+			int sourceAmmo = sourceBelief.Ammo;
+			float sourceProbability = sourceBelief.Probability;
+
+			// Iterate through each weapon type for each possibility
+			foreach (WeaponType weaponType in sourceBelief.PossibleWeapons) {
+
+				if (weaponType == WeaponType.Lightning) {
+
+					// Add danger to all above for lightning - easy
+					for (int j = -World.FloorLevelJ; j < World.BlocksHeight; j++) {
+
+						if (j < sourceJ) {
+							addDanger(sourceI, j, sourceProbability * LightningDangerWeight);
+						}
+					}
+
+				} else {
+					// Recursively add values to the danger zone 2D array
+					addDangerToBlockAndNeighbors(sourceI, sourceJ, weaponType, sourceProbability, sourceAmmo, true);
+					addDangerToBlockAndNeighbors(sourceI, sourceJ, weaponType, sourceProbability, sourceAmmo, false);
+				}
+			}
+		}
+	}
+
+	// Recursively add danger to the 2D array 
+	const float epsilon = 0.01f;
+	const float groundBlowoutFactor = 0.75f;
+	void addDangerToBlockAndNeighbors(int i, int j, WeaponType type, float probability, int ammo,
+	                                  bool facingRight) {
+
+		// Base cases
+		if (probability < epsilon) return;
+		if (ammo == 0) return; // Master mode has negative ammo - do not return
+
+		// Blow out ground if there is any at the current position
+		if (blockWorld.CheckGroundByIndex(i, j)) {
+
+			// Another base case for immutable ground
+			bool immutable = blockWorld.CheckGroundImmutableByIndex(i, j);
+			if (immutable) return; // End of the line
+
+			// Blow out ground otherwise
+			blockWorld.SetGroundByIndex(i, j, false);
+			addDangerToBlockAndNeighbors(i, j, type, probability * groundBlowoutFactor, ammo - 1, facingRight);
+			return;
+
+		} else {
+
+			int normalized = facingRight ? -1 : 1;
+
+			switch (type) {
+			case WeaponType.Rockets: {
+
+				addDanger(i, j, probability * RocketsDangerWeight);
+				addDangerToBlockAndNeighbors(i + normalized, j, type, probability, ammo, facingRight);
+				break;
+			}
+			
+			case WeaponType.Bombs: {
+				addDanger(i, j, probability * BombsDangerWeight);
+				addDangerToBlockAndNeighbors(i, j + 1, type, probability, ammo, facingRight);
+				break;
+			}
+
+			case WeaponType.Minions: {
+				addDanger(i, j, probability * MinionsDangerWeight);
+
+				// Check fall
+				if (blockWorld.CheckGroundByIndex(i, j + 1)) {
+
+					addDangerToBlockAndNeighbors(i, j + 1, type, probability, ammo, facingRight);
+
+				} else {
+
+					bool blowRight = blockWorld.CheckGroundByIndex(i + normalized, j);
+					bool blowBelow = blockWorld.CheckGroundByIndex(i, j + 1);
+
+					int options = 0;
+					if (blowRight) options++;
+					if (blowBelow) options++;
+					float newProb = probability / options;
+
+					if (blowRight) {
+						addDangerToBlockAndNeighbors(i + normalized, j, type, newProb, ammo, facingRight);
+					}
+					if (blowBelow) {
+						addDangerToBlockAndNeighbors(i, j + 1, type, newProb, ammo, facingRight);
+					}
+				}
+
+				break;
+			}
+
+			}
+		}
+	}
+
+	// Renders the danger zone
+	public void Render(Game resourceScript) {
+
+		for (int i = 0; i < World.BlocksWidth; i++) {
+
+			for (int j = 0; j < dangerZoneHeight; j++) {
+
+				if (dangerZoneArray[i, j] == 0) continue;
+				GameObject obj = Object.Instantiate(resourceScript.Protodanger);
+				obj.transform.position = new Vector3(i * World.BlockSize, j * World.BlockSize);
+				SpriteRenderer renderer = obj.GetComponent<SpriteRenderer>();
+				renderer.color = new Color(1.0f, 1.0f, 1.0f, dangerZoneArray[i, j] / 2.0f);
+			}
+		}
+	}
+
+	// Renders the player beliefs
+	public void RenderPlayerBeliefs(Game resourceScript) {
+
+		foreach (KeyValuePair<IJCoords, ProjectileSourceBelief> entry in sourceBeliefs) {
+
+			//if (!entry.Value.PossibleWeapons.Contains(WeaponType.Rockets) || entry.Value.Ammo != 3) continue;
+
+			GameObject obj = Object.Instantiate(resourceScript.Protobelief);
+			obj.transform.position = new Vector3(entry.Key.I * World.BlockSize, entry.Key.J * World.BlockSize + World.FloorLevel);
+			SpriteRenderer renderer = obj.GetComponent<SpriteRenderer>();
+			renderer.color = new Color(1.0f, 1.0f, 1.0f, entry.Value.Probability);
 		}
 	}
 
