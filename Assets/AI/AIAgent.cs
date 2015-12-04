@@ -33,6 +33,12 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+public class Program {
+	public static void Main (string[] args) {
+
+	}
+}
+
 public class AIAgent : PlayerAgentBase {
 
 	// Agent parameters
