@@ -52,9 +52,10 @@ public class QLearning {
 			float value = entry.Value;
 
 			i++;
+			Console.Write(key.ToString() + value.ToString());
 		}
 
-		Debug.Log (i.ToString ());
+		Debug.Log (i.ToString());
 	}
 
 	// Saves the Q function to the disk
