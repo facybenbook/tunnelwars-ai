@@ -90,12 +90,13 @@ public class AStar {
 		int expansions = 0;
 		while (frontier.Count > 0) {
 
-			if (expansions > MaxExpansions) {
-				return null;
-			}
-
 			Path path = frontier.Dequeue();
 			BlockWorld lastWorld = path.Last();
+
+			// Return the path. It is expanded so it must be one of the better ones
+			if (expansions > MaxExpansions) {
+				return path;
+			}
 
 			// Check goal
 			if (GoalFunction(lastWorld)) {
@@ -135,8 +136,7 @@ public class AStar {
 			expansions++;
 		}
 
-
-		Debug.Log("Couldn't find path within constraints");
+		// No solution exists
 		return null;
 	}
 }
