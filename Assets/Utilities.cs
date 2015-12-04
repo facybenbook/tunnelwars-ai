@@ -34,6 +34,17 @@ public static class Util {
 		return 1.0f - 1.0f / ((ManhattanDistance(x1, y1, x2, y2) / k) + 1.0f);
 	}
 
+	// Integer exponentiation
+	public static int IntPow(int x, uint pow) {
+		int ret = 1;
+		while (pow != 0) {
+			if ((pow & 1) == 1) ret *= x;
+			x *= x;
+			pow >>= 1;
+		}
+		return ret;
+	}
+
 	// Key class that stores a state and a strategy
 	public class Key {
 
