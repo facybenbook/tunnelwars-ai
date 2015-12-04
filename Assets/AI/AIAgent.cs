@@ -37,7 +37,7 @@ public class AIAgent : PlayerAgentBase {
 
 	// Agent parameters
 	public const int Level1StepSize = 4;
-	public const int Level3StepSize = 30;
+	public const int Level3StepSize = 20;
 	public Game ResourceScript { get; set; }
 
 	public AIAgent(int player) : base(player) {

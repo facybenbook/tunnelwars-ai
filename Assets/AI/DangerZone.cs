@@ -21,11 +21,11 @@ public class DangerZone {
 	public const float BombsDangerWeight = 1.0f;
 	public const float MinionsDangerWeight = 1.0f;
 
-	// Probabilities below this are ignored
+	// Probabilities below this are ignored while running trajectories
 	const float epsilon = 0.05f;
 	
-	// Reduce probability with more grounds for performance
-	const float groundBlowoutFactor = 0.9f;
+	// Reduce probability with more grounds blown-thru for performance
+	const float groundBlowoutFactor = 0.95f;
 
 	// Number of block steps to simulate in initial source distribution calculation
 	public const int DistributionSteps = 5;
