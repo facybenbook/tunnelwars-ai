@@ -37,9 +37,6 @@ public class Game : MonoBehaviour {
 	public AudioClip AmmoSound;
 	public AudioClip LightningSound;
 
-	bool firstUpdate;
-	QLearning obj;
-
 	// The current world
 	RenderedWorld currentWorld = null;
 
@@ -64,19 +61,13 @@ public class Game : MonoBehaviour {
 		agentList.Add(ai);
 		//agentList.Add(new WASDFAgent(1));
 
-		obj = new QLearning (0.5f, 0.5f, 0.5f);
-		obj.OpenSavedData ();
-		Debug.Log("OPENED SAVED DATA");
-		firstUpdate = true;
+		//obj = new QLearning (0.5f, 0.5f, 0.5f);
+		//obj.OpenSavedData ();
+		//Debug.Log("OPENED SAVED DATA");
 	}
 
 	// Called every frame
 	void Update () {
-
-		if (firstUpdate) {
-			obj.PrintUtilities ();
-			firstUpdate = false;
-		}
 
 		// Advance world using our agents
 		List<WorldAction> actions = new List<WorldAction>();

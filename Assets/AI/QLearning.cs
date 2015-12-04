@@ -40,21 +40,22 @@ public class QLearning {
 		Alpha = alpha;
 		Gamma = gamma;
 		Discount = discount;
+
 	}
 
 	public void PrintUtilities () {
 
 		int i = 0;
-
 		foreach (KeyValuePair<Util.Key, float> entry in utilities) {
 
 			Util.Key key = entry.Key;
 			float value = entry.Value;
 
+			Debug.Log (key.ToString() + ", " + value.ToString());
+
+			if (i > 50) return;
 			i++;
 		}
-
-		Debug.Log (i.ToString ());
 	}
 
 	// Saves the Q function to the disk
@@ -63,12 +64,15 @@ public class QLearning {
 		var file = File.Open(FileName, FileMode.CreateNew, FileAccess.ReadWrite);
 		var writer = new StreamWriter(file);
 
+		int i = 0;
 		foreach (KeyValuePair<Util.Key, float> entry in utilities) {
 			string key = entry.Key.ToString();
 			string value = entry.Value.ToString();
 
+			i++;
 			writer.WriteLine(key + " " + value);
 		}
+		Debug.Log (i);
 	}
 
 	// Open the Q function thats been saved to the disk

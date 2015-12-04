@@ -37,6 +37,7 @@ public class AIAgent : PlayerAgentBase {
 
 	// Agent parameters
 	public const int Level1StepSize = 4;
+	public const float Level2DangerDistanceRatio = 1.0f;
 	public const int Level3StepSize = 20;
 	public Game ResourceScript { get; set; }
 
@@ -70,11 +71,14 @@ public class AIAgent : PlayerAgentBase {
 
 			// Update level three in a fast frame
 			if (level3Timer <= 0) {
-				
-				BlockWorld blockWorld = new BlockWorld(playerNum, world);
-				
+
+				// Create block world and danger zone
+				blockWorld = new BlockWorld(playerNum, world);
 				dangerZone = new DangerZone(2, world, blockWorld);
-				
+
+				// Calculate player path
+				//AStar level3Searcher = new AStar
+
 				//dangerZone.Render(ResourceScript);
 				//dangerZone.RenderPlayerBeliefs(ResourceScript);
 				level3Timer = Level3StepSize;
@@ -102,6 +106,7 @@ public class AIAgent : PlayerAgentBase {
 
 	// Level 2 - The danger zone of the opponent
 	DangerZone dangerZone;
+	BlockWorld blockWorld;
 
 	// Time until action must end TODO take out
 	int level3Timer;
@@ -151,5 +156,29 @@ public class AIAgent : PlayerAgentBase {
 			utilDistanceHeuristic(state) * 0.05f;
 		if (!currentPlayer.IsMaster && !opponentPlayer.IsMaster) util += (currentPlayer.Ammo - opponentPlayer.Ammo) / 3.0f * 0.1f;
 		return util;
+	}
+
+	// Level 3 functions
+	float level3CostFunction(BlockWorld blockWorld) {
+		return 1.0f + Level2DangerDistanceRatio * dangerZone.CheckDanger(blockWorld.Player.I, blockWorld.Player.J);
+	}
+	bool level3GoalFunction(BlockWorld blockWorld) {
+		return blockWorld.JustCollectedAmmo;
+	}
+	float level3HeuristicFunction(BlockWorld blockWorld) {
+
+		BlockWorld.BlockPlayer player = blockWorld.Player;
+
+		// Return distance to nearest ammo
+		float minDistance = float.MaxValue;
+		foreach (BlockWorld.BlockPowerup powerup in blockWorld.Powerups) {
+
+			float d = Util.ManhattanDistance(powerup.I, powerup.J, player.I, player.J);
+			if (d < minDistance) {
+				minDistance = d;
+			}
+		}
+
+		return minDistance;
 	}
 }

@@ -151,7 +151,7 @@ public class State {
 								newState.YDistanceToEnemy = tempYDistanceToEnemy;
 
 								// add newState to stateList
-								stateList.Add (newState);
+								stateList.Add(newState);
 							}
 						}
 					}
@@ -236,7 +236,7 @@ public class State {
 		}
 	}
 
-	public string ToString () {
+	public override string ToString () {
 
 		string stateString = "";
 

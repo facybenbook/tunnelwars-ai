@@ -90,7 +90,7 @@ public class DangerZone {
 		// Check for ammo in new position
 		WeaponType ammoTypeCheckResult = blockWorld.CheckAmmo(newI, newJ);
 		if (ammoTypeCheckResult != WeaponType.None) {
-			derivedBelief.Ammo = 3; // Lightning doesn't matter
+			if (derivedBelief.Ammo != -1) derivedBelief.Ammo = 3; // Lightning doesn't matter
 			derivedBelief.PossibleWeapons.Add(ammoTypeCheckResult);
 		}
 

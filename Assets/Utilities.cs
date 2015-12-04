@@ -62,7 +62,7 @@ public static class Util {
 			strategy = Strategy.Attack;
 		}
 
-		public string ToString ()  {
+		public override string ToString ()  {
 
 			string keyString = "";
 
