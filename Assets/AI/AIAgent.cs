@@ -9,20 +9,20 @@
  * 		Transition model: Advancement of real gameplay
  * 		Action model: Valid key actions
  * 		Terminal state: Winning (1) or losing (-1)
- * 		Heuristic: Strategy-weighted World evaluation + Level 2 conformance
+ * 		Heuristic: StrategyType-weighted World evaluation + Level 2 conformance
  * 
  * Level 2 - Bloxel-level classical A* search
  * 		State space: BlockWorld's
  * 		Action space: Simplified directions
  * 		Transition model: Move in direction, taking out block if necessary
- * 		Goal state: Strategy specific
+ * 		Goal state: StrategyType specific
  * 		Action model: Must have ammo to blow out blocks. Must have walls if climbing
- * 		Cost function: Step number, Strategy-weighted BlockWorld evaluation (dominate)
+ * 		Cost function: Step number, StrategyType-weighted BlockWorld evaluation (dominate)
  * 		Heuristic: Distance (Euclidean if above ground)
  * 
  * Level 3 - Q-learned strategy selection
  * 		State space: SimplifiedWorld's
- * 		Action space: Strategy
+ * 		Action space: StrategyType
  * 		Transition model: Set strategy
  * 		Action model: All, except only dig down once.
  * 		Reward function: Delta health, winning the game (dominating term)
@@ -43,14 +43,22 @@ public class AIAgent : PlayerAgentBase {
 
 	// Agent parameters
 	public const int Level1StepSize = 1;
+
+	public const float Level2DangerDistanceRatio = 100.0f;
+	public const int Level2MaxNodesInPrioQueue = 10000;
+	public const int Level2MaxExpansions = 200;
+
 	public const int Level3StepSize = 20;
 	public Game ResourceScript { get; set; }
 
 	public AIAgent(int player) : base(player) {
 		playerNum = player;
+		opponentNum = playerNum == 1 ? 2 : 1;
 		level1Searcher = new DiscreteAdversarialSearch(playerNum, utilHealthHeuristic,
 		                                               getFillerAction, Level1StepSize, 4);
 		decisionTimer = 0;
+		level2Searcher = new AStar(Level2MaxNodesInPrioQueue, Level2MaxExpansions, level2CostFunction,
+		                           level2GoalFunction, level2HeuristicFunction);
 		level3Timer = Level3StepSize;
 		fillerAction = WorldAction.NoAction;
 	}
@@ -76,13 +84,21 @@ public class AIAgent : PlayerAgentBase {
 
 			// Update level three in a fast frame
 			if (level3Timer <= 0) {
-				
-				BlockWorld blockWorld = new BlockWorld(playerNum, world);
-				
-				dangerZone = new DangerZone(2, world, blockWorld);
-				
-				//dangerZone.Render(ResourceScript);
-				//dangerZone.RenderPlayerBeliefs(ResourceScript);
+
+				// Create block world and danger zone
+				blockWorld = new BlockWorld(playerNum, world);
+				dangerZone = new DangerZone(opponentNum, world, blockWorld);
+
+				//Debug.Log (blockWorld.ApplicableActions().Count);
+				//Debug.Log(blockWorld.CheckActionApplicable(BlockWorldAction.Right));
+
+				// Calculate player path
+				//Debug.Log (level2HeuristicFunction(blockWorld));
+				Path path = level2Searcher.ComputeBestPath(blockWorld);
+				RenderPath(path);
+
+				dangerZone.Render(ResourceScript);
+				dangerZone.RenderPlayerBeliefs(ResourceScript);
 				level3Timer = Level3StepSize;
 			}
 		}
@@ -94,20 +110,35 @@ public class AIAgent : PlayerAgentBase {
 		return new List<WorldAction>() {bestAction};
 	}
 
+	// Render the level 2 path
+	void RenderPath(Path path) {
+
+		if (path == null) return;
+
+		foreach (BlockWorld world in path.States) {
+			BlockWorld.BlockPlayer player = world.Player;
+			GameObject obj = Object.Instantiate(ResourceScript.Protopath);
+			obj.transform.position = new Vector3(player.I * World.BlockSize, player.J * World.BlockSize + World.FloorLevel);
+			SpriteRenderer renderer = obj.GetComponent<SpriteRenderer>();
+			renderer.color = new Color(1.0f, 1.0f, 1.0f, 0.25f);
+		}
+	}
+
 
 
 	// Number of the player
 	int playerNum;
+	int opponentNum;
 
 	// Our adversarial searcher for level 1
 	DiscreteAdversarialSearch level1Searcher;
-
-	// Level 1 - Time until next decision must be made, and filler action for meantime
 	int decisionTimer;
 	WorldAction fillerAction;
 
 	// Level 2 - The danger zone of the opponent
 	DangerZone dangerZone;
+	BlockWorld blockWorld;
+	AStar level2Searcher;
 
 	// Time until action must end TODO take out
 	int level3Timer;
@@ -157,5 +188,34 @@ public class AIAgent : PlayerAgentBase {
 			utilDistanceHeuristic(state) * 0.05f;
 		if (!currentPlayer.IsMaster && !opponentPlayer.IsMaster) util += (currentPlayer.Ammo - opponentPlayer.Ammo) / 3.0f * 0.1f;
 		return util;
+	}
+
+	// Level 2 functions
+	float level2CostFunction(BlockWorld blockWorld) {
+		//return 1.0f;
+		return 1.0f + Level2DangerDistanceRatio * dangerZone.CheckDanger(blockWorld.Player.I, blockWorld.Player.J);
+	}
+	bool level2GoalFunction(BlockWorld blockWorld) {
+		//return blockWorld.Player.I == 0;
+		return blockWorld.JustCollectedAmmo;
+	}
+	float level2HeuristicFunction(BlockWorld blockWorld) {
+
+		//return 0.0f;
+		//return blockWorld.Player.I;
+
+		BlockWorld.BlockPlayer player = blockWorld.Player;
+
+		// Return distance to nearest ammo
+		float minDistance = float.MaxValue;
+		foreach (BlockWorld.BlockPowerup powerup in blockWorld.Powerups) {
+
+			float d = Util.ManhattanDistance(powerup.I, powerup.J, player.I, player.J);
+			if (d < minDistance) {
+				minDistance = d;
+			}
+		}
+
+		return minDistance;
 	}
 }

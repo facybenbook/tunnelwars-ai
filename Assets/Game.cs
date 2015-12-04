@@ -29,6 +29,7 @@ public class Game : MonoBehaviour {
 	public GameObject Protoexplosion;
 	public GameObject Protodanger;
 	public GameObject Protobelief;
+	public GameObject Protopath;
 	public GUIControl Gui;
 	
 	public AudioClip ClickSound;
@@ -36,9 +37,6 @@ public class Game : MonoBehaviour {
 	public AudioClip ShiftSound;
 	public AudioClip AmmoSound;
 	public AudioClip LightningSound;
-
-	bool firstUpdate;
-	QLearning obj;
 
 	// The current world
 	RenderedWorld currentWorld = null;
@@ -63,6 +61,10 @@ public class Game : MonoBehaviour {
 		ai.ResourceScript = this; // For debug rendering only
 		agentList.Add(ai);
 		//agentList.Add(new WASDFAgent(1));
+
+		//obj = new QLearning (0.5f, 0.5f, 0.5f);
+		//obj.OpenSavedData ();
+		//Debug.Log("OPENED SAVED DATA");
 	}
 
 	// Called every frame

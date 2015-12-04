@@ -13,16 +13,9 @@ using System.Collections.Generic;
 using System;
 using System.IO;
 
-public enum Strategy {
-	Attack,
-	RunAway,
-	GetAmmo,
-	DigDown
-}
-
 // Class used in QLearning
 public class QLearning {
-
+	
 	// Filename
 	public const string FileName = "QValues.txt";
 
@@ -40,17 +33,20 @@ public class QLearning {
 		Alpha = alpha;
 		Gamma = gamma;
 		Discount = discount;
+
 	}
 
 	public void PrintUtilities () {
 
 		int i = 0;
+		foreach (KeyValuePair<Key, float> entry in utilities) {
 
-		foreach (KeyValuePair<Util.Key, float> entry in utilities) {
-
-			Util.Key key = entry.Key;
+			Key key = entry.Key;
 			float value = entry.Value;
 
+			Debug.Log (key.ToString() + ", " + value.ToString());
+
+			if (i > 50) return;
 			i++;
 			Console.Write(key.ToString() + value.ToString());
 		}
@@ -64,12 +60,15 @@ public class QLearning {
 		var file = File.Open(FileName, FileMode.CreateNew, FileAccess.ReadWrite);
 		var writer = new StreamWriter(file);
 
-		foreach (KeyValuePair<Util.Key, float> entry in utilities) {
+		int i = 0;
+		foreach (KeyValuePair<Key, float> entry in utilities) {
 			string key = entry.Key.ToString();
 			string value = entry.Value.ToString();
 
+			i++;
 			writer.WriteLine(key + " " + value);
 		}
+		Debug.Log (i);
 	}
 
 	// Open the Q function thats been saved to the disk
@@ -82,13 +81,13 @@ public class QLearning {
 		while ((line = reader.ReadLine()) != null) {
 
 			string[] keyValueArray = line.Split(' ');
-			Util.Key key = new Util.Key();
+			Key key = new Key();
 			float value = 0.0f;
 			
 			for (int i = 0; i < keyValueArray.Length; i++) {
 
 				if (i == 0) {
-					key = Util.Key.FromString(keyValueArray[0] + " " + keyValueArray[1] + " " + keyValueArray[2] + " " + keyValueArray[3] + " " + keyValueArray[4] + " " + keyValueArray[5] + " " + keyValueArray[6]);
+					key = Key.FromString(keyValueArray[0] + " " + keyValueArray[1] + " " + keyValueArray[2] + " " + keyValueArray[3] + " " + keyValueArray[4] + " " + keyValueArray[5] + " " + keyValueArray[6]);
 				} else if (i == 7) {
 					value = float.Parse(keyValueArray[i]);
 				}
@@ -99,8 +98,8 @@ public class QLearning {
 	}
 
 	// Returns the q value of a state-action tuple
-	public float getQValue (State state, Strategy strategy) {
-		Util.Key key = new Util.Key (state, strategy);
+	public float getQValue (State state, StrategyType strategy) {
+		Key key = new Key (state, strategy);
 		return utilities [key];
 	}
 
@@ -110,7 +109,7 @@ public class QLearning {
 		float currentQValue = 0.0f;
 		
 		// Iterate through all possible strategies
-		foreach (Strategy strategy in allStrategies) {
+		foreach (StrategyType strategy in allStrategies) {
 			
 			float qValue = getQValue (state, strategy);
 			
@@ -124,13 +123,13 @@ public class QLearning {
 	}
 
 	// Returns the optimal action at a state
-	public Strategy ComputeStrategyFromQValues (State state) {
+	public StrategyType ComputeStrategyFromQValues (State state) {
 
-		Strategy currentStrategy = Strategy.Attack;
+		StrategyType currentStrategy = StrategyType.Attack;
 		float currentQValue = 0.0f;
 
 		// Iterate through all possible strategies
-		foreach (Strategy strategy in allStrategies) {
+		foreach (StrategyType strategy in allStrategies) {
 
 			float qValue = getQValue (state, strategy);
 
@@ -145,11 +144,11 @@ public class QLearning {
 	}
 
 	// Updates the q value of a state-action tuple
-	public void UpdateQValue (State state, Strategy strategy, State nextState, float reward) {
+	public void UpdateQValue (State state, StrategyType strategy, State nextState, float reward) {
 
 		// Get the key
 		float qValue;
-		Util.Key key = new Util.Key(state,strategy);
+		Key key = new Key(state,strategy);
 
 		// If the key is already in the dictionary then get the current QValue otherwise set the current QValue to 0
 		if (utilities.ContainsKey (key)) {
@@ -170,25 +169,72 @@ public class QLearning {
 
 		// Iterate through every strategy and state
 		foreach (State state in State.AllPossible()) {
-			foreach (Strategy strategy in allStrategies) {
+			foreach (StrategyType strategy in allStrategies) {
 
 				// Get the key for the dictionary and enter in 0.0
-				Util.Key key = new Util.Key(state,strategy);
+				Key key = new Key(state,strategy);
 				utilities.Add(key,0.0f);
 
 			}
 		}
 	}
 
-	Strategy[] allStrategies = new Strategy[] {
-		Strategy.Attack,
-		Strategy.RunAway,
-		Strategy.GetAmmo,
-		Strategy.DigDown
+	StrategyType[] allStrategies = new StrategyType[] {
+		StrategyType.Attack,
+		StrategyType.RunAway,
+		StrategyType.GetAmmo,
+		StrategyType.DigDown
 	};
 
 	// Map of state-action dictionary to estimated utilities
-	Dictionary <Util.Key, float> utilities = new Dictionary <Util.Key, float>();
+	Dictionary <Key, float> utilities = new Dictionary <Key, float>();
 }
 
+// Key class that stores a state and a strategy
+class Key {
+	
+	public State state { get; set; }
+	public StrategyType strategy { get; set; }
+	
+	// Constructors
+	public Key (State state1, StrategyType strategy1) {
+		state = state1;
+		strategy = strategy1;
+	}
+	
+	public Key () {
+		state = new State();
+		strategy = StrategyType.Attack;
+	}
+	
+	public override string ToString ()  {
+		
+		string keyString = "";
+		
+		// State
+		keyString = keyString + state.ToString ();
+		keyString = keyString + " ";
+		
+		// StrategyType
+		keyString = keyString + strategy.ToString ();
+		
+		return keyString;
+	}
 
+	static public Key FromString (string keyString) {
+		
+		Key key = new Key ();
+		
+		string[] propertyArray = keyString.Split (' ');
+		
+		for (int i = 0; i < propertyArray.Length; i++) {
+			if (i == 0) {
+				key.state = State.FromString(propertyArray[0] + " " + propertyArray[1] + " " + propertyArray[2] + " " + propertyArray[3] + " " + propertyArray[4] + " " + propertyArray[5]);
+			} else if (i == 6) {
+				key.strategy = (StrategyType) Enum.Parse(typeof(StrategyType),propertyArray[i]);
+			}
+		}
+		
+		return key;
+	}
+}

@@ -38,117 +38,116 @@ public struct IJCoords {
 	int j;
 }
 
-// Make a class for the simplified player
-public class BlockPlayer {
+public class BlockWorld: WorldWithGround {
 
-	// Position is now stored in i, j coordinates
-	public int I { get; set; }
-	public int J { get; set; }
-
-	// Used for tunneling simulation
-	public int Ammo { get; set; }
-	public WeaponType Weapon { get; set; }
-
-	// Constructor takes a real player to simplify
-	public BlockPlayer(World.Player realPlayer) {
-		UpdateWithPlayer(realPlayer);
-	}
-
-	// Updates with a real player
-	public void UpdateWithPlayer(World.Player realPlayer) {
-		I = World.XToI(realPlayer.X);
-		J = World.YToJ(realPlayer.Y);
-		Ammo = realPlayer.Ammo;
-		Weapon = realPlayer.Weapon;
-	}
-
-	// Clone
-	public BlockPlayer Clone() {
-		return (BlockPlayer)this.MemberwiseClone();
-	}
-
-	// Compare
-	public bool PropertiesEqual(BlockPlayer player) {
-
-		if (I != player.I) return false;
-		if (J != player.J) return false;
-		if (Ammo != player.Ammo) return false;
-		if (Weapon != player.Weapon) return false;
-		return true;
-	}
-}
-
-// Make a class for a simplified powerup. Coordinates stored as both types
-public class BlockPowerup {
-	
-	public float X { get; set; }
-	public float Y { get; set; }
-	public WeaponType Weapon { get; set; }
-	public PowerupType Type { get; set; }
-	public bool Falling { get { return isFalling; } }
-
-	public float I { get { return World.XToI(X); } }
-	public float J { get { return World.YToJ(Y); } }
-
-	// Constructor from real powerup
-	public BlockPowerup (World.Powerup powerup) {
-		UpdateWithPowerup(powerup);
-	}
-
-	// Update with a real powerup
-	public void UpdateWithPowerup(World.Powerup powerup) {
-		X = powerup.X;
-		Y = powerup.Y;
-		Weapon = powerup.Weapon;
-		Type = powerup.Type;
-		isFalling = powerup.VSpeed > 0.0f;
-	}
-
-	// Clone
-	public BlockPowerup Clone() {
-		return (BlockPowerup)this.MemberwiseClone();
-	}
-
-	// Compare
-	public bool PropertiesEqual(BlockPowerup powerup) {
-
-		if (X != powerup.X) return false;
-		if (Y != powerup.Y) return false;
-		if (Weapon != powerup.Weapon) return false;
-		if (Type != powerup.Type) return false;
-		if (isFalling != powerup.isFalling) return false;
-		return true;
-	}
-
-	// Projects the powerup position downwards to rest on the ground
-	public void ProjectDownwards(BlockWorld world) {
-
-		// Don't project downwards if not falling anymore!
-		if (!isFalling) return;
-
-		// Speed and gravity fall
-		if (Type != PowerupType.Speed && Type != PowerupType.Gravity) return;
-
-		// Get nearest two horizontal indices
-		int i1 = World.XToI(X - 64.0f); // HACK: Powerup size better not change
-		int i2 = i1 + 1;
-
-		// Increase y until hit ground
-		float y = World.FloorLevel;
-		for (int j = 0; j < World.BlocksHeight; j++) {
-			if (world.CheckGroundByIndex(i1, j) || world.CheckGroundByIndex(i2, j)) {
-				break;
-			}
-
-			y += World.BlockSize;
+	// Make a class for the simplified player
+	public class BlockPlayer {
+		
+		// Position is now stored in i, j coordinates
+		public int I { get; set; }
+		public int J { get; set; }
+		
+		// Used for tunneling simulation
+		public int Ammo { get; set; }
+		public WeaponType Weapon { get; set; }
+		
+		// Constructor takes a real player to simplify
+		public BlockPlayer(World.Player realPlayer) {
+			UpdateWithPlayer(realPlayer);
+		}
+		
+		// Updates with a real player
+		public void UpdateWithPlayer(World.Player realPlayer) {
+			I = World.XToI(realPlayer.X);
+			J = World.YToJ(realPlayer.Y);
+			Ammo = realPlayer.Ammo;
+			Weapon = realPlayer.Weapon;
+		}
+		
+		// Clone
+		public BlockPlayer Clone() {
+			return (BlockPlayer)this.MemberwiseClone();
+		}
+		
+		// Compare
+		public bool PropertiesEqual(BlockPlayer player) {
+			
+			if (I != player.I) return false;
+			if (J != player.J) return false;
+			if (Ammo != player.Ammo) return false;
+			if (Weapon != player.Weapon) return false;
+			return true;
 		}
 	}
-
-	bool isFalling;
-}
-
-// The main class
-public class BlockWorld: WorldWithGround {
+	
+	// Make a class for a simplified powerup. Coordinates stored as both types
+	public class BlockPowerup {
+		
+		public float X { get; set; }
+		public float Y { get; set; }
+		public WeaponType Weapon { get; set; }
+		public PowerupType Type { get; set; }
+		public bool Falling { get { return isFalling; } }
+		
+		public float I { get { return World.XToI(X); } }
+		public float J { get { return World.YToJ(Y); } }
+		
+		// Constructor from real powerup
+		public BlockPowerup (World.Powerup powerup) {
+			UpdateWithPowerup(powerup);
+		}
+		
+		// Update with a real powerup
+		public void UpdateWithPowerup(World.Powerup powerup) {
+			X = powerup.X;
+			Y = powerup.Y;
+			Weapon = powerup.Weapon;
+			Type = powerup.Type;
+			isFalling = powerup.VSpeed > 0.0f;
+		}
+		
+		// Clone
+		public BlockPowerup Clone() {
+			return (BlockPowerup)this.MemberwiseClone();
+		}
+		
+		// Compare
+		public bool PropertiesEqual(BlockPowerup powerup) {
+			
+			if (X != powerup.X) return false;
+			if (Y != powerup.Y) return false;
+			if (Weapon != powerup.Weapon) return false;
+			if (Type != powerup.Type) return false;
+			if (isFalling != powerup.isFalling) return false;
+			return true;
+		}
+		
+		// Projects the powerup position downwards to rest on the ground
+		public void ProjectDownwards(BlockWorld world) {
+			
+			// Don't project downwards if not falling anymore!
+			if (!isFalling) return;
+			
+			// Speed and gravity fall
+			if (Type != PowerupType.Speed && Type != PowerupType.Gravity) return;
+			
+			// Get nearest two horizontal indices
+			int i1 = World.XToI(X - 64.0f); // HACK: Powerup size better not change
+			int i2 = i1 + 1;
+			
+			// Increase y until hit ground
+			float y = World.FloorLevel;
+			for (int j = 0; j < World.BlocksHeight; j++) {
+				if (world.CheckGroundByIndex(i1, j) || world.CheckGroundByIndex(i2, j)) {
+					break;
+				}
+				
+				y += World.BlockSize;
+			}
+		}
+		
+		bool isFalling;
+	}
 
 	// Whether to exclude speed/gravity powerups from the block world
 	const bool excludeSpeedGrav = true;
@@ -157,7 +156,10 @@ public class BlockWorld: WorldWithGround {
 	public BlockPlayer Player { get; set; }
 
 	// The powerups
-	List<BlockPowerup> Powerups { get; set; }
+	public List<BlockPowerup> Powerups { get; set; }
+
+	// Whether ammo was just collected
+	public bool JustCollectedAmmo { get { return justCollectedAmmo; } }
 	
 	// Constructors
 	public BlockWorld() {}
@@ -169,6 +171,8 @@ public class BlockWorld: WorldWithGround {
 				ground[i, j] = world.CheckGroundByIndex(i, j);
 			}
 		}
+
+		justCollectedAmmo = false;
 
 		// Turn player to BlockPlayer
 		Player = new BlockPlayer(playerNum == 1 ? world.Player1 : world.Player2);
@@ -201,6 +205,7 @@ public class BlockWorld: WorldWithGround {
 			world.Powerups.Add(powerup.Clone());
 		}
 		world.ground = (bool[,])ground.Clone();
+		world.justCollectedAmmo = justCollectedAmmo;
 
 		// Any other members should go here...
 
@@ -216,6 +221,8 @@ public class BlockWorld: WorldWithGround {
 				if (ground[i, j] != blockWorld.ground[i, j]) return false;
 			}
 		}
+
+		if (justCollectedAmmo != blockWorld.justCollectedAmmo) return false;
 
 		// Compare player
 		if (!Player.PropertiesEqual(blockWorld.Player)) return false;
@@ -318,7 +325,7 @@ public class BlockWorld: WorldWithGround {
 	}
 
 	// Advance with a single action
-	public void Advance(BlockWorldAction action) {
+	public void Advance(BlockWorldAction action, bool collectAmmo=true) {
 
 		// Checks action applicability
 		if (!CheckActionApplicable(action)) return;
@@ -326,6 +333,16 @@ public class BlockWorld: WorldWithGround {
 		// Move to new location
 		Player.I = ActionToI(action);
 		Player.J = ActionToJ(action);
+
+		// Collect ammo
+		if (collectAmmo) {
+			WeaponType weapon = CheckAmmo(Player.I, Player.J);
+			if (weapon != WeaponType.None) {
+				if (Player.Ammo != -1) Player.Ammo = 3;
+				Player.Weapon = weapon;
+				justCollectedAmmo = true;
+			}
+		}
 
 		// Blow out ground if needed and reduce ammo
 		if (CheckGroundByIndex(Player.I, Player.J)) {
@@ -337,13 +354,15 @@ public class BlockWorld: WorldWithGround {
 
 	// Gets I, J coordinates of new player position for an action
 	public int ActionToI(BlockWorldAction action) {
-		if (action == BlockWorldAction.Left) return Player.I - 1;
-		else if (action == BlockWorldAction.Right) return Player.I + 1;
+		if (action == BlockWorldAction.Left) return Player.I + 1;
+		else if (action == BlockWorldAction.Right) return Player.I - 1;
 		return Player.I;
 	}
 	public int ActionToJ(BlockWorldAction action) {
 		if (action == BlockWorldAction.Up) return Player.J - 1;
 		else if (action == BlockWorldAction.Down) return Player.J + 1;
-		return Player.I;
+		return Player.J;
 	}
+
+	bool justCollectedAmmo;
 }
