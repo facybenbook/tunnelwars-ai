@@ -55,7 +55,10 @@ public class QLearning {
 
 			if (i > 50) return;
 			i++;
+			Console.Write(key.ToString() + value.ToString());
 		}
+
+		Debug.Log (i.ToString());
 	}
 
 	// Saves the Q function to the disk
