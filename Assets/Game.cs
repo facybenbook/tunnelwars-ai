@@ -29,6 +29,7 @@ public class Game : MonoBehaviour {
 	public GameObject Protoexplosion;
 	public GameObject Protodanger;
 	public GameObject Protobelief;
+	public GameObject Protopath;
 	public GUIControl Gui;
 	
 	public AudioClip ClickSound;

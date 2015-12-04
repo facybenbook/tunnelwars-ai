@@ -38,7 +38,7 @@ public class AIAgent : PlayerAgentBase {
 	// Agent parameters
 	public const int Level1StepSize = 4;
 
-	public const float Level2DangerDistanceRatio = 1.0f;
+	public const float Level2DangerDistanceRatio = 100.0f;
 	public const int Level2MaxNodesInPrioQueue = 10000;
 	public const int Level2MaxExpansions = 200;
 
@@ -80,7 +80,7 @@ public class AIAgent : PlayerAgentBase {
 			if (level3Timer <= 0) {
 
 				// Create block world and danger zone
-				blockWorld = new BlockWorld(opponentNum, world);
+				blockWorld = new BlockWorld(playerNum, world);
 				dangerZone = new DangerZone(opponentNum, world, blockWorld);
 
 				//Debug.Log (blockWorld.ApplicableActions().Count);
@@ -91,8 +91,8 @@ public class AIAgent : PlayerAgentBase {
 				Path path = level2Searcher.ComputeBestPath(blockWorld);
 				RenderPath(path);
 
-				//dangerZone.Render(ResourceScript);
-				//dangerZone.RenderPlayerBeliefs(ResourceScript);
+				dangerZone.Render(ResourceScript);
+				dangerZone.RenderPlayerBeliefs(ResourceScript);
 				level3Timer = Level3StepSize;
 			}
 		}
@@ -111,7 +111,7 @@ public class AIAgent : PlayerAgentBase {
 
 		foreach (BlockWorld world in path.States) {
 			BlockWorld.BlockPlayer player = world.Player;
-			GameObject obj = Object.Instantiate(ResourceScript.Protobelief);
+			GameObject obj = Object.Instantiate(ResourceScript.Protopath);
 			obj.transform.position = new Vector3(player.I * World.BlockSize, player.J * World.BlockSize + World.FloorLevel);
 			SpriteRenderer renderer = obj.GetComponent<SpriteRenderer>();
 			renderer.color = new Color(1.0f, 1.0f, 1.0f, 0.25f);
@@ -186,8 +186,8 @@ public class AIAgent : PlayerAgentBase {
 
 	// Level 2 functions
 	float level2CostFunction(BlockWorld blockWorld) {
-		return 1.0f;
-		//return 1.0f + Level2DangerDistanceRatio * dangerZone.CheckDanger(blockWorld.Player.I, blockWorld.Player.J);
+		//return 1.0f;
+		return 1.0f + Level2DangerDistanceRatio * dangerZone.CheckDanger(blockWorld.Player.I, blockWorld.Player.J);
 	}
 	bool level2GoalFunction(BlockWorld blockWorld) {
 		//return blockWorld.Player.I == 0;
