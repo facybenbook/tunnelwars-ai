@@ -43,10 +43,18 @@ public class QLearning {
 	}
 
 	public void PrintUtilities () {
-		
+
+		int i = 0;
+
 		foreach (KeyValuePair<Util.Key, float> entry in utilities) {
-			Debug.Log(entry.Key.ToString() + " " + entry.Value.ToString());
+
+			Util.Key key = entry.Key;
+			float value = entry.Value;
+
+			i++;
 		}
+
+		Debug.Log (i.ToString ());
 	}
 
 	// Saves the Q function to the disk
@@ -73,11 +81,10 @@ public class QLearning {
 		while ((line = reader.ReadLine()) != null) {
 
 			string[] keyValueArray = line.Split(' ');
+			Util.Key key = new Util.Key();
+			float value = 0.0f;
 			
 			for (int i = 0; i < keyValueArray.Length; i++) {
-
-				Util.Key key = new Util.Key();
-				float value = 0.0f;
 
 				if (i == 0) {
 					key = Util.Key.FromString(keyValueArray[0] + " " + keyValueArray[1] + " " + keyValueArray[2] + " " + keyValueArray[3] + " " + keyValueArray[4] + " " + keyValueArray[5] + " " + keyValueArray[6]);
