@@ -354,14 +354,14 @@ public class BlockWorld: WorldWithGround {
 
 	// Gets I, J coordinates of new player position for an action
 	public int ActionToI(BlockWorldAction action) {
-		if (action == BlockWorldAction.Left) return Player.I - 1;
-		else if (action == BlockWorldAction.Right) return Player.I + 1;
+		if (action == BlockWorldAction.Left) return Player.I + 1;
+		else if (action == BlockWorldAction.Right) return Player.I - 1;
 		return Player.I;
 	}
 	public int ActionToJ(BlockWorldAction action) {
 		if (action == BlockWorldAction.Up) return Player.J - 1;
 		else if (action == BlockWorldAction.Down) return Player.J + 1;
-		return Player.I;
+		return Player.J;
 	}
 
 	bool justCollectedAmmo;

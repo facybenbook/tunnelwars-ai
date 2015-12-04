@@ -37,15 +37,22 @@ public class AIAgent : PlayerAgentBase {
 
 	// Agent parameters
 	public const int Level1StepSize = 4;
+
 	public const float Level2DangerDistanceRatio = 1.0f;
+	public const int Level2MaxNodesInPrioQueue = 10000;
+	public const int Level2MaxExpansions = 200;
+
 	public const int Level3StepSize = 20;
 	public Game ResourceScript { get; set; }
 
 	public AIAgent(int player) : base(player) {
 		playerNum = player;
+		opponentNum = playerNum == 1 ? 2 : 1;
 		level1Searcher = new DiscreteAdversarialSearch(playerNum, utilHealthHeuristic,
 		                                               getFillerAction, Level1StepSize, 4);
 		decisionTimer = 0;
+		level2Searcher = new AStar(Level2MaxNodesInPrioQueue, Level2MaxExpansions, level2CostFunction,
+		                           level2GoalFunction, level2HeuristicFunction);
 		level3Timer = Level3StepSize;
 		fillerAction = WorldAction.NoAction;
 	}
@@ -73,11 +80,16 @@ public class AIAgent : PlayerAgentBase {
 			if (level3Timer <= 0) {
 
 				// Create block world and danger zone
-				blockWorld = new BlockWorld(playerNum, world);
-				dangerZone = new DangerZone(2, world, blockWorld);
+				blockWorld = new BlockWorld(opponentNum, world);
+				dangerZone = new DangerZone(opponentNum, world, blockWorld);
+
+				//Debug.Log (blockWorld.ApplicableActions().Count);
+				//Debug.Log(blockWorld.CheckActionApplicable(BlockWorldAction.Right));
 
 				// Calculate player path
-				//AStar level3Searcher = new AStar
+				//Debug.Log (level2HeuristicFunction(blockWorld));
+				Path path = level2Searcher.ComputeBestPath(blockWorld);
+				RenderPath(path);
 
 				//dangerZone.Render(ResourceScript);
 				//dangerZone.RenderPlayerBeliefs(ResourceScript);
@@ -92,21 +104,35 @@ public class AIAgent : PlayerAgentBase {
 		return new List<WorldAction>() {bestAction};
 	}
 
+	// Render the level 2 path
+	void RenderPath(Path path) {
+
+		if (path == null) return;
+
+		foreach (BlockWorld world in path.States) {
+			BlockWorld.BlockPlayer player = world.Player;
+			GameObject obj = Object.Instantiate(ResourceScript.Protobelief);
+			obj.transform.position = new Vector3(player.I * World.BlockSize, player.J * World.BlockSize + World.FloorLevel);
+			SpriteRenderer renderer = obj.GetComponent<SpriteRenderer>();
+			renderer.color = new Color(1.0f, 1.0f, 1.0f, 0.25f);
+		}
+	}
+
 
 
 	// Number of the player
 	int playerNum;
+	int opponentNum;
 
 	// Our adversarial searcher for level 1
 	DiscreteAdversarialSearch level1Searcher;
-
-	// Level 1 - Time until next decision must be made, and filler action for meantime
 	int decisionTimer;
 	WorldAction fillerAction;
 
 	// Level 2 - The danger zone of the opponent
 	DangerZone dangerZone;
 	BlockWorld blockWorld;
+	AStar level2Searcher;
 
 	// Time until action must end TODO take out
 	int level3Timer;
@@ -158,14 +184,19 @@ public class AIAgent : PlayerAgentBase {
 		return util;
 	}
 
-	// Level 3 functions
-	float level3CostFunction(BlockWorld blockWorld) {
-		return 1.0f + Level2DangerDistanceRatio * dangerZone.CheckDanger(blockWorld.Player.I, blockWorld.Player.J);
+	// Level 2 functions
+	float level2CostFunction(BlockWorld blockWorld) {
+		return 1.0f;
+		//return 1.0f + Level2DangerDistanceRatio * dangerZone.CheckDanger(blockWorld.Player.I, blockWorld.Player.J);
 	}
-	bool level3GoalFunction(BlockWorld blockWorld) {
+	bool level2GoalFunction(BlockWorld blockWorld) {
+		//return blockWorld.Player.I == 0;
 		return blockWorld.JustCollectedAmmo;
 	}
-	float level3HeuristicFunction(BlockWorld blockWorld) {
+	float level2HeuristicFunction(BlockWorld blockWorld) {
+
+		//return 0.0f;
+		//return blockWorld.Player.I;
 
 		BlockWorld.BlockPlayer player = blockWorld.Player;
 

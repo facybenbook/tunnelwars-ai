@@ -49,8 +49,9 @@ public delegate bool GoalStateTest(BlockWorld blockWorld);
 
 public class AStar {
 
-	// The maximum search depth after which path computation terminates
-	public int MaxDepth { get; set; }
+	// The maximum nodes and expansions
+	public int MaxNodes { get; set; }
+	public int MaxExpansions { get; set; }
 
 	// The model on which to act
 	public BlockWorldCostFunction CostFunction { get; set; }
@@ -61,8 +62,11 @@ public class AStar {
 	// The heuristic
 	public FutureCostHeuristic Heuristic { get; set; }
 
-	public AStar(BlockWorldCostFunction costFunction, GoalStateTest goalFunction, FutureCostHeuristic heuristic) {
+	public AStar(int maxNodes, int maxExpansions, BlockWorldCostFunction costFunction,
+	             GoalStateTest goalFunction, FutureCostHeuristic heuristic) {
 
+		MaxNodes = maxNodes;
+		MaxExpansions = maxExpansions;
 		CostFunction = costFunction;
 		GoalFunction = goalFunction;
 		Heuristic = heuristic;
@@ -71,9 +75,7 @@ public class AStar {
 	// Outputs the optimal path
 	public Path ComputeBestPath(BlockWorld blockWorld) {
 
-		int branchingFactor = BlockWorldAction.GetValues(typeof(BlockWorldAction)).Length;
-		int maxNodes = Util.IntPow(branchingFactor, (uint) MaxDepth);
-		HeapPriorityQueue<Path> frontier = new HeapPriorityQueue<Path>(maxNodes);
+		HeapPriorityQueue<Path> frontier = new HeapPriorityQueue<Path>(MaxNodes);
 		HashSet<BlockWorld> explored = new HashSet<BlockWorld>();
 
 		// Initial state, path
@@ -83,14 +85,22 @@ public class AStar {
 		// Add the initial path to the frontier
 		frontier.Enqueue(initialPath, 0 + Heuristic(initialState));
 
+
 		// Find paths
+		int expansions = 0;
 		while (frontier.Count > 0) {
+
+			if (expansions > MaxExpansions) {
+				return null;
+			}
 
 			Path path = frontier.Dequeue();
 			BlockWorld lastWorld = path.Last();
 
 			// Check goal
-			if (GoalFunction(lastWorld)) return path;
+			if (GoalFunction(lastWorld)) {
+				return path;
+			}
 
 			// Mark as explored
 			explored.Add(lastWorld);
@@ -122,9 +132,11 @@ public class AStar {
 				}
 			}
 
-
+			expansions++;
 		}
 
+
+		Debug.Log("Couldn't find path within constraints");
 		return null;
 	}
 }
