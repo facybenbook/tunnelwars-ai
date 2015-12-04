@@ -33,10 +33,16 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+public class Program {
+	public static void Main (string[] args) {
+
+	}
+}
+
 public class AIAgent : PlayerAgentBase {
 
 	// Agent parameters
-	public const int Level1StepSize = 4;
+	public const int Level1StepSize = 1;
 	public const int Level3StepSize = 20;
 	public Game ResourceScript { get; set; }
 
