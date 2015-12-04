@@ -11,6 +11,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 // Enum which specifies how positively or negatively close an enemy is to the player
 public enum XCloseness {
@@ -235,6 +236,61 @@ public class State {
 		}
 	}
 
+	public string ToString () {
+
+		string stateString = "";
+
+		// Players Weapon Type
+		stateString = stateString + Weapon.ToString ();
+		stateString = stateString + " ";
+		
+		// Players Ammo
+		stateString = stateString + AmmoAmount.ToString ();
+		stateString = stateString + " ";
+		
+		// Enemy Weapon Type
+		stateString = stateString + EnemyWeapon.ToString ();
+		stateString = stateString + " ";
+		
+		// Enemy Ammo
+		stateString = stateString + EnemyAmmoAmount.ToString ();
+		stateString = stateString + " ";
+
+		// XCloseness to Enemy
+		stateString = stateString + XDistanceToEnemy.ToString ();
+		stateString = stateString + " ";
+		
+		// YCloseness to Enemy
+		stateString = stateString + YDistanceToEnemy.ToString ();
+
+		return stateString;
+	}
+
+	static public State FromString (string stateString) {
+
+		State state = new State ();
+
+		string[] propertyArray = stateString.Split (' ');
+
+		for (int i = 0; i < propertyArray.Count(); i++) {
+			if (i == 0) {
+				state.Weapon = (WeaponType) Enum.Parse (typeof(WeaponType), propertyArray [i]);
+			} else if (i == 1) {
+				state.AmmoAmount = int.Parse (propertyArray [i]);
+			} else if (i == 2) {
+				state.EnemyWeapon = (WeaponType) Enum.Parse (typeof(WeaponType), propertyArray [i]);
+			} else if (i == 3) {
+				state.EnemyAmmoAmount = int.Parse (propertyArray [i]);
+			} else if (i == 4) {
+				state.XDistanceToEnemy = (XCloseness) Enum.Parse (typeof(XCloseness), propertyArray [i]);
+			} else if (i == 5) {
+				state.YDistanceToEnemy = (YCloseness) Enum.Parse (typeof(YCloseness), propertyArray [i]);
+			}
+		}
+
+		return state;
+	}
+
 
 
 
@@ -277,5 +333,5 @@ public class State {
 		}
 
 		return false;
-	}
+	}	
 }

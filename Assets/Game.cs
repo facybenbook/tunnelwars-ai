@@ -60,6 +60,10 @@ public class Game : MonoBehaviour {
 		ai.ResourceScript = this; // For debug rendering only
 		agentList.Add(ai);
 		//agentList.Add(new WASDFAgent(1));
+
+		QLearning obj = new QLearning (0.5f, 0.5f, 0.5f);
+		obj.OpenSavedData ();
+		obj.PrintUtilities ();
 	}
 
 	// Called every frame

@@ -23,6 +23,9 @@ public enum Strategy {
 // Class used in QLearning
 public class QLearning {
 
+	// Filename
+	public const string FileName = "QValues.txt";
+
 	// The learning rate
 	public float Alpha { get; set; }
 
@@ -39,14 +42,52 @@ public class QLearning {
 		Discount = discount;
 	}
 
-	// Saves the Q function to the disk
-	public void SaveData (string fileName) {
+	public void PrintUtilities () {
+		
+		foreach (KeyValuePair<Util.Key, float> entry in utilities) {
+			Debug.Log(entry.Key.ToString() + " " + entry.Value.ToString());
+		}
+	}
 
+	// Saves the Q function to the disk
+	public void SaveData () {
+
+		var file = File.Open(FileName, FileMode.CreateNew, FileAccess.ReadWrite);
+		var writer = new StreamWriter(file);
+
+		foreach (KeyValuePair<Util.Key, float> entry in utilities) {
+			string key = entry.Key.ToString();
+			string value = entry.Value.ToString();
+
+			writer.WriteLine(key + " " + value);
+		}
 	}
 
 	// Open the Q function thats been saved to the disk
-	public void OpenSavedData (string fileName) {
+	public void OpenSavedData () {
 
+		var file = File.Open(FileName, FileMode.Open, FileAccess.ReadWrite);
+		var reader = new StreamReader(file);
+		string line;
+
+		while ((line = reader.ReadLine()) != null) {
+
+			string[] keyValueArray = line.Split(' ');
+			
+			for (int i = 0; i < keyValueArray.Length; i++) {
+
+				Util.Key key = new Util.Key();
+				float value = 0.0f;
+
+				if (i == 0) {
+					key = Util.Key.FromString(keyValueArray[0] + " " + keyValueArray[1] + " " + keyValueArray[2] + " " + keyValueArray[3] + " " + keyValueArray[4] + " " + keyValueArray[5] + " " + keyValueArray[6]);
+				} else if (i == 7) {
+					value = float.Parse(keyValueArray[i]);
+				}
+
+				utilities[key] = value;
+			}
+		}
 	}
 
 	// Returns the q value of a state-action tuple
@@ -130,7 +171,7 @@ public class QLearning {
 			}
 		}
 	}
-	
+
 	Strategy[] allStrategies = new Strategy[] {
 		Strategy.Attack,
 		Strategy.RunAway,

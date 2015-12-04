@@ -40,10 +40,46 @@ public static class Util {
 		public State state { get; set; }
 		public Strategy strategy { get; set; }
 
-		// Constructor
+		// Constructors
 		public Key (State state1, Strategy strategy1) {
 			state = state1;
 			strategy = strategy1;
+		}
+
+		public Key () {
+			state = new State();
+			strategy = Strategy.Attack;
+		}
+
+		public string ToString ()  {
+
+			string keyString = "";
+
+			// State
+			keyString = keyString + state.ToString ();
+			keyString = keyString + " ";
+
+			// Strategy
+			keyString = keyString + strategy.ToString ();
+
+			return keyString;
+		}
+
+		static public Key FromString (string keyString) {
+
+			Key key = new Key ();
+
+			string[] propertyArray = keyString.Split (' ');
+			
+			for (int i = 0; i < propertyArray.Length; i++) {
+				if (i == 0) {
+					key.state = State.FromString(propertyArray[0] + " " + propertyArray[1] + " " + propertyArray[2] + " " + propertyArray[3] + " " + propertyArray[4] + " " + propertyArray[5]);
+				} else if (i == 6) {
+					key.strategy = (Strategy) Enum.Parse(typeof(Strategy),propertyArray[i]);
+				}
+			}
+			
+			return key;
 		}
 	}
 }
