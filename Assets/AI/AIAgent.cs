@@ -37,8 +37,7 @@ public class AIAgent : PlayerAgentBase {
 
 	// Agent parameters
 	public const int Level1StepSize = 4;
-
-	public const float Level2DangerDistanceRatio = 100.0f;
+	
 	public const int Level2MaxNodesInPrioQueue = 10000;
 	public const int Level2MaxExpansions = 200;
 
@@ -48,13 +47,16 @@ public class AIAgent : PlayerAgentBase {
 	public AIAgent(int player) : base(player) {
 		playerNum = player;
 		opponentNum = playerNum == 1 ? 2 : 1;
-		level1Searcher = new DiscreteAdversarialSearch(playerNum, utilHealthHeuristic,
+		level1Searcher = new DiscreteAdversarialSearch(playerNum, strategy.Level1Heuristic,
 		                                               getFillerAction, Level1StepSize, 4);
 		decisionTimer = 0;
-		level2Searcher = new AStar(Level2MaxNodesInPrioQueue, Level2MaxExpansions, level2CostFunction,
-		                           level2GoalFunction, level2HeuristicFunction);
+		level2Searcher = new AStar(Level2MaxNodesInPrioQueue, Level2MaxExpansions, strategy.Level2CostFunction,
+		                           strategy.Level2GoalFunction, strategy.Level2HeuristicFunction);
 		level3Timer = Level3StepSize;
 		fillerAction = WorldAction.NoAction;
+
+		// Set strategy
+
 	}
 
 	// The center of the AI - get an action
@@ -89,7 +91,7 @@ public class AIAgent : PlayerAgentBase {
 				// Calculate player path
 				//Debug.Log (level2HeuristicFunction(blockWorld));
 				Path path = level2Searcher.ComputeBestPath(blockWorld);
-				RenderPath(path);
+				if (path != null) path.Render(ResourceScript);
 
 				dangerZone.Render(ResourceScript);
 				dangerZone.RenderPlayerBeliefs(ResourceScript);
@@ -104,38 +106,24 @@ public class AIAgent : PlayerAgentBase {
 		return new List<WorldAction>() {bestAction};
 	}
 
-	// Render the level 2 path
-	void RenderPath(Path path) {
-
-		if (path == null) return;
-
-		foreach (BlockWorld world in path.States) {
-			BlockWorld.BlockPlayer player = world.Player;
-			GameObject obj = Object.Instantiate(ResourceScript.Protopath);
-			obj.transform.position = new Vector3(player.I * World.BlockSize, player.J * World.BlockSize + World.FloorLevel);
-			SpriteRenderer renderer = obj.GetComponent<SpriteRenderer>();
-			renderer.color = new Color(1.0f, 1.0f, 1.0f, 0.25f);
-		}
-	}
-
-
 
 	// Number of the player
 	int playerNum;
 	int opponentNum;
 
-	// Our adversarial searcher for level 1
+	// Level 1
 	DiscreteAdversarialSearch level1Searcher;
 	int decisionTimer;
 	WorldAction fillerAction;
 
-	// Level 2 - The danger zone of the opponent
+	// Level 2
 	DangerZone dangerZone;
 	BlockWorld blockWorld;
 	AStar level2Searcher;
 
-	// Time until action must end TODO take out
+	// Level 3
 	int level3Timer;
+	Strategy strategy;
 
 	// Defines the association between level 1 actions and filler actions
 	WorldAction getFillerAction(WorldAction action, WorldAction prevFillerAction) {
@@ -146,70 +134,5 @@ public class AIAgent : PlayerAgentBase {
 		} else {
 			return prevFillerAction;
 		}
-	}
-
-	// A heuristic estimating the utility of a state based on distance between the players,
-	// ammunition, and master mode
-	float utilDistanceHeuristic(World state) {
-		
-		World.Player currentPlayer = playerNum == 1 ? state.Player1 : state.Player2;
-		World.Player opponentPlayer = playerNum == 1 ? state.Player2 : state.Player1;
-		
-		float d = Util.ManhattanDistance(currentPlayer.X, currentPlayer.Y, opponentPlayer.X, opponentPlayer.Y);
-		
-		// Determine whether to charge the player
-		float distanceScalar = 0.0f;
-		if (opponentPlayer.IsMaster && !currentPlayer.IsMaster) {
-			distanceScalar = 1.0f;
-		} else if (currentPlayer.IsMaster && !opponentPlayer.IsMaster) {
-			distanceScalar = -1.0f;
-		} else if (currentPlayer.Ammo < opponentPlayer.Ammo) {
-			distanceScalar = 1.0f;
-		} else if (currentPlayer.Ammo >= opponentPlayer.Ammo) {
-			distanceScalar = -1.0f;
-		}
-		
-		return d * distanceScalar / 3000.0f;
-	}
-	
-	// The most robust heuristic, drawing upon the distance heuristic
-	float utilHealthHeuristic(World state) {
-		
-		World.Player currentPlayer = playerNum == 1 ? state.Player1 : state.Player2;
-		World.Player opponentPlayer = playerNum == 1 ? state.Player2 : state.Player1;
-
-		float util = currentPlayer.Health / 200.0f - opponentPlayer.Health / 200.0f + 
-			utilDistanceHeuristic(state) * 0.05f;
-		if (!currentPlayer.IsMaster && !opponentPlayer.IsMaster) util += (currentPlayer.Ammo - opponentPlayer.Ammo) / 3.0f * 0.1f;
-		return util;
-	}
-
-	// Level 2 functions
-	float level2CostFunction(BlockWorld blockWorld) {
-		//return 1.0f;
-		return 1.0f + Level2DangerDistanceRatio * dangerZone.CheckDanger(blockWorld.Player.I, blockWorld.Player.J);
-	}
-	bool level2GoalFunction(BlockWorld blockWorld) {
-		//return blockWorld.Player.I == 0;
-		return blockWorld.JustCollectedAmmo;
-	}
-	float level2HeuristicFunction(BlockWorld blockWorld) {
-
-		//return 0.0f;
-		//return blockWorld.Player.I;
-
-		BlockWorld.BlockPlayer player = blockWorld.Player;
-
-		// Return distance to nearest ammo
-		float minDistance = float.MaxValue;
-		foreach (BlockWorld.BlockPowerup powerup in blockWorld.Powerups) {
-
-			float d = Util.ManhattanDistance(powerup.I, powerup.J, player.I, player.J);
-			if (d < minDistance) {
-				minDistance = d;
-			}
-		}
-
-		return minDistance;
 	}
 }

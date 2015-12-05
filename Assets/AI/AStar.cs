@@ -33,6 +33,19 @@ public class Path : PriorityQueueNode {
 	public BlockWorld Last() {
 		return states.Last();
 	}
+
+	// Render
+	public void Render(Game resourceScript) {
+		foreach (BlockWorld world in States) {
+			BlockWorld.BlockPlayer player = world.Player;
+			GameObject obj = Object.Instantiate(resourceScript.Protopath);
+			obj.transform.position = new Vector3(player.I * World.BlockSize, player.J * World.BlockSize + World.FloorLevel);
+			SpriteRenderer renderer = obj.GetComponent<SpriteRenderer>();
+			renderer.color = new Color(1.0f, 1.0f, 1.0f, 0.25f);
+		}
+	}
+
+
 	
 	float cost;
 	List<BlockWorld> states;

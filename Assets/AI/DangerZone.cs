@@ -21,6 +21,10 @@ public class DangerZone {
 	public const float BombsDangerWeight = 1.0f;
 	public const float MinionsDangerWeight = 1.0f;
 
+	// The source coordinates
+	public int SourceI { get { return sourceI; } }
+	public int SourceJ { get { return sourceJ; } }
+
 	// Probabilities below this are ignored while running trajectories
 	const float epsilon = 0.05f;
 	
@@ -61,6 +65,10 @@ public class DangerZone {
 	}
 
 	
+
+	// The source coordinates
+	int sourceI;
+	int sourceJ;
 
 	// The probability distribution of initial weapon sources / player configurations
 	Dictionary<IJCoords, ProjectileSourceBelief> sourceBeliefs;
@@ -122,6 +130,9 @@ public class DangerZone {
 		World.Player player = playerNum == 1 ? world.Player1 : world.Player2;
 		int playerI = World.XToI(player.X);
 		int playerJ = World.YToJ(player.Y);
+
+		sourceI = playerI;
+		sourceJ = playerJ;
 		
 		// The initial source is at the player
 		ProjectileSourceBelief initial = new ProjectileSourceBelief(1.0f, player.Ammo, player.Weapon);
