@@ -226,11 +226,15 @@ class Key {
 		Key key = new Key ();
 		
 		string[] propertyArray = keyString.Split (' ');
-		
-		for (int i = 0; i < propertyArray.Length; i++) {
-			if (i == 0) {
-				key.state = State.FromString(propertyArray[0] + " " + propertyArray[1] + " " + propertyArray[2] + " " + propertyArray[3] + " " + propertyArray[4] + " " + propertyArray[5]);
-			} else if (i == 6) {
+
+		int l = propertyArray.Length;
+		string stateString = "";
+
+		for (int i = 0; i < l; i++) {
+			if (i < l - 1) {
+				stateString = propertyArray[i] + " ";
+			} else {
+				key.state = State.FromString(stateString);
 				key.strategy = (StrategyType) Enum.Parse(typeof(StrategyType),propertyArray[i]);
 			}
 		}
