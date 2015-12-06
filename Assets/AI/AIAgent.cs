@@ -48,7 +48,7 @@ public class AIAgent : PlayerAgentBase {
 	public const int Level2MaxNodesInPrioQueue = 10000;
 	public const int Level2MaxExpansions = 200;
 
-	public const int Level3StepSize = 60;
+	public const int Level3StepSize = 20;
 	public Game ResourceScript { get; set; }
 
 	public AIAgent(int player) : base(player) {
@@ -80,7 +80,6 @@ public class AIAgent : PlayerAgentBase {
 
 		// Update level 1 heuristic parameters
 		World.Player player = playerNum == 1 ? world.Player1 : world.Player2;
-		strategy.NextPathIndex = getNewPathIndex(player, strategy.NextPathIndex);
 
 
 		// Calculate new level 1 action if timer is up
@@ -122,7 +121,21 @@ public class AIAgent : PlayerAgentBase {
 		decisionTimer--;
 		level3Timer--;
 
-		if (strategy.Path != null) strategy.Path.Render(ResourceScript, strategy.NextPathIndex);
+		if (strategy.Path != null) strategy.Path.Render(ResourceScript, 5);
+		if (strategy.Path != null) {
+			if (strategy.Path.States.Count > 5) {
+
+				int targetI = strategy.Path.States[5].Player.I;
+				int targetJ = strategy.Path.States[5].Player.J;
+				float targetX = World.IToXMin(targetI) + World.BlockSize / 2.0f;
+				float targetY = World.JToYMin(targetJ) + World.BlockSize / 2.0f;
+				GameObject obj = Object.Instantiate(ResourceScript.Protopath);
+				obj.transform.position = new Vector3(targetX, targetY);
+			}
+		}
+		
+		// Update
+		strategy.NextPathIndex = getNewPathIndex(player, strategy.NextPathIndex);
 
 		// Return a single-valued list with the best action
 		return new List<WorldAction>() {bestAction};
@@ -162,19 +175,23 @@ public class AIAgent : PlayerAgentBase {
 	int getNewPathIndex(World.Player player, int currentIndex) {
 
 		if (strategy.Path == null) return currentIndex;
-		if (currentIndex >= strategy.Path.States.Count) return currentIndex;
+		int pathLength = strategy.Path.States.Count;
 
 		// Get target
-		BlockWorld targetWorld = strategy.Path.States[currentIndex];
-		int targetI = targetWorld.Player.I;
-		int targetJ = targetWorld.Player.J;
+		for (int i = 0; i < Strategy.MaxPathPointsWithInfluence && i + currentIndex < pathLength; i++) {
 
-		int playerI = World.XToI(player.X);
-		int playerJ = World.YToJ(player.Y);
+			BlockWorld targetWorld = strategy.Path.States[currentIndex + i];
+			int targetI = targetWorld.Player.I;
+			int targetJ = targetWorld.Player.J;
+			
+			int playerI = World.XToI(player.X);
+			int playerJ = World.YToJ(player.Y);
+			
+			// If the player is touching the next path coord, then return the index of the new path coord
+			if (playerI == targetI && playerJ == targetJ) {
+				return currentIndex + i + 1;
+			}
 
-		// If the player is touching the next path coord, then return the index of the new path coord
-		if (playerI == targetI && playerJ == targetJ) {
-			return currentIndex + 1;
 		}
 
 		return currentIndex;

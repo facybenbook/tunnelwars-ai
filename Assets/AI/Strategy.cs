@@ -65,7 +65,7 @@ public abstract class Strategy {
 	}
 
 	// The level 1 adversarial search heuristic
-	public float Level1Heuristic(World world) {
+	public float Level1Heuristic(World world, int pathIndex) {
 
 		World.Player currentPlayer = playerNum == 1 ? world.Player1 : world.Player2;
 		World.Player opponentPlayer = playerNum == 1 ? world.Player2 : world.Player1;
@@ -74,28 +74,37 @@ public abstract class Strategy {
 		float dHealth = (currentPlayer.Health - opponentPlayer.Health) / 200.0f;
 		float dAmmo = currentPlayer.Ammo - opponentPlayer.Ammo;
 		if (currentPlayer.IsMaster || opponentPlayer.IsMaster) dAmmo = 0.0f;
-
-		return -Util.ManhattanDistance(currentPlayer.X, currentPlayer.Y,
-		                               opponentPlayer.X, opponentPlayer.Y);
-		float normalizedInverseDist = Util.BoundedInverseManhattanDistance(currentPlayer.X, currentPlayer.Y,
+		float normalizedInverseDist = Util.BoundedInverseDistance(currentPlayer.X, currentPlayer.Y,
 		                                                     			   opponentPlayer.X, opponentPlayer.Y);
 
 		// Normalized level 2 conformance
 		float normalizedConformance = 0.0f;
 		int pathLength = Path.States.Count;
-		for (int i = NextPathIndex, k = 0; i < pathLength && k < MaxPathPointsWithInfluence; i++, k++) {
+		if (MaxPathPointsWithInfluence < pathLength) {
+			int targetI = Path.States[MaxPathPointsWithInfluence].Player.I;
+			int targetJ = Path.States[MaxPathPointsWithInfluence].Player.J;
+			float targetX = World.IToXMin(targetI) + Random.Range (0.0f, World.BlockSize);
+			float targetY = World.JToYMin(targetJ) + Random.Range (0.0f, World.BlockSize);
+
+			targetX = World.IToXMin(World.XToI(opponentPlayer.X)) + World.BlockSize / 2;
+			targetY = World.JToYMin(World.XToI(opponentPlayer.Y)) + World.BlockSize / 2;
+
+			normalizedConformance = -Util.Distance(currentPlayer.X, currentPlayer.Y,
+			                                                    targetX, targetY);
+
+			return normalizedConformance;
+		}
+		/*for (int i = pathIndex; i < pathLength; i++) {
 
 
 			BlockWorld.BlockPlayer target = Path.States[i].Player;
-			int playerI = World.XToI(currentPlayer.X);
-			int playerJ = World.YToJ(currentPlayer.Y);
 
 			if (target.I == playerI && target.J == playerJ) {
-				normalizedConformance = 1.0f;
-				break;
-				//normalizedConformance = 1.0f / (MaxPathPointsWithInfluence - k);
+				//normalizedConformance = 1.0f;
+				normalizedConformance = i / pathLength;
 			}
-		}
+		}*/
+
 
 		// Return weighted sum of influences
 		return level1HealthWeight * dHealth
