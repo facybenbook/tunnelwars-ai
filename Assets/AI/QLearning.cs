@@ -22,18 +22,22 @@ public class QLearning {
 	// The learning rate
 	public float Alpha { get; set; }
 
-	// Near vs far sighted factor
-	public float Gamma { get; set; }
+	// Exploration rate
+	public float Epsilon { get; set; }
 
 	// Gamma factor
 	public float Discount { get; set; }
 
 	// Constructor
-	public QLearning (float alpha, float gamma, float discount) {
+	public QLearning (float alpha, float epsilon, float discount) {
 		Alpha = alpha;
-		Gamma = gamma;
+		Epsilon = epsilon;
 		Discount = discount;
 
+		// Construct allPossibleStrategies
+		foreach (StrategyType strategy in Enum.GetValues(typeof(StrategyType))) {
+			allPossibleStrategies.Add(strategy);
+		}
 	}
 
 	public void PrintUtilities () {
@@ -161,6 +165,24 @@ public class QLearning {
 		utilities [key] = qValue + Alpha * (reward + Discount * ComputeValueFromQValues (nextState) - qValue);
 	}
 
+	public StrategyType GetStrategy (State state) {
+
+		System.Random rnd = new System.Random();
+		int randomInt = rnd.Next(1, 101);
+ 		int epsilonInt = (int) (Epsilon * 100f);
+
+		// Take random strategy
+		if (randomInt <= epsilonInt) {
+			int numberOfStrategies = Enum.GetNames(typeof(StrategyType)).Length;
+			int randomIndex = rnd.Next (0,numberOfStrategies);
+			return allPossibleStrategies[randomIndex];
+		}
+		// Otherwise take best possible strategy
+		else {
+			return ComputeStrategyFromQValues(state);
+		}
+	}
+
 
 
 
@@ -188,6 +210,9 @@ public class QLearning {
 
 	// Map of state-action dictionary to estimated utilities
 	Dictionary <Key, float> utilities = new Dictionary <Key, float>();
+
+	// List of possible strategyies
+	List<StrategyType> allPossibleStrategies = new List<StrategyType> ();
 }
 
 // Key class that stores a state and a strategy
