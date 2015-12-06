@@ -6,10 +6,11 @@
  *
  */
 
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class QLearningSimulation {
+public class QLearningSimulation: MonoBehaviour {
 
 	// World
 	World currentWorld;
@@ -20,7 +21,13 @@ public class QLearningSimulation {
 	// A list of all agents that are used for the game
 	List<IAgent> agentList;
 
-	public void RunQLearning () {
+	// Number of games to be played
+	int numberOfGames;
+
+	// Specifies which iteration of games we are on
+	int gameIteration;
+
+	public void Awake () {
 
 		// Set up the wor8ld with the initial state
 		currentWorld = new World();
@@ -39,34 +46,38 @@ public class QLearningSimulation {
 		qLearner = new QLearning (alpha, gamma, discount);
 
 		// Specify number of games
-		int numberOfGames = 3;
+		numberOfGames = 3;
 
-		// Play the number of games specified
-		for (int i = 0; i < numberOfGames; i++) {
+		// Specify which iteration of games we are on
+		gameIteration = 1;
 
-			// Play game until terminal state
-			while (! currentWorld.IsTerminal ()) {
-				Update();
-			}
-
-			// Restart game
-			RestartGame ();
-		}
-
-		// Save the QLearning object
-		qLearner.SaveData ();
 	}
 	
 	// Called every frame
 	void Update () {
-		
-		// Advance world using our agents
-		List<WorldAction> actions = new List<WorldAction>();
-		foreach (IAgent agent in agentList) {
-			actions.AddRange(agent.GetAction(currentWorld));
+
+		// Learning is over
+		if (currentWorld.IsTerminal () && gameIteration == numberOfGames) {
+
+			qLearner.SaveData();
+			Application.Quit();
 		}
-		
-		currentWorld.Advance(actions);
+		// Game is over but learning continues
+		else if (currentWorld.IsTerminal() && gameIteration < numberOfGames) {
+
+			RestartGame();
+		}
+		// Game is not over
+		else {
+
+			// Advance world using our agents
+			List<WorldAction> actions = new List<WorldAction>();
+			foreach (IAgent agent in agentList) {
+				actions.AddRange(agent.GetAction(currentWorld));
+			}
+			
+			currentWorld.Advance(actions);
+		}
 	}
 	
 	// Restarts the game
