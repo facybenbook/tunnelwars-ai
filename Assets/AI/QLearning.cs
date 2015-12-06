@@ -103,8 +103,14 @@ public class QLearning {
 
 	// Returns the q value of a state-action tuple
 	public float getQValue (State state, StrategyType strategy) {
+
 		Key key = new Key (state, strategy);
-		return utilities [key];
+
+		if (utilities.ContainsKey (key)) {
+			return utilities [key];
+		} else {
+			return 0.0f;
+		}
 	}
 
 	// Returns the utility value of a state
