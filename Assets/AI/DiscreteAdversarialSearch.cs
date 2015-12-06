@@ -22,7 +22,7 @@ public struct ActionWithFiller {
 }
 
 // Define a delegate for a World-evaluating heuristic function
-public delegate float WorldHeuristic(World world);
+public delegate float WorldHeuristic(World world, int pathIndex);
 
 // Define delegate to determine filler action from action
 public delegate WorldAction FillerActionDeterminationFunction(WorldAction action, WorldAction prevFillerAction);
@@ -73,16 +73,16 @@ class DiscreteAdversarialSearch {
 			World.Player newCurrentPlayer = playerNum == 1 ? newState.Player1 : newState.Player2;
 
 			newCurrentPlayer.Advance(new List<WorldAction>(){action});
-			//currentPathIndex = PathIndexFunction(newCurrentPlayer, currentPathIndex);
 			newState.Advance(emptyList, false, false);
+			//currentPathIndex = PathIndexFunction(newCurrentPlayer, currentPathIndex);
 			
 			// Decide filler action and do it repeatedly
 			WorldAction potentialFillerAction = FillerActionFunction(action, currentFillerAction);
 			List<WorldAction> fillerActionList = new List<WorldAction>(){potentialFillerAction};
 			for (int i = 0; i < StepSize - 1; i++) {
 				newCurrentPlayer.Advance(fillerActionList);
-				//currentPathIndex = PathIndexFunction(newCurrentPlayer, currentPathIndex);
 				newState.Advance(emptyList, false, false);
+				//currentPathIndex = PathIndexFunction(newCurrentPlayer, currentPathIndex);
 			}
 
 			// Calculate utility and update maximum
@@ -135,7 +135,7 @@ class DiscreteAdversarialSearch {
 			//float h = Heuristic(state);
 			//if (h > 1.0f || h < -1.0f) Debug.LogWarning("Heuristic has magnitude greater than 1!");
 			//return h;
-			return Heuristic(state);
+			return Heuristic(state, currentPathIndex);
 		}
 		
 		if (isOpponentsTurn) {
@@ -194,16 +194,16 @@ class DiscreteAdversarialSearch {
 				World newState = state.Clone();
 				World.Player newCurrentPlayer = playerNum == 1 ? newState.Player1 : newState.Player2;
 				newCurrentPlayer.Advance(new List<WorldAction>(){action});
+				//newState.Advance(emptyList, false, false);
 				//currentPathIndex = PathIndexFunction(newCurrentPlayer, currentPathIndex);
-				newState.Advance(emptyList, false, false);
 				
 				// Do filler action
 				WorldAction potentialFillerAction = FillerActionFunction(action, prevFillerAction);
 				List<WorldAction> fillerActionList = new List<WorldAction>(){potentialFillerAction};
 				for (int i = 0; i < StepSize - 1; i++) {
 					newCurrentPlayer.Advance(fillerActionList);
+					//newState.Advance(emptyList, false, false);
 					//currentPathIndex = PathIndexFunction(newCurrentPlayer, currentPathIndex);
-					newState.Advance(emptyList, false, false);
 				}
 
 				// Calculate utility and update maximum

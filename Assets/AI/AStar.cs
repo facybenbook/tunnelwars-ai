@@ -41,7 +41,7 @@ public class Path : PriorityQueueNode {
 
 			BlockWorld.BlockPlayer player = world.Player;
 			GameObject obj = Object.Instantiate(resourceScript.Protopath);
-			obj.transform.position = new Vector3(player.I * World.BlockSize, player.J * World.BlockSize + World.FloorLevel);
+			obj.transform.position = new Vector3(World.IToXMin(player.I), World.JToYMin(player.J));
 			SpriteRenderer renderer = obj.GetComponent<SpriteRenderer>();
 			renderer.color = new Color(1.0f, 1.0f, 1.0f, 0.25f);
 		}
