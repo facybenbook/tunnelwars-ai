@@ -27,6 +27,9 @@ public delegate float WorldHeuristic(World world);
 // Define delegate to determine filler action from action
 public delegate WorldAction FillerActionDeterminationFunction(WorldAction action, WorldAction prevFillerAction);
 
+// Define delegate to determine the new path index
+public delegate int NewPathIndexFunction(World.Player player, int currentPathIndex);
+
 class DiscreteAdversarialSearch {
 
 	// The number of frames for each action
@@ -41,14 +44,18 @@ class DiscreteAdversarialSearch {
 	// The filler action function
 	public FillerActionDeterminationFunction FillerActionFunction { get; set; }
 
+	// The path index function
+	public NewPathIndexFunction PathIndexFunction { get; set; }
+
 	// Constructor
 	public DiscreteAdversarialSearch(int playerNum, WorldHeuristic heuristic, FillerActionDeterminationFunction fillerActionFunction,
-	                                 int stepSize=4, int searchDepth=4) {
-		init(playerNum, stepSize, searchDepth, heuristic, fillerActionFunction);
+	                                 NewPathIndexFunction pathIndexFunction, int stepSize=4, int searchDepth=4) {
+		init(playerNum, stepSize, searchDepth, heuristic, fillerActionFunction, pathIndexFunction);
 	}
 
 	// Searches the world for an action
-	public ActionWithFiller ComputeBestAction(World world, WorldAction currentFillerAction) {
+	public ActionWithFiller ComputeBestAction(World world, WorldAction currentFillerAction,
+	                                          int currentPathIndex) {
 
 		WorldAction bestAction = WorldAction.NoAction;
 		WorldAction bestFillerAction = WorldAction.NoAction;
@@ -66,6 +73,7 @@ class DiscreteAdversarialSearch {
 			World.Player newCurrentPlayer = playerNum == 1 ? newState.Player1 : newState.Player2;
 
 			newCurrentPlayer.Advance(new List<WorldAction>(){action});
+			//currentPathIndex = PathIndexFunction(newCurrentPlayer, currentPathIndex);
 			newState.Advance(emptyList, false, false);
 			
 			// Decide filler action and do it repeatedly
@@ -73,11 +81,13 @@ class DiscreteAdversarialSearch {
 			List<WorldAction> fillerActionList = new List<WorldAction>(){potentialFillerAction};
 			for (int i = 0; i < StepSize - 1; i++) {
 				newCurrentPlayer.Advance(fillerActionList);
+				//currentPathIndex = PathIndexFunction(newCurrentPlayer, currentPathIndex);
 				newState.Advance(emptyList, false, false);
 			}
 
 			// Calculate utility and update maximum
-			float utility = calculateUtility(newState, 0, true, float.MinValue, float.MaxValue, potentialFillerAction);
+			float utility = calculateUtility(newState, 0, true, float.MinValue, float.MaxValue, potentialFillerAction,
+			                                 currentPathIndex);
 			
 			if (utility > bestActionUtility) {
 				bestAction = action;
@@ -97,18 +107,21 @@ class DiscreteAdversarialSearch {
 	int playerNum;
 
 	protected void init(int playerNum, int stepSize, int searchDepth, WorldHeuristic heuristic,
-	                    FillerActionDeterminationFunction fillerActionFunction) {
+	                    FillerActionDeterminationFunction fillerActionFunction,
+	                    NewPathIndexFunction pathIndexFunction) {
 		
 		this.playerNum = playerNum;
 		StepSize = stepSize;
 		SearchDepth = searchDepth;
 		Heuristic = heuristic;
 		FillerActionFunction = fillerActionFunction;
+		PathIndexFunction = pathIndexFunction;
 		emptyList = new List<WorldAction>();
 	}
 
 	// Calculates the utility of a state
-	protected float calculateUtility(World state, int depth, bool isOpponentsTurn, float alpha, float beta, WorldAction prevFillerAction) {
+	protected float calculateUtility(World state, int depth, bool isOpponentsTurn, float alpha, float beta,
+	                                 WorldAction prevFillerAction, int currentPathIndex) {
 		
 		// Check if terminal and return terminal utility
 		if (state.IsTerminal()) {
@@ -150,7 +163,8 @@ class DiscreteAdversarialSearch {
 				}
 
 				// Calculate utility and update minimum
-				float utility = calculateUtility(newState, depth + 1, false, alpha, beta, potentialFillerAction);
+				float utility = calculateUtility(newState, depth + 1, false, alpha, beta, potentialFillerAction,
+				                                 currentPathIndex);
 				if (utility < minUtil) {
 					minUtil = utility;
 					
@@ -180,6 +194,7 @@ class DiscreteAdversarialSearch {
 				World newState = state.Clone();
 				World.Player newCurrentPlayer = playerNum == 1 ? newState.Player1 : newState.Player2;
 				newCurrentPlayer.Advance(new List<WorldAction>(){action});
+				//currentPathIndex = PathIndexFunction(newCurrentPlayer, currentPathIndex);
 				newState.Advance(emptyList, false, false);
 				
 				// Do filler action
@@ -187,11 +202,13 @@ class DiscreteAdversarialSearch {
 				List<WorldAction> fillerActionList = new List<WorldAction>(){potentialFillerAction};
 				for (int i = 0; i < StepSize - 1; i++) {
 					newCurrentPlayer.Advance(fillerActionList);
+					//currentPathIndex = PathIndexFunction(newCurrentPlayer, currentPathIndex);
 					newState.Advance(emptyList, false, false);
 				}
 
 				// Calculate utility and update maximum
-				float utility = calculateUtility(newState, depth + 1, true, alpha, beta, potentialFillerAction);
+				float utility = calculateUtility(newState, depth + 1, true, alpha, beta, potentialFillerAction,
+				                                 currentPathIndex);
 				if (utility > maxUtil) {
 					
 					maxUtil = utility;

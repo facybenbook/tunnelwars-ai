@@ -3,7 +3,7 @@ using System.Collections;
 
 public class TimedDestroy : MonoBehaviour {
 
-	int Timer = AIAgent.Level3StepSize - 1;
+	public int Timer = AIAgent.Level3StepSize - 1;
 
 	// Use this for initialization
 	void Start () {

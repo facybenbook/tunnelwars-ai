@@ -23,8 +23,8 @@ public enum StrategyType {
 // Abstract class for strategies
 public abstract class Strategy {
 
-	// The number of path points that have influence on level 1
-	public const int PathPointsWithInfluence = 4;
+	// The max number of path points that have influence on level 1
+	public const int MaxPathPointsWithInfluence = 5;
 
 	// Level two - increase to give priority to danger over distance of path
 	public const float Level2DangerDistanceRatio = 100.0f;
@@ -44,7 +44,7 @@ public abstract class Strategy {
 	public DangerZone Level2DangerZone { get; set; }
 
 	// The main way to construct strategies
-	public Strategy strategyWithType(int playerNun, StrategyType type) {
+	public static Strategy StrategyWithType(int playerNum, StrategyType type) {
 		switch (type) {
 		case StrategyType.Attack:
 			return new AttackStrategy(playerNum);
@@ -74,17 +74,27 @@ public abstract class Strategy {
 		float dHealth = (currentPlayer.Health - opponentPlayer.Health) / 200.0f;
 		float dAmmo = currentPlayer.Ammo - opponentPlayer.Ammo;
 		if (currentPlayer.IsMaster || opponentPlayer.IsMaster) dAmmo = 0.0f;
+
+		return -Util.ManhattanDistance(currentPlayer.X, currentPlayer.Y,
+		                               opponentPlayer.X, opponentPlayer.Y);
 		float normalizedInverseDist = Util.BoundedInverseManhattanDistance(currentPlayer.X, currentPlayer.Y,
 		                                                     			   opponentPlayer.X, opponentPlayer.Y);
 
 		// Normalized level 2 conformance
 		float normalizedConformance = 0.0f;
-		for (int i = 0; i < PathPointsWithInfluence; i++) {
+		int pathLength = Path.States.Count;
+		for (int i = NextPathIndex, k = 0; i < pathLength && k < MaxPathPointsWithInfluence; i++, k++) {
 
-			BlockWorld.BlockPlayer target = Path.States[i + NextPathIndex].Player;
-			float dInverse = Util.BoundedInverseManhattanDistance(currentPlayer.X, currentPlayer.Y,
-			                                        	   		  target.I, target.J, 64.0f);
-			normalizedConformance += dInverse * heuristicPathWeightForDepth(i);
+
+			BlockWorld.BlockPlayer target = Path.States[i].Player;
+			int playerI = World.XToI(currentPlayer.X);
+			int playerJ = World.YToJ(currentPlayer.Y);
+
+			if (target.I == playerI && target.J == playerJ) {
+				normalizedConformance = 1.0f;
+				break;
+				//normalizedConformance = 1.0f / (MaxPathPointsWithInfluence - k);
+			}
 		}
 
 		// Return weighted sum of influences
@@ -105,6 +115,8 @@ public abstract class Strategy {
 	protected StrategyType type;
 	protected int playerNum;
 
+	const float oneOverXSquaredNormalizationFactor = 0.6079f;
+
 	// Level 1 weights
 	protected float level1HealthWeight;
 	protected float level1AmmoWeight;
@@ -112,9 +124,9 @@ public abstract class Strategy {
 	protected float level1SuperlevelWeight; // How much to conform with the directions of level 2
 	// What about speed and grav?
 
-	// The interpolation function between level 2 path points. Must converge to 1
-	protected float heuristicPathWeightForDepth(int depth) {
-		return 1.0f / (depth * depth);
+	// The interpolation function between level 2 path points. Converges to pi^2 / 6
+	protected float heuristicPathWeight(int distanceFromLast) {
+		return 1.0f / (distanceFromLast * distanceFromLast);
 	}
 
 }
@@ -122,10 +134,10 @@ public abstract class Strategy {
 public class AttackStrategy : Strategy {
 
 	public AttackStrategy(int playerNum) : base(playerNum) {
-		level1HealthWeight = 10.0f;
-		level1AmmoWeight = -1.0f;
+		level1HealthWeight = 0.0f;//10.0f;
+		level1AmmoWeight = 0.0f;
 		level1ConfrontationWeight = 1.0f;
-		level1SuperlevelWeight = 1.0f;
+		level1SuperlevelWeight = 0.0f;// 1.0f;
 	}
 	
 	override public float Level2CostFunction(BlockWorld blockWorld) {
