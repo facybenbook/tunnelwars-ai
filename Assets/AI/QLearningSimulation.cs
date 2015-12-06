@@ -51,6 +51,8 @@ public class QLearningSimulation: MonoBehaviour {
 		// Specify which iteration of games we are on
 		gameIteration = 1;
 
+		Debug.Log ("Beginning learning.  Simulating " + numberOfGames.ToString() + " games.");
+
 	}
 	
 	// Called every frame
@@ -59,11 +61,20 @@ public class QLearningSimulation: MonoBehaviour {
 		// Learning is over
 		if (currentWorld.IsTerminal () && gameIteration == numberOfGames) {
 
+			Debug.Log ("Learning finished.  Saving QValues...");
+
 			qLearner.SaveData();
+
+			Debug.Log ("Finished saving QValues.  Closing Application.");
+
 			Application.Quit();
 		}
 		// Game is over but learning continues
 		else if (currentWorld.IsTerminal() && gameIteration < numberOfGames) {
+
+			Debug.Log("Finished game " + gameIteration.ToString() + " of " + numberOfGames.ToString() + ".");
+
+			numberOfGames += 1;
 
 			RestartGame();
 		}
