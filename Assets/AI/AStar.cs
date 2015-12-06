@@ -35,8 +35,10 @@ public class Path : PriorityQueueNode {
 	}
 
 	// Render
-	public void Render(Game resourceScript) {
-		foreach (BlockWorld world in States) {
+	public void Render(Game resourceScript, int startIndex=0) {
+		for (int i = startIndex; i < States.Count; i++) {
+			BlockWorld world = States[i];
+
 			BlockWorld.BlockPlayer player = world.Player;
 			GameObject obj = Object.Instantiate(resourceScript.Protopath);
 			obj.transform.position = new Vector3(player.I * World.BlockSize, player.J * World.BlockSize + World.FloorLevel);

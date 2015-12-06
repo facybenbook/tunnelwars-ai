@@ -41,22 +41,28 @@ public class AIAgent : PlayerAgentBase {
 	public const int Level2MaxNodesInPrioQueue = 10000;
 	public const int Level2MaxExpansions = 200;
 
-	public const int Level3StepSize = 20;
+	public const int Level3StepSize = 60;
 	public Game ResourceScript { get; set; }
 
 	public AIAgent(int player) : base(player) {
+
+		// Set strategy
+		strategy = Strategy.StrategyWithType(playerNum, StrategyType.Attack);
+
 		playerNum = player;
 		opponentNum = playerNum == 1 ? 2 : 1;
-		level1Searcher = new DiscreteAdversarialSearch(playerNum, strategy.Level1Heuristic,
-		                                               getFillerAction, Level1StepSize, 4);
+
+		level1Searcher = new DiscreteAdversarialSearch(playerNum,
+		                                               strategy.Level1Heuristic,
+		                                               getFillerAction,
+		                                               getNewPathIndex,
+		                                               Level1StepSize,
+		                                               4);
 		decisionTimer = 0;
 		level2Searcher = new AStar(Level2MaxNodesInPrioQueue, Level2MaxExpansions, strategy.Level2CostFunction,
 		                           strategy.Level2GoalFunction, strategy.Level2HeuristicFunction);
 		level3Timer = Level3StepSize;
 		fillerAction = WorldAction.NoAction;
-
-		// Set strategy
-
 	}
 
 	// The center of the AI - get an action
@@ -65,10 +71,15 @@ public class AIAgent : PlayerAgentBase {
 		// The immediate action comes from level 1
 		WorldAction bestAction = WorldAction.NoAction;
 
-		// Calculate new level 1 action if timer is up
-		if (decisionTimer <= 0) {
+		// Update level 1 heuristic parameters
+		World.Player player = playerNum == 1 ? world.Player1 : world.Player2;
+		strategy.NextPathIndex = getNewPathIndex(player, strategy.NextPathIndex);
 
-			ActionWithFiller decision = level1Searcher.ComputeBestAction(world, fillerAction);
+
+		// Calculate new level 1 action if timer is up
+		if (decisionTimer <= 0 && strategy.Path != null) {
+
+			ActionWithFiller decision = level1Searcher.ComputeBestAction(world, fillerAction, strategy.NextPathIndex);
 			bestAction = decision.Action;
 			fillerAction = decision.FillerAction;
 
@@ -85,22 +96,26 @@ public class AIAgent : PlayerAgentBase {
 				blockWorld = new BlockWorld(playerNum, world);
 				dangerZone = new DangerZone(opponentNum, world, blockWorld);
 
-				//Debug.Log (blockWorld.ApplicableActions().Count);
-				//Debug.Log(blockWorld.CheckActionApplicable(BlockWorldAction.Right));
+				// Must be set before using the level 2 reward, cost, and goal functions
+				strategy.Level2DangerZone = dangerZone;
 
 				// Calculate player path
-				//Debug.Log (level2HeuristicFunction(blockWorld));
 				Path path = level2Searcher.ComputeBestPath(blockWorld);
-				if (path != null) path.Render(ResourceScript);
 
-				dangerZone.Render(ResourceScript);
-				dangerZone.RenderPlayerBeliefs(ResourceScript);
+				// Must be set before using the level 1 heuristic
+				strategy.Path = path;
+				strategy.NextPathIndex = 0;
+
+				//dangerZone.Render(ResourceScript);
+				//dangerZone.RenderPlayerBeliefs(ResourceScript);
 				level3Timer = Level3StepSize;
 			}
 		}
 	
 		decisionTimer--;
 		level3Timer--;
+
+		if (strategy.Path != null) strategy.Path.Render(ResourceScript, strategy.NextPathIndex);
 
 		// Return a single-valued list with the best action
 		return new List<WorldAction>() {bestAction};
@@ -134,5 +149,27 @@ public class AIAgent : PlayerAgentBase {
 		} else {
 			return prevFillerAction;
 		}
+	}
+
+	// Returns the path index - the index of the next path node to target given the current player
+	int getNewPathIndex(World.Player player, int currentIndex) {
+
+		if (strategy.Path == null) return currentIndex;
+		if (currentIndex >= strategy.Path.States.Count) return currentIndex;
+
+		// Get target
+		BlockWorld targetWorld = strategy.Path.States[currentIndex];
+		int targetI = targetWorld.Player.I;
+		int targetJ = targetWorld.Player.J;
+
+		int playerI = World.XToI(player.X);
+		int playerJ = World.YToJ(player.Y);
+
+		// If the player is touching the next path coord, then return the index of the new path coord
+		if (playerI == targetI && playerJ == targetJ) {
+			return currentIndex + 1;
+		}
+
+		return currentIndex;
 	}
 }
