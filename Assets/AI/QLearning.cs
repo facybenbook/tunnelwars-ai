@@ -44,12 +44,12 @@ public class QLearning {
 	public void PrintUtilities () {
 
 		int i = 0;
-		foreach (KeyValuePair<Key, float> entry in utilities) {
+		foreach (KeyValuePair<string, float> entry in utilities) {
 
-			Key key = entry.Key;
+			string key = entry.Key;
 			float value = entry.Value;
 
-			Debug.Log (key.ToString() + ", " + value.ToString());
+			Debug.Log (key + ", " + value.ToString());
 
 			if (i > 50) return;
 			i++;
@@ -66,7 +66,7 @@ public class QLearning {
 		var writer = new StreamWriter(file);
 
 		int i = 0;
-		foreach (KeyValuePair<Key, float> entry in utilities) {
+		foreach (KeyValuePair<string, float> entry in utilities) {
 
 			string key = entry.Key.ToString();
 			string value = entry.Value.ToString();
@@ -98,7 +98,9 @@ public class QLearning {
 					value = float.Parse(keyValueArray[i]);
 				}
 
-				utilities[key] = value;
+				string keyString = key.ToString();
+
+				utilities[keyString] = value;
 			}
 		}
 	}
@@ -106,7 +108,7 @@ public class QLearning {
 	// Returns the q value of a state-action tuple
 	public float getQValue (State state, StrategyType strategy) {
 
-		Key key = new Key (state, strategy);
+		string key = (new Key (state, strategy)).ToString();
 
 		if (utilities.ContainsKey (key)) {
 			return utilities [key];
@@ -160,7 +162,7 @@ public class QLearning {
 
 		// Get the key
 		float qValue;
-		Key key = new Key(state,strategy);
+		string key = (new Key(state,strategy)).ToString();
 
 		// If the key is already in the dictionary then get the current QValue otherwise set the current QValue to 0
 		if (utilities.ContainsKey (key)) {
@@ -202,7 +204,7 @@ public class QLearning {
 			foreach (StrategyType strategy in allStrategies) {
 
 				// Get the key for the dictionary and enter in 0.0
-				Key key = new Key(state,strategy);
+				string key = (new Key(state,strategy)).ToString();
 				utilities.Add(key,0.0f);
 
 			}
@@ -217,7 +219,7 @@ public class QLearning {
 	};
 
 	// Map of state-action dictionary to estimated utilities
-	Dictionary <Key, float> utilities = new Dictionary <Key, float>();
+	Dictionary <String, float> utilities = new Dictionary <String, float>();
 
 	// List of possible strategyies
 	List<StrategyType> allPossibleStrategies = new List<StrategyType> ();
