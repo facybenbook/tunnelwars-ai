@@ -17,7 +17,6 @@ using System.IO;
 public class QLearning {
 	
 	// Filename
-	public const string OpenFileName = "QValues";
 	public const string FileName = "QValues";
 
 	// The learning rate
@@ -62,7 +61,8 @@ public class QLearning {
 	// Saves the Q function to the disk
 	public void SaveData () {
 
-		FileStream file = File.Open(FileName + DateTime.Now.ToString("yyyyMMdd-HH:mm:ss"), FileMode.CreateNew, FileAccess.ReadWrite);
+		string timeSpecific = FileName + DateTime.Now.ToString("yyyyMMdd-HH,mm,ss");
+		FileStream file = File.Open(timeSpecific, FileMode.CreateNew, FileAccess.ReadWrite);
 		var writer = new StreamWriter(file);
 
 		int i = 0;
@@ -76,12 +76,15 @@ public class QLearning {
 		}
 		Debug.Log (i);
 		writer.Close();
+
+		// Copy
+		File.Copy(timeSpecific, FileName, true);
 	}
 
 	// Open the Q function thats been saved to the disk
 	public void OpenSavedData () {
 
-		var file = File.Open(FileName, FileMode.Open, FileAccess.ReadWrite);
+		FileStream file = File.Open(FileName, FileMode.Open, FileAccess.ReadWrite);
 		var reader = new StreamReader(file);
 		string line;
 
@@ -90,7 +93,8 @@ public class QLearning {
 			string[] keyValueArray = line.Split(' ');
 			Key key = new Key();
 			float value = 0.0f;
-			
+
+
 			for (int i = 0; i < keyValueArray.Length; i++) {
 
 				if (i == 0) {
@@ -104,6 +108,10 @@ public class QLearning {
 				utilities[keyString] = value;
 			}
 		}
+
+
+
+		file.Close ();
 	}
 
 	// Returns the q value of a state-action tuple
@@ -268,7 +276,7 @@ class Key {
 
 		for (int i = 0; i < l; i++) {
 			if (i < l - 1) {
-				stateString = propertyArray[i] + " ";
+				stateString += propertyArray[i] + " ";
 			} else {
 				key.state = State.FromString(stateString);
 				key.strategy = (StrategyType) Enum.Parse(typeof(StrategyType),propertyArray[i]);

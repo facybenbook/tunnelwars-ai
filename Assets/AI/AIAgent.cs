@@ -133,9 +133,6 @@ public class AIAgent : PlayerAgentBase {
 				// Get reward and update QValues if learning
 				if (IsLearning) {
 					float reward = State.Reward(previousState,strategy.Type,currentState);
-					if (previousState == null) {
-						Debug.Log ("NULL STATE");
-					}
 					QLearner.UpdateQValue(previousState,strategy.Type,currentState,reward);
 				}
 

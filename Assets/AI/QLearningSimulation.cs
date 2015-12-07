@@ -43,6 +43,7 @@ public class QLearningSimulation: MonoBehaviour {
 		float epsilon = 0.05f;
 		float discount = 0.95f;
 		qLearner = new QLearning (alpha, epsilon, discount);
+		qLearner.OpenSavedData();
 		
 		// Create 2 ai agents
 		agentList = new List<IAgent>();
@@ -61,7 +62,7 @@ public class QLearningSimulation: MonoBehaviour {
 		// Specify which iteration of games we are on
 		gameIteration = 1;
 
-		Debug.Log ("Beginning learning.  Simulating " + numberOfGames.ToString() + " games.");
+		Debug.Log ("Beginning learning.  Simulating " + numberOfGames.ToString() + " games before writing.");
 
 	}
 	
@@ -81,7 +82,7 @@ public class QLearningSimulation: MonoBehaviour {
 
 			qLearner.SaveData();
 
-			Debug.Log ("Finished saving QValues.  Closing Application.");
+			Debug.Log ("Finished saving QValues.  Restarting...");
 
 			currentWorld = null;
 
