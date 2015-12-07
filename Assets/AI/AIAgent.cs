@@ -42,9 +42,8 @@ public class Program {
 public class AIAgent : PlayerAgentBase {
 
 	// Agent parameters
-	public const int Level1StepSize = 1;
-
-	public const float Level2DangerDistanceRatio = 100.0f;
+	public const int Level1StepSize = 4;
+	
 	public const int Level2MaxNodesInPrioQueue = 10000;
 	public const int Level2MaxExpansions = 200;
 
@@ -52,13 +51,22 @@ public class AIAgent : PlayerAgentBase {
 	public Game ResourceScript { get; set; }
 
 	public AIAgent(int player) : base(player) {
+
 		playerNum = player;
 		opponentNum = playerNum == 1 ? 2 : 1;
-		level1Searcher = new DiscreteAdversarialSearch(playerNum, utilHealthHeuristic,
-		                                               getFillerAction, Level1StepSize, 4);
+
+		// Set strategy
+		strategy = Strategy.StrategyWithType(playerNum, StrategyType.DigDown);
+
+		level1Searcher = new DiscreteAdversarialSearch(playerNum,
+		                                               strategy.Level1Heuristic,
+		                                               getFillerAction,
+		                                               getNewPathIndex,
+		                                               Level1StepSize,
+		                                               4);
 		decisionTimer = 0;
-		level2Searcher = new AStar(Level2MaxNodesInPrioQueue, Level2MaxExpansions, level2CostFunction,
-		                           level2GoalFunction, level2HeuristicFunction);
+		level2Searcher = new AStar(Level2MaxNodesInPrioQueue, Level2MaxExpansions, strategy.Level2CostFunction,
+		                           strategy.Level2GoalFunction, strategy.Level2HeuristicFunction);
 		level3Timer = Level3StepSize;
 		fillerAction = WorldAction.NoAction;
 	}
@@ -69,10 +77,14 @@ public class AIAgent : PlayerAgentBase {
 		// The immediate action comes from level 1
 		WorldAction bestAction = WorldAction.NoAction;
 
-		// Calculate new level 1 action if timer is up
-		if (decisionTimer <= 0) {
+		// Update level 1 heuristic parameters
+		World.Player player = playerNum == 1 ? world.Player1 : world.Player2;
 
-			ActionWithFiller decision = level1Searcher.ComputeBestAction(world, fillerAction);
+
+		// Calculate new level 1 action if timer is up
+		if (decisionTimer <= 0 && strategy.SearchPath != null) {
+
+			ActionWithFiller decision = level1Searcher.ComputeBestAction(world, fillerAction, strategy.NextPathIndex);
 			bestAction = decision.Action;
 			fillerAction = decision.FillerAction;
 
@@ -89,16 +101,18 @@ public class AIAgent : PlayerAgentBase {
 				blockWorld = new BlockWorld(playerNum, world);
 				dangerZone = new DangerZone(opponentNum, world, blockWorld);
 
-				//Debug.Log (blockWorld.ApplicableActions().Count);
-				//Debug.Log(blockWorld.CheckActionApplicable(BlockWorldAction.Right));
+				// Must be set before using the level 2 reward, cost, and goal functions
+				strategy.Level2DangerZone = dangerZone;
 
 				// Calculate player path
-				//Debug.Log (level2HeuristicFunction(blockWorld));
 				Path path = level2Searcher.ComputeBestPath(blockWorld);
-				RenderPath(path);
 
-				dangerZone.Render(ResourceScript);
-				dangerZone.RenderPlayerBeliefs(ResourceScript);
+				// Must be set before using the level 1 heuristic
+				strategy.SearchPath = path;
+				strategy.NextPathIndex = 0;
+
+				//dangerZone.Render(ResourceScript);
+				//dangerZone.RenderPlayerBeliefs(ResourceScript);
 				level3Timer = Level3StepSize;
 			}
 		}
@@ -106,42 +120,45 @@ public class AIAgent : PlayerAgentBase {
 		decisionTimer--;
 		level3Timer--;
 
+		if (strategy.SearchPath != null) strategy.SearchPath.Render(ResourceScript, strategy.NextPathIndex);
+		/*if (strategy.SearchPath != null) {
+			int len = strategy.SearchPath.States.Count;
+			if (true) {
+
+				int targetI = strategy.SearchPath.States[len - 1].Player.I;
+				int targetJ = strategy.SearchPath.States[len - 1].Player.J;
+				float targetX = World.IToXMin(targetI); //+ World.BlockSize / 2.0f;
+				float targetY = World.JToYMin(targetJ); //+ World.BlockSize / 2.0f;
+				GameObject obj = Object.Instantiate(ResourceScript.Protopath);
+				obj.transform.position = new Vector3(targetX, targetY);
+			}
+		}*/
+		
+		// Update
+		strategy.NextPathIndex = getNewPathIndex(player, strategy.NextPathIndex);
+
 		// Return a single-valued list with the best action
 		return new List<WorldAction>() {bestAction};
 	}
-
-	// Render the level 2 path
-	void RenderPath(Path path) {
-
-		if (path == null) return;
-
-		foreach (BlockWorld world in path.States) {
-			BlockWorld.BlockPlayer player = world.Player;
-			GameObject obj = Object.Instantiate(ResourceScript.Protopath);
-			obj.transform.position = new Vector3(player.I * World.BlockSize, player.J * World.BlockSize + World.FloorLevel);
-			SpriteRenderer renderer = obj.GetComponent<SpriteRenderer>();
-			renderer.color = new Color(1.0f, 1.0f, 1.0f, 0.25f);
-		}
-	}
-
 
 
 	// Number of the player
 	int playerNum;
 	int opponentNum;
 
-	// Our adversarial searcher for level 1
+	// Level 1
 	DiscreteAdversarialSearch level1Searcher;
 	int decisionTimer;
 	WorldAction fillerAction;
 
-	// Level 2 - The danger zone of the opponent
+	// Level 2
 	DangerZone dangerZone;
 	BlockWorld blockWorld;
 	AStar level2Searcher;
 
-	// Time until action must end TODO take out
+	// Level 3
 	int level3Timer;
+	Strategy strategy;
 
 	// Defines the association between level 1 actions and filler actions
 	WorldAction getFillerAction(WorldAction action, WorldAction prevFillerAction) {
@@ -154,68 +171,29 @@ public class AIAgent : PlayerAgentBase {
 		}
 	}
 
-	// A heuristic estimating the utility of a state based on distance between the players,
-	// ammunition, and master mode
-	float utilDistanceHeuristic(World state) {
-		
-		World.Player currentPlayer = playerNum == 1 ? state.Player1 : state.Player2;
-		World.Player opponentPlayer = playerNum == 1 ? state.Player2 : state.Player1;
-		
-		float d = Util.ManhattanDistance(currentPlayer.X, currentPlayer.Y, opponentPlayer.X, opponentPlayer.Y);
-		
-		// Determine whether to charge the player
-		float distanceScalar = 0.0f;
-		if (opponentPlayer.IsMaster && !currentPlayer.IsMaster) {
-			distanceScalar = 1.0f;
-		} else if (currentPlayer.IsMaster && !opponentPlayer.IsMaster) {
-			distanceScalar = -1.0f;
-		} else if (currentPlayer.Ammo < opponentPlayer.Ammo) {
-			distanceScalar = 1.0f;
-		} else if (currentPlayer.Ammo >= opponentPlayer.Ammo) {
-			distanceScalar = -1.0f;
-		}
-		
-		return d * distanceScalar / 3000.0f;
-	}
-	
-	// The most robust heuristic, drawing upon the distance heuristic
-	float utilHealthHeuristic(World state) {
-		
-		World.Player currentPlayer = playerNum == 1 ? state.Player1 : state.Player2;
-		World.Player opponentPlayer = playerNum == 1 ? state.Player2 : state.Player1;
+	// Returns the path index - the index of the next path node to target given the current player
+	int getNewPathIndex(World.Player player, int currentIndex) {
 
-		float util = currentPlayer.Health / 200.0f - opponentPlayer.Health / 200.0f + 
-			utilDistanceHeuristic(state) * 0.05f;
-		if (!currentPlayer.IsMaster && !opponentPlayer.IsMaster) util += (currentPlayer.Ammo - opponentPlayer.Ammo) / 3.0f * 0.1f;
-		return util;
-	}
+		if (strategy.SearchPath == null) return currentIndex;
+		int pathLength = strategy.SearchPath.States.Count;
 
-	// Level 2 functions
-	float level2CostFunction(BlockWorld blockWorld) {
-		//return 1.0f;
-		return 1.0f + Level2DangerDistanceRatio * dangerZone.CheckDanger(blockWorld.Player.I, blockWorld.Player.J);
-	}
-	bool level2GoalFunction(BlockWorld blockWorld) {
-		//return blockWorld.Player.I == 0;
-		return blockWorld.JustCollectedAmmo;
-	}
-	float level2HeuristicFunction(BlockWorld blockWorld) {
+		// Get target
+		for (int i = 0; i + currentIndex < pathLength; i++) {
 
-		//return 0.0f;
-		//return blockWorld.Player.I;
-
-		BlockWorld.BlockPlayer player = blockWorld.Player;
-
-		// Return distance to nearest ammo
-		float minDistance = float.MaxValue;
-		foreach (BlockWorld.BlockPowerup powerup in blockWorld.Powerups) {
-
-			float d = Util.ManhattanDistance(powerup.I, powerup.J, player.I, player.J);
-			if (d < minDistance) {
-				minDistance = d;
+			BlockWorld targetWorld = strategy.SearchPath.States[currentIndex + i];
+			int targetI = targetWorld.Player.I;
+			int targetJ = targetWorld.Player.J;
+			
+			int playerI = World.XToI(player.X);
+			int playerJ = World.YToJ(player.Y);
+			
+			// If the player is touching the next path coord, then return the index of the new path coord
+			if (playerI == targetI && playerJ == targetJ) {
+				return currentIndex + i + 1;
 			}
+
 		}
 
-		return minDistance;
+		return currentIndex;
 	}
 }

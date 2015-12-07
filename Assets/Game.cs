@@ -65,6 +65,7 @@ public class Game : MonoBehaviour {
 		//obj = new QLearning (0.5f, 0.5f, 0.5f);
 		//obj.OpenSavedData ();
 		//Debug.Log("OPENED SAVED DATA");
+
 	}
 
 	// Called every frame

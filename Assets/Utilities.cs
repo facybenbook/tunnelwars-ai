@@ -33,6 +33,14 @@ public static class Util {
 
 		return 1.0f - 1.0f / ((ManhattanDistance(x1, y1, x2, y2) / k) + 1.0f);
 	}
+	public static float BoundedInverseDistance(float x1, float y1, float x2, float y2, float k=600) {
+		
+		return 1.0f / ((Distance(x1, y1, x2, y2) / k) + 1.0f);
+	}
+	public static float BoundedInverseManhattanDistance(float x1, float y1, float x2, float y2, float k=600) {
+		
+		return 1.0f / ((ManhattanDistance(x1, y1, x2, y2) / k) + 1.0f);
+	}
 
 	// Integer exponentiation
 	public static int IntPow(int x, uint pow) {

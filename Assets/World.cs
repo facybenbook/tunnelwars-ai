@@ -346,6 +346,12 @@ public class WorldWithGround {
 	public static int YToJ(float y) {
 		return Mathf.FloorToInt((y - FloorLevel) / BlockSize);
 	}
+	public static float IToXMin(int i) {
+		return i * BlockSize;
+	}
+	public static float JToYMin(int j) {
+		return j * BlockSize + FloorLevel;
+	}
 
 	// Checks the ground at a point
 	public bool CheckGround(float x, float y) {
