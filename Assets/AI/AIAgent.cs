@@ -124,11 +124,18 @@ public class AIAgent : PlayerAgentBase {
 			    || dangerZoneShifted(world) || playerLeftPath(world, strategy.SearchPath)
 			    || boredomTimer == 0) {
 
+				if (isFirstTime) {
+					previousState = currentState;
+				}
+
 				isFirstTime = false;
 
 				// Get reward and update QValues if learning
 				if (IsLearning) {
 					float reward = State.Reward(previousState,strategy.Type,currentState);
+					if (previousState == null) {
+						Debug.Log ("NULL STATE");
+					}
 					QLearner.UpdateQValue(previousState,strategy.Type,currentState,reward);
 				}
 

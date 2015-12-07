@@ -9,6 +9,8 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
+using System.IO;
 
 public class QLearningSimulation: MonoBehaviour {
 
@@ -59,6 +61,21 @@ public class QLearningSimulation: MonoBehaviour {
 		// Specify which iteration of games we are on
 		gameIteration = 1;
 
+		FileStream file = File.Open("Test" + DateTime.Now.ToString("yyyyMMdd-HH:mm:ss"), FileMode.CreateNew, FileAccess.ReadWrite);
+		var writer = new StreamWriter(file);
+		
+		int i = 0;
+		var list = new List<int>(){3, 5, 10, 11};
+		writer.Write(" START ");
+		foreach (int a in list) {
+
+			string value = a.ToString();
+
+			writer.WriteLine(value + " HELLO \n");
+		}
+		
+		writer.Close();
+
 		Debug.Log ("Beginning learning.  Simulating " + numberOfGames.ToString() + " games.");
 
 	}
@@ -66,12 +83,14 @@ public class QLearningSimulation: MonoBehaviour {
 	// Called every frame
 	void Update () {
 
+		if (currentWorld == null) return;
+
 		// Learning is over
 		if (currentWorld.IsTerminal () && gameIteration == numberOfGames) {
 
 			float termUtil = currentWorld.TerminalUtility();
 			int winnerNum = termUtil == 1 ? 1 : 2;
-			Debug.Log ("Player " + winnerNum.ToString () + " WINS! WOOOOOO");
+			Debug.Log ("Player " + winnerNum.ToString () + " WINS!");
 
 			Debug.Log ("Learning finished.  Saving QValues...");
 
@@ -79,11 +98,16 @@ public class QLearningSimulation: MonoBehaviour {
 
 			Debug.Log ("Finished saving QValues.  Closing Application.");
 
+			currentWorld = null;
 			Application.Quit();
 		}
 		// Game is over but learning continues
 		else if (currentWorld.IsTerminal() && gameIteration < numberOfGames) {
 
+			float termUtil = currentWorld.TerminalUtility();
+			int winnerNum = termUtil == 1 ? 1 : 2;
+			Debug.Log ("Player " + winnerNum.ToString () + " WINS!");
+			
 			Debug.Log("Finished game " + gameIteration.ToString() + " of " + numberOfGames.ToString() + ".");
 
 			gameIteration += 1;
