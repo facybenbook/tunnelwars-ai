@@ -108,9 +108,9 @@ public class AStar {
 			Path path = frontier.Dequeue();
 			BlockWorld lastWorld = path.Last();
 
-			// Return the path. It is expanded so it must be one of the better ones
+			// Return the no path
 			if (expansions > MaxExpansions) {
-				return path;
+				return null;
 			}
 
 			// Check goal

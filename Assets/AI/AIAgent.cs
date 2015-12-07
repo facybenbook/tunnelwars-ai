@@ -65,7 +65,7 @@ public class AIAgent : PlayerAgentBase {
 		IsLearning = false;
 
 		// Set strategy
-		strategy = Strategy.StrategyWithType(playerNum, StrategyType.DigDown);
+		strategy = Strategy.StrategyWithType(playerNum, StrategyType.RunAway);
 
 		level1Searcher = new DiscreteAdversarialSearch(playerNum,
 		                                               strategy.Level1Heuristic,

@@ -30,7 +30,7 @@ public abstract class Strategy {
 	public const float Level2DangerDistanceRatio = 100.0f;
 
 	// The distance away that is adequate for the "run away" strategy
-	public const float RunAwayBlockDistance = 30;
+	public const float RunAwayBlockDistance = 15;
 
 
 	// The enumerated identity of the strategy
@@ -72,40 +72,33 @@ public abstract class Strategy {
 
 		// Compute normalized factors
 		float dHealth = (currentPlayer.Health - opponentPlayer.Health) / 200.0f;
-		float dAmmo = currentPlayer.Ammo - opponentPlayer.Ammo;
-		if (currentPlayer.IsMaster || opponentPlayer.IsMaster) dAmmo = 0.0f;
+		float dAmmo = (currentPlayer.Ammo/* - opponentPlayer.Ammo*/) / 3.0f;
+		if (currentPlayer.IsMaster) dAmmo = 0.0f; // Ammo is not a concern when master
 		float normalizedInverseDist = Util.BoundedInverseDistance(currentPlayer.X, currentPlayer.Y,
 		                                                     			   opponentPlayer.X, opponentPlayer.Y);
 
 		// Normalized level 2 conformance
 		float normalizedConformance = 0.0f;
-		int pathLength = SearchPath.States.Count;
+		if (SearchPath != null) {
+			int pathLength = SearchPath.States.Count;
 
-		// The real target depth may not exceed the end of the path
-		int targetDepth = pathLength - pathIndex - 1 < PathTargetDepth ? pathLength - pathIndex - 1: PathTargetDepth;
+			// The real target depth may not exceed the end of the path
+			int targetDepth = pathLength - pathIndex - 1 < PathTargetDepth ? pathLength - pathIndex - 1: PathTargetDepth;
 
-		if (pathIndex < pathLength) {
-			int i = pathIndex + targetDepth;
+			if (pathIndex < pathLength) {
+				int i = pathIndex + targetDepth;
 
-			int targetI = SearchPath.States[i].Player.I;
-			int targetJ = SearchPath.States[i].Player.J;
-			float targetX = World.IToXMin(targetI) + World.BlockSize / 2.0f;
-			float targetY = World.JToYMin(targetJ) + World.BlockSize / 2.0f;
+				int targetI = SearchPath.States[i].Player.I;
+				int targetJ = SearchPath.States[i].Player.J;
+				float targetX = World.IToXMin(targetI) + World.BlockSize / 2.0f;
+				float targetY = World.JToYMin(targetJ) + World.BlockSize / 2.0f;
+				float weight = ((float)i) / pathLength;
+				normalizedConformance += Util.BoundedInverseDistance(currentPlayer.X, currentPlayer.Y,
+				                                                      targetX, targetY) * weight;
 
-			/*int opponentI = World.XToI(opponentPlayer.X);
-			int opponentJ = World.YToJ(opponentPlayer.Y);
-
-			int playerI = World.XToI (currentPlayer.X);
-			int playerJ = World.YToJ (currentPlayer.Y);*/
-
-			//float weight = heuristicPathWeight(pathLength - i);
-			float weight = ((float)i) / pathLength;
-
-			normalizedConformance += Util.BoundedInverseDistance(currentPlayer.X, currentPlayer.Y,
-			                                                      targetX, targetY) * weight;
-
+			}
+			normalizedConformance *= oneOverXSquaredNormalizationFactor;
 		}
-		normalizedConformance *= oneOverXSquaredNormalizationFactor;
 
 
 		// Return weighted sum of influences
@@ -135,20 +128,15 @@ public abstract class Strategy {
 	protected float level1SuperlevelWeight; // How much to conform with the directions of level 2
 	// What about speed and grav?
 
-	// The interpolation function between level 2 path points. Converges to pi^2 / 6
-	protected float heuristicPathWeight(int distanceFromLast) {
-		return 1.0f / (distanceFromLast * distanceFromLast);
-	}
-
 }
 
 public class AttackStrategy : Strategy {
 
 	public AttackStrategy(int playerNum) : base(playerNum) {
-		level1HealthWeight = 0.0f;//10.0f;
-		level1AmmoWeight = 0.0f;
-		level1ConfrontationWeight = 1.0f;
-		level1SuperlevelWeight = 0.0f;// 1.0f;
+		level1HealthWeight = 0.25f;
+		level1AmmoWeight = 0.1f;
+		level1ConfrontationWeight = 0.005f;
+		level1SuperlevelWeight = 0.02f;
 	}
 	
 	override public float Level2CostFunction(BlockWorld blockWorld) {
@@ -172,10 +160,10 @@ public class AttackStrategy : Strategy {
 public class RunAwayStrategy : Strategy {
 
 	public RunAwayStrategy(int playerNum) : base(playerNum) {
-		level1HealthWeight = 100.0f;
-		level1AmmoWeight = 1.0f;
-		level1ConfrontationWeight = -1.0f;
-		level1SuperlevelWeight = 1.0f;
+		level1HealthWeight = 0.25f;
+		level1AmmoWeight = 0.1f;
+		level1ConfrontationWeight = -0.005f;
+		level1SuperlevelWeight = 0.02f;
 	}
 	
 	override public float Level2CostFunction(BlockWorld blockWorld) {
@@ -193,10 +181,10 @@ public class RunAwayStrategy : Strategy {
 		}
 
 		// Enforce no ground above
-		bool groundAbove = true;
+		bool groundAbove = false;
 		for (int j = playerJ; j >= 0; j--) {
 			if (blockWorld.CheckGroundByIndex(playerI, j)) {
-				groundAbove = false;
+				groundAbove = true;
 				break;
 			}
 		}
@@ -222,10 +210,10 @@ public class GetAmmoStrategy : Strategy {
 
 	public GetAmmoStrategy(int playerNum) : base(playerNum) {
 
-		level1HealthWeight = 10.0f;
-		level1AmmoWeight = 1.0f;
+		level1HealthWeight = 0.25f;
+		level1AmmoWeight = 0.1f;
 		level1ConfrontationWeight = 0.0f;
-		level1SuperlevelWeight = 1.0f;
+		level1SuperlevelWeight = 0.02f;
 	}
 	
 	override public float Level2CostFunction(BlockWorld blockWorld) {
@@ -256,20 +244,20 @@ public class DigDownStrategy : Strategy {
 
 	public DigDownStrategy(int playerNum) : base(playerNum) {
 		
-		level1HealthWeight = 0.0f;//10.0f;
-		level1AmmoWeight = 0.0f;//0.5f;
+		level1HealthWeight = 0.25f;
+		level1AmmoWeight = 0.1f;
 		level1ConfrontationWeight = 0.0f;
-		level1SuperlevelWeight = 1.0f;
+		level1SuperlevelWeight = 0.05f;
 	}
 	
 	override public float Level2CostFunction(BlockWorld blockWorld) {
 		return 1.0f + Level2DangerDistanceRatio * Level2DangerZone.CheckDanger(blockWorld.Player.I, blockWorld.Player.J);
 	}
 	override public bool Level2GoalFunction(BlockWorld blockWorld) {
-		return blockWorld.Player.J >= 2; //World.WallDepthJ;
+		return blockWorld.Player.J >= World.WallDepthJ;
 	}
 	override public float Level2HeuristicFunction(BlockWorld blockWorld) {
-		return 2 - blockWorld.Player.J;//World.WallDepthJ - blockWorld.Player.J;
+		return World.WallDepthJ - blockWorld.Player.J;
 	}
 	
 }

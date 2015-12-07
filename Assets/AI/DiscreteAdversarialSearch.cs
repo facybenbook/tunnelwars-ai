@@ -133,10 +133,10 @@ class DiscreteAdversarialSearch {
 		// Use heuristic for over max depth
 		if (depth > SearchDepth) {
 			// Uncomment below to check heuristic bounds between -1 and 1
-			//float h = Heuristic(state);
-			//if (h > 1.0f || h < -1.0f) Debug.LogWarning("Heuristic has magnitude greater than 1!");
-			//return h;
-			return Heuristic(state, currentPathIndex);
+			float h = Heuristic(state, currentPathIndex);
+			if (h > 1.0f || h < -1.0f) Debug.LogWarning("Heuristic has magnitude greater than 1!");
+			return h;
+			//return Heuristic(state, currentPathIndex);
 		}
 		
 		if (isOpponentsTurn) {
