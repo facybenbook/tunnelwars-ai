@@ -46,6 +46,8 @@ public class AIAgent : PlayerAgentBase {
 	
 	public const int Level2MaxNodesInPrioQueue = 10000;
 	public const int Level2MaxExpansions = 200;
+	public const int DangerZoneRecalcDistance = DangerZone.DistributionSteps;
+	public const float PathDeviationRecalcDistance = World.BlocksHeight * 6;
 
 	public const int Level3StepSize = 20;
 	public Game ResourceScript { get; set; }
@@ -76,7 +78,6 @@ public class AIAgent : PlayerAgentBase {
 		decisionTimer = 0;
 		level2Searcher = new AStar(Level2MaxNodesInPrioQueue, Level2MaxExpansions, strategy.Level2CostFunction,
 		                           strategy.Level2GoalFunction, strategy.Level2HeuristicFunction);
-		level3Timer = Level3StepSize;
 		fillerAction = WorldAction.NoAction;
 		isFirstTime = true;
 	}
@@ -146,7 +147,6 @@ public class AIAgent : PlayerAgentBase {
 		}
 	
 		decisionTimer--;
-		level3Timer--;
 
 		if (strategy.SearchPath != null) strategy.SearchPath.Render(ResourceScript, strategy.NextPathIndex);
 		/*if (strategy.SearchPath != null) {
@@ -185,7 +185,6 @@ public class AIAgent : PlayerAgentBase {
 	AStar level2Searcher;
 
 	// Level 3
-	int level3Timer;
 	Strategy strategy;
 	State previousState;
 	bool isFirstTime;
@@ -226,4 +225,35 @@ public class AIAgent : PlayerAgentBase {
 
 		return currentIndex;
 	}
+
+	// Checks if the enemy player has changed position
+	bool dangerZoneShifted(World world) {
+
+		World.Player opponent = playerNum == 1 ? world.Player2 : world.Player1;
+		int opponentI = World.XToI(opponent.X);
+		int opponentJ = World.YToJ(opponent.Y);
+		return Util.ManhattanDistance(opponentI, opponentJ,
+		                              dangerZone.SourceI, dangerZone.SourceJ) > DangerZoneRecalcDistance;
+	}
+
+	// Checks if player left path
+	bool playerLeftPath(World world, Path path) {
+
+		if (path != null) {
+			World.Player player = playerNum == 1 ? world.Player1 : world.Player2;
+			float cutOffSquared = PathDeviationRecalcDistance * PathDeviationRecalcDistance;
+
+			foreach (BlockWorld blockWorld in path.States) {
+				int pathI = blockWorld.Player.I;
+				int pathJ = blockWorld.Player.J;
+				float pathX = World.IToXMin(pathI) + World.BlockSize / 2.0f;
+				float pathY = World.JToYMin(pathJ) + World.BlockSize / 2.0f;
+				if (Util.SquareDistance(player.X, player.Y, pathX, pathY) > cutOffSquared) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 }

@@ -306,7 +306,7 @@ public class State {
 	}
 
 	public static float Reward (State initState, StrategyType strategy, State resultState) {
-		return 0.0f;
+		return resultState.health - resultState.enemyHealth;
 	}
 
 	
