@@ -87,27 +87,10 @@ public class QLearningSimulation: MonoBehaviour {
 
 			// Advance world using our agents
 			List<WorldAction> actions = new List<WorldAction>();
-			int playerNum = 1;
 
 			foreach (IAgent agent in agentList) {
 
-				// Get the simplified world representation (state) and compute a strategy from QValues
-				State initialState = new State(currentWorld,playerNum);
-				StrategyType strategy = qLearner.GetStrategy(initialState);
-
 				actions.AddRange(agent.GetAction(currentWorld));
-
-				// Get the resulting state
-				State resultState = new State(currentWorld,playerNum);
-
-				// If the result state is not the same as the initial state
-				if (! initialState.IsEquivalent(resultState)) {
-					float reward = State.Reward(initialState,strategy,resultState);
-					qLearner.UpdateQValue(initialState,strategy,resultState,reward);
-				}
-
-				// Update the player
-				playerNum++;
 			}
 			
 			currentWorld.Advance(actions);

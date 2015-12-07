@@ -49,11 +49,20 @@ public class AIAgent : PlayerAgentBase {
 
 	public const int Level3StepSize = 20;
 	public Game ResourceScript { get; set; }
+	public QLearning qLearner;
+	public bool IsLearning;
 
 	public AIAgent(int player) : base(player) {
 
 		playerNum = player;
 		opponentNum = playerNum == 1 ? 2 : 1;
+
+		// Get qLearner
+		float alpha = 0.5f;
+		float epsilon = 0.3f;
+		float discount = 0.95f;
+		qLearner = new QLearning (alpha, epsilon, discount);
+		IsLearning = false;
 
 		// Set strategy
 		strategy = Strategy.StrategyWithType(playerNum, StrategyType.DigDown);
@@ -69,6 +78,7 @@ public class AIAgent : PlayerAgentBase {
 		                           strategy.Level2GoalFunction, strategy.Level2HeuristicFunction);
 		level3Timer = Level3StepSize;
 		fillerAction = WorldAction.NoAction;
+		isFirstTime = true;
 	}
 
 	// The center of the AI - get an action
@@ -82,7 +92,7 @@ public class AIAgent : PlayerAgentBase {
 
 
 		// Calculate new level 1 action if timer is up
-		if (decisionTimer <= 0 && strategy.SearchPath != null) {
+		if (decisionTimer <= 0) {
 
 			ActionWithFiller decision = level1Searcher.ComputeBestAction(world, fillerAction, strategy.NextPathIndex);
 			bestAction = decision.Action;
@@ -95,26 +105,44 @@ public class AIAgent : PlayerAgentBase {
 			bestAction = fillerAction;
 
 			// Update level three in a fast frame
-			if (level3Timer <= 0) {
 
-				// Create block world and danger zone
-				blockWorld = new BlockWorld(playerNum, world);
-				dangerZone = new DangerZone(opponentNum, world, blockWorld);
+			// Create block world and danger zone
+			blockWorld = new BlockWorld(playerNum, world);
+			dangerZone = new DangerZone(opponentNum, world, blockWorld);
 
-				// Must be set before using the level 2 reward, cost, and goal functions
-				strategy.Level2DangerZone = dangerZone;
+			// Get currentState
+			State currentState = new State(world,playerNum);
 
-				// Calculate player path
-				Path path = level2Searcher.ComputeBestPath(blockWorld);
+			// Check if this is the first time GetAction has been called or if one of the cases for changing strategies is hit
+			if (isFirstTime || (!previousState.IsEquivalent(currentState))) {
 
-				// Must be set before using the level 1 heuristic
-				strategy.SearchPath = path;
-				strategy.NextPathIndex = 0;
+				// Get reward and update QValues if learning
+				if (IsLearning) {
+					float reward = State.Reward(previousState,strategy.Type,currentState);
+					qLearner.UpdateQValue(previousState,strategy.Type,currentState,reward);
+				}
 
-				//dangerZone.Render(ResourceScript);
-				//dangerZone.RenderPlayerBeliefs(ResourceScript);
-				level3Timer = Level3StepSize;
+				// Get a new strategy
+				StrategyType newStrategy = qLearner.GetStrategy(currentState);
+				strategy = Strategy.StrategyWithType(playerNum, newStrategy);
+
+				// Reset previous state
+				previousState = currentState;
 			}
+		
+			// Must be set before using the level 2 reward, cost, and goal functions
+			strategy.Level2DangerZone = dangerZone;
+
+			// Calculate player path
+			Path path = level2Searcher.ComputeBestPath(blockWorld);
+		
+			// Must be set before using the level 1 heuristic
+			strategy.SearchPath = path;
+			strategy.NextPathIndex = 0;
+
+			//dangerZone.Render(ResourceScript);
+			//dangerZone.RenderPlayerBeliefs(ResourceScript);
+
 		}
 	
 		decisionTimer--;
@@ -159,6 +187,8 @@ public class AIAgent : PlayerAgentBase {
 	// Level 3
 	int level3Timer;
 	Strategy strategy;
+	State previousState;
+	bool isFirstTime;
 
 	// Defines the association between level 1 actions and filler actions
 	WorldAction getFillerAction(WorldAction action, WorldAction prevFillerAction) {

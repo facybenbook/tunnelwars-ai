@@ -51,7 +51,9 @@ public class State {
 
 	// YCloseness to Enemy
 	public YCloseness YDistanceToEnemy { get; set; }
-	
+
+
+
 	// Initialization method that simplifies a world into a state
 	public State (World world, int playerNum) {
 
@@ -81,6 +83,8 @@ public class State {
 		// Set the player and enemy health
 		health = player.Health;
 		enemyHealth = enemy.Health;
+
+		//
 	}
 
 	public State () {
@@ -305,7 +309,7 @@ public class State {
 		return 0.0f;
 	}
 
-
+	
 
 
 	// Takes in a world and a direction and checks if there is a ground between the two players in that direction
