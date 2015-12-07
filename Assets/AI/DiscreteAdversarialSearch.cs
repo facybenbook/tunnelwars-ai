@@ -86,6 +86,7 @@ class DiscreteAdversarialSearch {
 			}
 
 			// Calculate utility and update maximum
+			//float utility = 0.0f;
 			float utility = calculateUtility(newState, 0, true, float.MinValue, float.MaxValue, potentialFillerAction,
 			                                 currentPathIndex);
 			
@@ -194,7 +195,7 @@ class DiscreteAdversarialSearch {
 				World newState = state.Clone();
 				World.Player newCurrentPlayer = playerNum == 1 ? newState.Player1 : newState.Player2;
 				newCurrentPlayer.Advance(new List<WorldAction>(){action});
-				//newState.Advance(emptyList, false, false);
+				newState.Advance(emptyList, false, false);
 				//currentPathIndex = PathIndexFunction(newCurrentPlayer, currentPathIndex);
 				
 				// Do filler action
@@ -202,7 +203,7 @@ class DiscreteAdversarialSearch {
 				List<WorldAction> fillerActionList = new List<WorldAction>(){potentialFillerAction};
 				for (int i = 0; i < StepSize - 1; i++) {
 					newCurrentPlayer.Advance(fillerActionList);
-					//newState.Advance(emptyList, false, false);
+					newState.Advance(emptyList, false, false);
 					//currentPathIndex = PathIndexFunction(newCurrentPlayer, currentPathIndex);
 				}
 

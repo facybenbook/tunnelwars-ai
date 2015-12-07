@@ -53,11 +53,11 @@ public class AIAgent : PlayerAgentBase {
 
 	public AIAgent(int player) : base(player) {
 
-		// Set strategy
-		strategy = Strategy.StrategyWithType(playerNum, StrategyType.Attack);
-
 		playerNum = player;
 		opponentNum = playerNum == 1 ? 2 : 1;
+
+		// Set strategy
+		strategy = Strategy.StrategyWithType(playerNum, StrategyType.DigDown);
 
 		level1Searcher = new DiscreteAdversarialSearch(playerNum,
 		                                               strategy.Level1Heuristic,
@@ -83,7 +83,7 @@ public class AIAgent : PlayerAgentBase {
 
 
 		// Calculate new level 1 action if timer is up
-		if (decisionTimer <= 0 && strategy.Path != null) {
+		if (decisionTimer <= 0 && strategy.SearchPath != null) {
 
 			ActionWithFiller decision = level1Searcher.ComputeBestAction(world, fillerAction, strategy.NextPathIndex);
 			bestAction = decision.Action;
@@ -109,7 +109,7 @@ public class AIAgent : PlayerAgentBase {
 				Path path = level2Searcher.ComputeBestPath(blockWorld);
 
 				// Must be set before using the level 1 heuristic
-				strategy.Path = path;
+				strategy.SearchPath = path;
 				strategy.NextPathIndex = 0;
 
 				//dangerZone.Render(ResourceScript);
@@ -121,18 +121,19 @@ public class AIAgent : PlayerAgentBase {
 		decisionTimer--;
 		level3Timer--;
 
-		if (strategy.Path != null) strategy.Path.Render(ResourceScript, 5);
-		if (strategy.Path != null) {
-			if (strategy.Path.States.Count > 5) {
+		if (strategy.SearchPath != null) strategy.SearchPath.Render(ResourceScript, strategy.NextPathIndex);
+		/*if (strategy.SearchPath != null) {
+			int len = strategy.SearchPath.States.Count;
+			if (true) {
 
-				int targetI = strategy.Path.States[5].Player.I;
-				int targetJ = strategy.Path.States[5].Player.J;
-				float targetX = World.IToXMin(targetI) + World.BlockSize / 2.0f;
-				float targetY = World.JToYMin(targetJ) + World.BlockSize / 2.0f;
+				int targetI = strategy.SearchPath.States[len - 1].Player.I;
+				int targetJ = strategy.SearchPath.States[len - 1].Player.J;
+				float targetX = World.IToXMin(targetI); //+ World.BlockSize / 2.0f;
+				float targetY = World.JToYMin(targetJ); //+ World.BlockSize / 2.0f;
 				GameObject obj = Object.Instantiate(ResourceScript.Protopath);
 				obj.transform.position = new Vector3(targetX, targetY);
 			}
-		}
+		}*/
 		
 		// Update
 		strategy.NextPathIndex = getNewPathIndex(player, strategy.NextPathIndex);
@@ -174,13 +175,13 @@ public class AIAgent : PlayerAgentBase {
 	// Returns the path index - the index of the next path node to target given the current player
 	int getNewPathIndex(World.Player player, int currentIndex) {
 
-		if (strategy.Path == null) return currentIndex;
-		int pathLength = strategy.Path.States.Count;
+		if (strategy.SearchPath == null) return currentIndex;
+		int pathLength = strategy.SearchPath.States.Count;
 
 		// Get target
-		for (int i = 0; i < Strategy.MaxPathPointsWithInfluence && i + currentIndex < pathLength; i++) {
+		for (int i = 0; i + currentIndex < pathLength; i++) {
 
-			BlockWorld targetWorld = strategy.Path.States[currentIndex + i];
+			BlockWorld targetWorld = strategy.SearchPath.States[currentIndex + i];
 			int targetI = targetWorld.Player.I;
 			int targetJ = targetWorld.Player.J;
 			
