@@ -43,8 +43,7 @@ public class AIAgent : PlayerAgentBase {
 
 	// Agent parameters
 	public const int Level1StepSize = 4;
-
-	public const float Level2DangerDistanceRatio = 100.0f;
+	
 	public const int Level2MaxNodesInPrioQueue = 10000;
 	public const int Level2MaxExpansions = 200;
 
