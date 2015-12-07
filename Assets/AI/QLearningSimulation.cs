@@ -61,21 +61,6 @@ public class QLearningSimulation: MonoBehaviour {
 		// Specify which iteration of games we are on
 		gameIteration = 1;
 
-		FileStream file = File.Open("Test" + DateTime.Now.ToString("yyyyMMdd-HH:mm:ss"), FileMode.CreateNew, FileAccess.ReadWrite);
-		var writer = new StreamWriter(file);
-		
-		int i = 0;
-		var list = new List<int>(){3, 5, 10, 11};
-		writer.Write(" START ");
-		foreach (int a in list) {
-
-			string value = a.ToString();
-
-			writer.WriteLine(value + " HELLO \n");
-		}
-		
-		writer.Close();
-
 		Debug.Log ("Beginning learning.  Simulating " + numberOfGames.ToString() + " games.");
 
 	}
