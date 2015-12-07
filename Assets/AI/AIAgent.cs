@@ -56,7 +56,7 @@ public class AIAgent : PlayerAgentBase {
 		opponentNum = playerNum == 1 ? 2 : 1;
 
 		// Set strategy
-		strategy = Strategy.StrategyWithType(playerNum, StrategyType.DigDown);
+		strategy = Strategy.StrategyWithType(playerNum, StrategyType.RunAway);
 
 		level1Searcher = new DiscreteAdversarialSearch(playerNum,
 		                                               strategy.Level1Heuristic,
@@ -82,7 +82,7 @@ public class AIAgent : PlayerAgentBase {
 
 
 		// Calculate new level 1 action if timer is up
-		if (decisionTimer <= 0 && strategy.SearchPath != null) {
+		if (decisionTimer <= 0) {
 
 			ActionWithFiller decision = level1Searcher.ComputeBestAction(world, fillerAction, strategy.NextPathIndex);
 			bestAction = decision.Action;
