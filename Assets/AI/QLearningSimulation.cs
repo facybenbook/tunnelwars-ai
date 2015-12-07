@@ -84,7 +84,9 @@ public class QLearningSimulation: MonoBehaviour {
 			Debug.Log ("Finished saving QValues.  Closing Application.");
 
 			currentWorld = null;
-			Application.Quit();
+
+			// Restart don't quit
+			Application.LoadLevel(0);
 		}
 		// Game is over but learning continues
 		else if (currentWorld.IsTerminal() && gameIteration < numberOfGames) {
