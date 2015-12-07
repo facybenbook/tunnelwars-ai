@@ -1,4 +1,4 @@
-﻿/*
+﻿ /*
  * StrategyType.cs
  * 
  * The Strategy class encapsulates all strategy-specific logic. A strategy influences
@@ -24,7 +24,7 @@ public enum StrategyType {
 public abstract class Strategy {
 
 	// The max number of path points that have influence on level 1
-	public const int MaxPathPointsWithInfluence = 5;
+	public const int PathTargetDepth = 2;
 
 	// Level two - increase to give priority to danger over distance of path
 	public const float Level2DangerDistanceRatio = 100.0f;
@@ -37,7 +37,7 @@ public abstract class Strategy {
 	public StrategyType Type { get { return type; } }
 
 	// Must be set before using the level 1 heuristic
-	public Path Path { get; set; }
+	public Path SearchPath { get; set; }
 	public int NextPathIndex { get; set; }
 
 	// Must be set before using the level 2 reward, cost, and goal functions
@@ -79,31 +79,33 @@ public abstract class Strategy {
 
 		// Normalized level 2 conformance
 		float normalizedConformance = 0.0f;
-		int pathLength = Path.States.Count;
-		if (MaxPathPointsWithInfluence < pathLength) {
-			int targetI = Path.States[MaxPathPointsWithInfluence].Player.I;
-			int targetJ = Path.States[MaxPathPointsWithInfluence].Player.J;
-			float targetX = World.IToXMin(targetI) + Random.Range (0.0f, World.BlockSize);
-			float targetY = World.JToYMin(targetJ) + Random.Range (0.0f, World.BlockSize);
+		int pathLength = SearchPath.States.Count;
 
-			targetX = World.IToXMin(World.XToI(opponentPlayer.X)) + World.BlockSize / 2;
-			targetY = World.JToYMin(World.XToI(opponentPlayer.Y)) + World.BlockSize / 2;
+		// The real target depth may not exceed the end of the path
+		int targetDepth = pathLength - pathIndex - 1 < PathTargetDepth ? pathLength - pathIndex - 1: PathTargetDepth;
 
-			normalizedConformance = -Util.Distance(currentPlayer.X, currentPlayer.Y,
-			                                                    targetX, targetY);
+		if (pathIndex < pathLength) {
+			int i = pathIndex + targetDepth;
 
-			return normalizedConformance;
+			int targetI = SearchPath.States[i].Player.I;
+			int targetJ = SearchPath.States[i].Player.J;
+			float targetX = World.IToXMin(targetI) + World.BlockSize / 2.0f;
+			float targetY = World.JToYMin(targetJ) + World.BlockSize / 2.0f;
+
+			/*int opponentI = World.XToI(opponentPlayer.X);
+			int opponentJ = World.YToJ(opponentPlayer.Y);
+
+			int playerI = World.XToI (currentPlayer.X);
+			int playerJ = World.YToJ (currentPlayer.Y);*/
+
+			//float weight = heuristicPathWeight(pathLength - i);
+			float weight = ((float)i) / pathLength;
+
+			normalizedConformance += Util.BoundedInverseDistance(currentPlayer.X, currentPlayer.Y,
+			                                                      targetX, targetY) * weight;
+
 		}
-		/*for (int i = pathIndex; i < pathLength; i++) {
-
-
-			BlockWorld.BlockPlayer target = Path.States[i].Player;
-
-			if (target.I == playerI && target.J == playerJ) {
-				//normalizedConformance = 1.0f;
-				normalizedConformance = i / pathLength;
-			}
-		}*/
+		normalizedConformance *= oneOverXSquaredNormalizationFactor;
 
 
 		// Return weighted sum of influences
@@ -254,8 +256,8 @@ public class DigDownStrategy : Strategy {
 
 	public DigDownStrategy(int playerNum) : base(playerNum) {
 		
-		level1HealthWeight = 10.0f;
-		level1AmmoWeight = 0.5f;
+		level1HealthWeight = 0.0f;//10.0f;
+		level1AmmoWeight = 0.0f;//0.5f;
 		level1ConfrontationWeight = 0.0f;
 		level1SuperlevelWeight = 1.0f;
 	}
@@ -264,10 +266,10 @@ public class DigDownStrategy : Strategy {
 		return 1.0f + Level2DangerDistanceRatio * Level2DangerZone.CheckDanger(blockWorld.Player.I, blockWorld.Player.J);
 	}
 	override public bool Level2GoalFunction(BlockWorld blockWorld) {
-		return blockWorld.Player.J >= World.WallDepthJ;
+		return blockWorld.Player.J >= 2; //World.WallDepthJ;
 	}
 	override public float Level2HeuristicFunction(BlockWorld blockWorld) {
-		return World.WallDepthJ - blockWorld.Player.J;
+		return 2 - blockWorld.Player.J;//World.WallDepthJ - blockWorld.Player.J;
 	}
 	
 }
