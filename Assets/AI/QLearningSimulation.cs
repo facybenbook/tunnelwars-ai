@@ -23,17 +23,24 @@ public class QLearningSimulation: MonoBehaviour {
 	// A list of all agents that are used for the game
 	List<IAgent> agentList;
 
+	const long FramesCutoff = 4800;
+
 	// Number of games to be played
 	int numberOfGames;
 
 	// Specifies which iteration of games we are on
 	int gameIteration;
 
+	long gameFrames; // Number of frames in a game
+
 	public void Awake () {
 
 		// Setup framerate and vsynccount
 		Application.targetFrameRate = 30000;
 		QualitySettings.vSyncCount = 1;
+	}
+
+	public void Start() {
 
 		// Set up the wor8ld with the initial state
 		currentWorld = new World();
@@ -61,6 +68,7 @@ public class QLearningSimulation: MonoBehaviour {
 
 		// Specify which iteration of games we are on
 		gameIteration = 1;
+		gameFrames = 0;
 
 		Debug.Log ("Beginning learning.  Simulating " + numberOfGames.ToString() + " games before writing.");
 
@@ -72,30 +80,32 @@ public class QLearningSimulation: MonoBehaviour {
 		if (currentWorld == null) return;
 
 		// Learning is over
-		if (currentWorld.IsTerminal () && gameIteration == numberOfGames) {
+		if ((currentWorld.IsTerminal () || gameFrames >= FramesCutoff)
+		    && gameIteration == numberOfGames) {
 
-			float termUtil = currentWorld.TerminalUtility();
-			int winnerNum = termUtil == 1 ? 1 : 2;
-			Debug.Log ("Player " + winnerNum.ToString () + " WINS!");
+			if (gameFrames < FramesCutoff) {
+				float termUtil = currentWorld.TerminalUtility();
+				int winnerNum = termUtil == 1 ? 1 : 2;
+				Debug.Log ("Player " + winnerNum.ToString () + " WINS!");
+			}
 
 			Debug.Log ("Learning finished.  Saving QValues...");
+
 
 			qLearner.SaveData();
 
 			Debug.Log ("Finished saving QValues.  Restarting...");
 
-			currentWorld = null;
-
 			// Restart don't quit
-			Application.LoadLevel(0);
+			RestartGame();
 		}
 		// Game is over but learning continues
-		else if (currentWorld.IsTerminal() && gameIteration < numberOfGames) {
+		else if ((currentWorld.IsTerminal() || gameFrames >= FramesCutoff)
+		         && gameIteration < numberOfGames) {
 
 			float termUtil = currentWorld.TerminalUtility();
 			int winnerNum = termUtil == 1 ? 1 : 2;
 			Debug.Log ("Player " + winnerNum.ToString () + " WINS!");
-			
 			Debug.Log("Finished game " + gameIteration.ToString() + " of " + numberOfGames.ToString() + ".");
 
 			gameIteration += 1;
@@ -114,6 +124,11 @@ public class QLearningSimulation: MonoBehaviour {
 			}
 			
 			currentWorld.Advance(actions);
+
+			gameFrames++;
+			if (gameFrames == 60 * 60) {
+				Debug.Log ("A minute goes by...");
+			}
 		}
 	}
 	
@@ -129,5 +144,6 @@ public class QLearningSimulation: MonoBehaviour {
 		ai2.QLearner = qLearner;
 		agentList.Add(ai1);
 		agentList.Add (ai2);
+		gameFrames = 0;
 	}
 }
