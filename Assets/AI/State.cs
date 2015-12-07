@@ -83,8 +83,6 @@ public class State {
 		// Set the player and enemy health
 		health = player.Health;
 		enemyHealth = enemy.Health;
-
-		//
 	}
 
 	public State () {
@@ -302,7 +300,12 @@ public class State {
 	// Returns a bool on whether or not input state is the same as this state
 	public bool IsEquivalent (State comparisonState) {
 
-		return comparisonState.AmmoAmount == this.AmmoAmount && comparisonState.EnemyAmmoAmount == this.EnemyAmmoAmount && comparisonState.EnemyWeapon == this.EnemyWeapon && comparisonState.Weapon == this.Weapon && comparisonState.XDistanceToEnemy == this.XDistanceToEnemy && comparisonState.YDistanceToEnemy == this.YDistanceToEnemy;
+		return comparisonState.AmmoAmount == this.AmmoAmount
+			&& comparisonState.EnemyAmmoAmount == this.EnemyAmmoAmount
+				&& comparisonState.EnemyWeapon == this.EnemyWeapon
+				&& comparisonState.Weapon == this.Weapon
+				&& comparisonState.XDistanceToEnemy == this.XDistanceToEnemy
+				&& comparisonState.YDistanceToEnemy == this.YDistanceToEnemy;
 	}
 
 	public static float Reward (State initState, StrategyType strategy, State resultState) {

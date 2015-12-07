@@ -30,17 +30,17 @@ public class QLearningSimulation: MonoBehaviour {
 	public void Awake () {
 
 		// Setup framerate and vsynccount
-		Application.targetFrameRate = 300;
+		Application.targetFrameRate = 30000;
 		QualitySettings.vSyncCount = 1;
 
 		// Set up the wor8ld with the initial state
 		currentWorld = new World();
 
 		// Create QLearning obj
-		float alpha = 0.5f;
-		float gamma = 0.5f;
-		float discount = 0.5f;
-		qLearner = new QLearning (alpha, gamma, discount);
+		float alpha = 0.65f;
+		float epsilon = 0.05f;
+		float discount = 0.95f;
+		qLearner = new QLearning (alpha, epsilon, discount);
 		
 		// Create 2 ai agents
 		agentList = new List<IAgent>();
@@ -54,7 +54,7 @@ public class QLearningSimulation: MonoBehaviour {
 		agentList.Add (ai2);
 
 		// Specify number of games
-		numberOfGames = 3;
+		numberOfGames = 1;
 
 		// Specify which iteration of games we are on
 		gameIteration = 1;
@@ -69,6 +69,10 @@ public class QLearningSimulation: MonoBehaviour {
 		// Learning is over
 		if (currentWorld.IsTerminal () && gameIteration == numberOfGames) {
 
+			float termUtil = currentWorld.TerminalUtility();
+			int winnerNum = termUtil == 1 ? 1 : 2;
+			Debug.Log ("Player " + winnerNum.ToString () + " WINS! WOOOOOO");
+
 			Debug.Log ("Learning finished.  Saving QValues...");
 
 			qLearner.SaveData();
@@ -82,7 +86,7 @@ public class QLearningSimulation: MonoBehaviour {
 
 			Debug.Log("Finished game " + gameIteration.ToString() + " of " + numberOfGames.ToString() + ".");
 
-			numberOfGames += 1;
+			gameIteration += 1;
 
 			RestartGame();
 		}

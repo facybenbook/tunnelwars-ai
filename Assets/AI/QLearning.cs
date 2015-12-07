@@ -17,6 +17,7 @@ using System.IO;
 public class QLearning {
 	
 	// Filename
+	public const string OpenFileName = "QValues.txt";
 	public const string FileName = "QValues.txt";
 
 	// The learning rate
@@ -61,11 +62,12 @@ public class QLearning {
 	// Saves the Q function to the disk
 	public void SaveData () {
 
-		var file = File.Open(FileName, FileMode.CreateNew, FileAccess.ReadWrite);
+		var file = File.Open(FileName + DateTime.Now.ToString("yyyyMMdd"), FileMode.CreateNew, FileAccess.ReadWrite);
 		var writer = new StreamWriter(file);
 
 		int i = 0;
 		foreach (KeyValuePair<Key, float> entry in utilities) {
+
 			string key = entry.Key.ToString();
 			string value = entry.Value.ToString();
 

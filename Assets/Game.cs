@@ -41,31 +41,47 @@ public class Game : MonoBehaviour {
 	// The current world
 	RenderedWorld currentWorld = null;
 
+	// QLearning Object
+	QLearning qLearner;
+
 	void  Awake () {
-		Application.targetFrameRate = 60;
-		QualitySettings.vSyncCount = 1;
+
+		//Debug.Log ("YEIKS");
+
+		//Application.targetFrameRate = 60;
+		//QualitySettings.vSyncCount = 1;
 	}
 
 	// First-time setup
 	void Start () {
+
+		Debug.Log ("YEIKS");
 
 		// Set up the world with the initial state
 		currentWorld = new RenderedWorld(this);
 		currentWorld.Display();
 		Gui.GetComponent<GUIControl>().SetMode(0);
 
+		// Create QLearning obj
+		float alpha = 0.65f;
+		float epsilon = 0.05f;
+		float discount = 0.95f;
+		qLearner = new QLearning (alpha, epsilon, discount);
+
 		// Create a keyboard control agent for both players
 		agentList = new List<IAgent>();
-		agentList.Add(new WASDFAgent(2));
 		AIAgent ai = new AIAgent(1);
 		ai.ResourceScript = this; // For debug rendering only
+		ai.QLearner = qLearner;
 		agentList.Add(ai);
-		//agentList.Add(new WASDFAgent(1));
+		ai.IsLearning = true;
 
-		//obj = new QLearning (0.5f, 0.5f, 0.5f);
-		//obj.OpenSavedData ();
-		//Debug.Log("OPENED SAVED DATA");
-
+		ai = new AIAgent(2);
+		ai.ResourceScript = this; // For debug rendering only
+		ai.QLearner = qLearner;
+		agentList.Add(ai);
+		ai.IsLearning = true;
+		//agentList.Add(new WASDFAgent(2));
 	}
 
 	// Called every frame

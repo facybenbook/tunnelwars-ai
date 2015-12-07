@@ -49,6 +49,8 @@ public class AIAgent : PlayerAgentBase {
 	public const int DangerZoneRecalcDistance = DangerZone.DistributionSteps;
 	public const float PathDeviationRecalcDistance = World.BlocksHeight * 6;
 
+	public const int BoredTime = 60 * 20;
+
 	public const int Level3StepSize = 20;
 	public Game ResourceScript { get; set; }
 	public QLearning QLearner;
@@ -67,7 +69,7 @@ public class AIAgent : PlayerAgentBase {
 		IsLearning = false;
 
 		// Set strategy
-		strategy = Strategy.StrategyWithType(playerNum, StrategyType.RunAway);
+		strategy = Strategy.StrategyWithType(playerNum, StrategyType.Attack);
 
 		level1Searcher = new DiscreteAdversarialSearch(playerNum,
 		                                               strategy.Level1Heuristic,
@@ -80,6 +82,7 @@ public class AIAgent : PlayerAgentBase {
 		                           strategy.Level2GoalFunction, strategy.Level2HeuristicFunction);
 		fillerAction = WorldAction.NoAction;
 		isFirstTime = true;
+		boredomTimer = BoredTime;
 	}
 
 	// The center of the AI - get an action
@@ -100,22 +103,28 @@ public class AIAgent : PlayerAgentBase {
 			fillerAction = decision.FillerAction;
 
 			decisionTimer = Level1StepSize;
+			boredomTimer = BoredTime;
 		
 		// Otherwise do the filler action
 		} else {
 			bestAction = fillerAction;
 
-			// Update level three in a fast frame
-
-			// Create block world and danger zone
-			blockWorld = new BlockWorld(playerNum, world);
-			dangerZone = new DangerZone(opponentNum, world, blockWorld);
+			// Update
+			strategy.NextPathIndex = getNewPathIndex(player, strategy.NextPathIndex);
+			bool doneWithPath = false;
+			if (strategy.SearchPath != null) {
+				doneWithPath = strategy.NextPathIndex >= strategy.SearchPath.States.Count - 1;
+			}
 
 			// Get currentState
 			State currentState = new State(world,playerNum);
 
 			// Check if this is the first time GetAction has been called or if one of the cases for changing strategies is hit
-			if (isFirstTime || (!previousState.IsEquivalent(currentState))) {
+			if (isFirstTime || (!previousState.IsEquivalent(currentState)) || doneWithPath
+			    || dangerZoneShifted(world) || playerLeftPath(world, strategy.SearchPath)
+			    || boredomTimer == 0) {
+
+				isFirstTime = false;
 
 				// Get reward and update QValues if learning
 				if (IsLearning) {
@@ -125,21 +134,38 @@ public class AIAgent : PlayerAgentBase {
 
 				// Get a new strategy
 				StrategyType newStrategy = QLearner.GetStrategy(currentState);
+				//Debug.Log (playerNum.ToString() + " is doing " + newStrategy.ToString());
 				strategy = Strategy.StrategyWithType(playerNum, newStrategy);
+
+				level1Searcher = new DiscreteAdversarialSearch(playerNum,
+				                                               strategy.Level1Heuristic,
+				                                               getFillerAction,
+				                                               getNewPathIndex,
+				                                               Level1StepSize,
+				                                               4);
+				level2Searcher = new AStar(Level2MaxNodesInPrioQueue, Level2MaxExpansions, strategy.Level2CostFunction,
+				                           strategy.Level2GoalFunction, strategy.Level2HeuristicFunction);
+
+				// Create block world and danger zone
+				blockWorld = new BlockWorld(playerNum, world);
+				dangerZone = new DangerZone(opponentNum, world, blockWorld);
+
+				// Must be set before using the level 2 reward, cost, and goal functions
+				strategy.Level2DangerZone = dangerZone;
+
+
+				// Calculate player path
+				Path path = level2Searcher.ComputeBestPath(blockWorld);
+				
+				// Must be set before using the level 1 heuristic
+				strategy.SearchPath = path;
+				strategy.NextPathIndex = 0;
 
 				// Reset previous state
 				previousState = currentState;
-			}
-		
-			// Must be set before using the level 2 reward, cost, and goal functions
-			strategy.Level2DangerZone = dangerZone;
 
-			// Calculate player path
-			Path path = level2Searcher.ComputeBestPath(blockWorld);
-		
-			// Must be set before using the level 1 heuristic
-			strategy.SearchPath = path;
-			strategy.NextPathIndex = 0;
+				boredomTimer = BoredTime;
+			}
 
 			//dangerZone.Render(ResourceScript);
 			//dangerZone.RenderPlayerBeliefs(ResourceScript);
@@ -147,8 +173,11 @@ public class AIAgent : PlayerAgentBase {
 		}
 	
 		decisionTimer--;
+		boredomTimer--;
 
-		if (strategy.SearchPath != null) strategy.SearchPath.Render(ResourceScript, strategy.NextPathIndex);
+		/*if (strategy.SearchPath != null) {
+			strategy.SearchPath.Render(ResourceScript, strategy.NextPathIndex);
+		}*/
 		/*if (strategy.SearchPath != null) {
 			int len = strategy.SearchPath.States.Count;
 			if (true) {
@@ -161,9 +190,6 @@ public class AIAgent : PlayerAgentBase {
 				obj.transform.position = new Vector3(targetX, targetY);
 			}
 		}*/
-		
-		// Update
-		strategy.NextPathIndex = getNewPathIndex(player, strategy.NextPathIndex);
 
 		// Return a single-valued list with the best action
 		return new List<WorldAction>() {bestAction};
@@ -188,6 +214,7 @@ public class AIAgent : PlayerAgentBase {
 	Strategy strategy;
 	State previousState;
 	bool isFirstTime;
+	int boredomTimer;
 
 	// Defines the association between level 1 actions and filler actions
 	WorldAction getFillerAction(WorldAction action, WorldAction prevFillerAction) {
