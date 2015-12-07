@@ -51,7 +51,7 @@ public class AIAgent : PlayerAgentBase {
 
 	public const int Level3StepSize = 20;
 	public Game ResourceScript { get; set; }
-	public QLearning qLearner;
+	public QLearning QLearner;
 	public bool IsLearning;
 
 	public AIAgent(int player) : base(player) {
@@ -63,7 +63,7 @@ public class AIAgent : PlayerAgentBase {
 		float alpha = 0.5f;
 		float epsilon = 0.3f;
 		float discount = 0.95f;
-		qLearner = new QLearning (alpha, epsilon, discount);
+		QLearner = new QLearning (alpha, epsilon, discount);
 		IsLearning = false;
 
 		// Set strategy
@@ -120,11 +120,11 @@ public class AIAgent : PlayerAgentBase {
 				// Get reward and update QValues if learning
 				if (IsLearning) {
 					float reward = State.Reward(previousState,strategy.Type,currentState);
-					qLearner.UpdateQValue(previousState,strategy.Type,currentState,reward);
+					QLearner.UpdateQValue(previousState,strategy.Type,currentState,reward);
 				}
 
 				// Get a new strategy
-				StrategyType newStrategy = qLearner.GetStrategy(currentState);
+				StrategyType newStrategy = QLearner.GetStrategy(currentState);
 				strategy = Strategy.StrategyWithType(playerNum, newStrategy);
 
 				// Reset previous state

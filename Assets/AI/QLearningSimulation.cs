@@ -35,19 +35,23 @@ public class QLearningSimulation: MonoBehaviour {
 
 		// Set up the wor8ld with the initial state
 		currentWorld = new World();
-		
-		// Create 2 ai agents
-		agentList = new List<IAgent>();
-		AIAgent ai1 = new AIAgent(1);
-		AIAgent ai2 = new AIAgent (2);
-		agentList.Add(ai1);
-		agentList.Add (ai2);
-		
+
 		// Create QLearning obj
 		float alpha = 0.5f;
 		float gamma = 0.5f;
 		float discount = 0.5f;
 		qLearner = new QLearning (alpha, gamma, discount);
+		
+		// Create 2 ai agents
+		agentList = new List<IAgent>();
+		AIAgent ai1 = new AIAgent(1);
+		ai1.IsLearning = true;
+		ai1.QLearner = qLearner;
+		AIAgent ai2 = new AIAgent (2);
+		ai2.IsLearning = true;
+		ai2.QLearner = qLearner;
+		agentList.Add(ai1);
+		agentList.Add (ai2);
 
 		// Specify number of games
 		numberOfGames = 3;
@@ -102,7 +106,11 @@ public class QLearningSimulation: MonoBehaviour {
 		currentWorld = new World ();
 		agentList = new List<IAgent>();
 		AIAgent ai1 = new AIAgent(1);
+		ai1.IsLearning = true;
+		ai1.QLearner = qLearner;
 		AIAgent ai2 = new AIAgent (2);
+		ai2.IsLearning = true;
+		ai2.QLearner = qLearner;
 		agentList.Add(ai1);
 		agentList.Add (ai2);
 	}
