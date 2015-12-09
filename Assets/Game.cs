@@ -44,19 +44,9 @@ public class Game : MonoBehaviour {
 	// QLearning Object
 	QLearning qLearner;
 
-	void  Awake () {
-
-		//Debug.Log ("YEIKS");
-
-		//Application.targetFrameRate = 60;
-		//QualitySettings.vSyncCount = 1;
-	}
-
 	// First-time setup
 	void Start () {
-
-		Debug.Log ("YEIKS");
-
+	
 		// Set up the world with the initial state
 		currentWorld = new RenderedWorld(this);
 		currentWorld.Display();
@@ -70,7 +60,7 @@ public class Game : MonoBehaviour {
 
 		// Create a keyboard control agent for both players
 		agentList = new List<IAgent>();
-		AIAgent ai = new AIAgent(1);
+		/*AIAgent ai = new AIAgent(1);
 		ai.ResourceScript = this; // For debug rendering only
 		ai.QLearner = qLearner;
 		agentList.Add(ai);
@@ -80,8 +70,9 @@ public class Game : MonoBehaviour {
 		ai.ResourceScript = this; // For debug rendering only
 		ai.QLearner = qLearner;
 		agentList.Add(ai);
-		ai.IsLearning = true;
-		//agentList.Add(new WASDFAgent(2));
+		ai.IsLearning = true;*/
+		agentList.Add(new WASDFAgent(1));
+		agentList.Add(new WASDFAgent(2));
 	}
 
 	// Called every frame

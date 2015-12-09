@@ -32,17 +32,10 @@ public class QLearningSimulation: MonoBehaviour {
 	int gameIteration;
 
 	long gameFrames; // Number of frames in a game
-
-	public void Awake () {
-
-		// Setup framerate and vsynccount
-		Application.targetFrameRate = 30000;
-		QualitySettings.vSyncCount = 1;
-	}
-
+	
 	public void Start() {
-
-		// Set up the wor8ld with the initial state
+		
+		// Set up the world with the initial state
 		currentWorld = new World();
 
 		// Create QLearning obj
