@@ -60,18 +60,19 @@ public class Game : MonoBehaviour {
 
 		// Create a keyboard control agent for both players
 		agentList = new List<IAgent>();
-		/*AIAgent ai = new AIAgent(1);
+		/*AIAgent ai = new AIAgent(2);
+		ai.ResourceScript = this; // For debug rendering only
+		ai.QLearner = qLearner;
+		agentList.Add(ai);
+		ai.IsLearning = true;
+		*/
+		AIAgent ai = new AIAgent(1);
 		ai.ResourceScript = this; // For debug rendering only
 		ai.QLearner = qLearner;
 		agentList.Add(ai);
 		ai.IsLearning = true;
 
-		ai = new AIAgent(2);
-		ai.ResourceScript = this; // For debug rendering only
-		ai.QLearner = qLearner;
-		agentList.Add(ai);
-		ai.IsLearning = true;*/
-		agentList.Add(new WASDFAgent(1));
+		//agentList.Add(new WASDFAgent(1));
 		agentList.Add(new WASDFAgent(2));
 	}
 
@@ -85,6 +86,12 @@ public class Game : MonoBehaviour {
 		}
 
 		currentWorld.Advance(actions);
+
+		if (currentWorld.IsTerminal()) {
+
+
+			Debug.Log ("Game Over");
+		}
 	}
 
 	// Restarts the game

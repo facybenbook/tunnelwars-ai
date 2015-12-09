@@ -146,10 +146,10 @@ public class QLearning {
 	}
 
 	// Returns the optimal action at a state
-	public StrategyType ComputeStrategyFromQValues (State state) {
+	public StrategyType ComputeStrategyFromQValues(State state) {
 
 		StrategyType currentStrategy = StrategyType.Attack;
-		float currentQValue = 0.0f;
+		float maxQValue = float.MinValue;
 
 		// Iterate through all possible strategies
 		foreach (StrategyType strategy in allStrategies) {
@@ -157,8 +157,9 @@ public class QLearning {
 			float qValue = getQValue (state, strategy);
 
 			// If the utility for this strategy is higher than the current best
-			if (qValue > currentQValue) {
-				currentQValue = qValue;
+			if (qValue > maxQValue) {
+
+				maxQValue = qValue;
 				currentStrategy = strategy;
 			}
 		}
@@ -186,14 +187,12 @@ public class QLearning {
 
 	public StrategyType GetStrategy (State state) {
 
-		System.Random rnd = new System.Random();
-		int randomInt = rnd.Next(1, 101);
- 		int epsilonInt = (int) (Epsilon * 100f);
+		float random = UnityEngine.Random.Range (0.0f, 1.0f);
 
 		// Take random strategy
-		if (randomInt <= epsilonInt) {
+		if (random <= Epsilon) {
 			int numberOfStrategies = Enum.GetNames(typeof(StrategyType)).Length;
-			int randomIndex = rnd.Next (0,numberOfStrategies);
+			int randomIndex = UnityEngine.Random.Range(0, numberOfStrategies);
 			return allPossibleStrategies[randomIndex];
 		}
 		// Otherwise take best possible strategy

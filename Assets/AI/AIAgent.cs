@@ -69,7 +69,7 @@ public class AIAgent : PlayerAgentBase {
 		IsLearning = false;
 
 		// Set strategy
-		strategy = Strategy.StrategyWithType(playerNum, StrategyType.Attack);
+		strategy = Strategy.StrategyWithType(playerNum, StrategyType.RunAway);
 
 		level1Searcher = new DiscreteAdversarialSearch(playerNum,
 		                                               strategy.Level1Heuristic,
@@ -117,16 +117,21 @@ public class AIAgent : PlayerAgentBase {
 			}
 
 			// Get currentState
-			State currentState = new State(world,playerNum);
+			State currentState = new State(world, playerNum);
 
 			// Check if this is the first time GetAction has been called or if one of the cases for changing strategies is hit
-			if (isFirstTime || (!previousState.IsEquivalent(currentState)) || doneWithPath
+			if (isFirstTime || !previousState.IsEquivalent(currentState) || doneWithPath
 			    || dangerZoneShifted(world) || playerLeftPath(world, strategy.SearchPath)
 			    || boredomTimer == 0) {
 
 				if (isFirstTime) {
 					previousState = currentState;
-				}
+				} /*else {
+					bool statesDifferent = !previousState.IsEquivalent(currentState);
+					bool zoneShift = dangerZoneShifted(world);
+					bool leftPath = playerLeftPath(world, strategy.SearchPath);
+					Debug.Log ("A");
+				}*/
 
 				isFirstTime = false;
 
@@ -135,10 +140,11 @@ public class AIAgent : PlayerAgentBase {
 					float reward = State.Reward(previousState,strategy.Type,currentState);
 					QLearner.UpdateQValue(previousState,strategy.Type,currentState,reward);
 				}
-
+	
 				// Get a new strategy
 				StrategyType newStrategy = QLearner.GetStrategy(currentState);
-				//Debug.Log (playerNum.ToString() + " is doing " + newStrategy.ToString());
+
+				Debug.Log (playerNum.ToString() + " is doing " + newStrategy.ToString());
 				strategy = Strategy.StrategyWithType(playerNum, newStrategy);
 
 				level1Searcher = new DiscreteAdversarialSearch(playerNum,
@@ -179,9 +185,10 @@ public class AIAgent : PlayerAgentBase {
 		decisionTimer--;
 		boredomTimer--;
 
-		/*if (strategy.SearchPath != null) {
+		if (strategy.SearchPath != null) {
 			strategy.SearchPath.Render(ResourceScript, strategy.NextPathIndex);
-		}*/
+		}
+
 		/*if (strategy.SearchPath != null) {
 			int len = strategy.SearchPath.States.Count;
 			if (true) {
@@ -279,10 +286,11 @@ public class AIAgent : PlayerAgentBase {
 				int pathJ = blockWorld.Player.J;
 				float pathX = World.IToXMin(pathI) + World.BlockSize / 2.0f;
 				float pathY = World.JToYMin(pathJ) + World.BlockSize / 2.0f;
-				if (Util.SquareDistance(player.X, player.Y, pathX, pathY) > cutOffSquared) {
-					return true;
+				if (Util.SquareDistance(player.X, player.Y, pathX, pathY) < cutOffSquared) {
+					return false;
 				}
 			}
+			return true;
 		}
 		return false;
 	}
