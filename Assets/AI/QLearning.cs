@@ -112,46 +112,7 @@ public class QLearner {
 
 			string keyString = key.ToString();
 
-			// TEMPORARILY CHANGE THE KEY ACCORDINGLY
-			Key tempKey = Key.FromString(keyString);
-
-			if ((tempKey.state.AmmoAmount == 0 && tempKey.state.Weapon != WeaponType.None) ||
-			    tempKey.state.EnemyAmmoAmount == 0 && tempKey.state.EnemyWeapon != WeaponType.None) {
-
-				if (tempKey.state.AmmoAmount == 0) {
-
-					tempKey.state.Weapon = WeaponType.None;
-
-				} else if (tempKey.state.EnemyAmmoAmount == 0) {
-
-					tempKey.state.EnemyWeapon = WeaponType.None;
-
-				}
-
-				if (EmptyAmmoDict.ContainsKey(tempKey.ToString())) {
-
-					EmptyAmmoDict[tempKey.ToString()].Add(value);
-
-				} else {
-
-					List<float> newList = new List<float>();
-					
-					newList.Add(value);
-					EmptyAmmoDict.Add(tempKey.ToString(),newList);
-
-				}
-
-
-				EmptyAmmoDict[tempKey.ToString()].Add(value);
-
-			} else {
-				utilities[keyString] = value;
-			}
-		}
-
-		foreach (KeyValuePair<string, List<float>> entry in EmptyAmmoDict) {
-			float avgQValue = average(entry.Value);
-			utilities[entry.Key] = avgQValue;
+			utilities[keyString] = value
 		}
 
 		file.Close ();
@@ -313,20 +274,6 @@ public class QLearner {
 				}    
 			}
 		}
-	}
-
-	float average (List<float> list) {
-		
-		float currAvg = 0;
-		float numEls = 0;
-		
-		foreach (float num in list) {
-			currAvg += num;
-			numEls += 1;
-		}
-		
-		return (currAvg / numEls);
-		
 	}
 }
 
