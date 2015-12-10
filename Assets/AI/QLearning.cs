@@ -112,7 +112,7 @@ public class QLearner {
 
 			string keyString = key.ToString();
 
-			utilities[keyString] = value
+			utilities[keyString] = value;
 		}
 
 		file.Close ();
