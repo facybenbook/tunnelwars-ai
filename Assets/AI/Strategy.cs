@@ -45,18 +45,29 @@ public abstract class Strategy {
 
 	// The main way to construct strategies
 	public static Strategy StrategyWithType(int playerNum, StrategyType type) {
+
+		Strategy newStrategy = null;
+
 		switch (type) {
 		case StrategyType.Attack:
-			return new AttackStrategy(playerNum);
+			newStrategy = new AttackStrategy(playerNum);
+			break;
 		case StrategyType.DigDown:
-			return new DigDownStrategy(playerNum);
+			newStrategy = new DigDownStrategy(playerNum);
+			break;
 		case StrategyType.GetAmmo:
-			return new GetAmmoStrategy(playerNum);
+			newStrategy = new GetAmmoStrategy(playerNum);
+			break;
 		case StrategyType.RunAway:
-			return new RunAwayStrategy(playerNum);
+			newStrategy = new RunAwayStrategy(playerNum);
+			break;
 		}
 
-		return null;
+		if (newStrategy != null) {
+			newStrategy.type = type;
+		}
+
+		return newStrategy;
 	}
 
 	// Constructor

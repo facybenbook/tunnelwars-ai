@@ -170,19 +170,21 @@ public class QLearning {
 	// Updates the q value of a state-action tuple
 	public void UpdateQValue (State state, StrategyType strategy, State nextState, float reward) {
 
+
+
 		// Get the key
 		float qValue;
 		string key = (new Key(state,strategy)).ToString();
 
 		// If the key is already in the dictionary then get the current QValue otherwise set the current QValue to 0
-		if (utilities.ContainsKey (key)) {
-			qValue = getQValue (state, strategy);
+		if (utilities.ContainsKey(key)) {
+			qValue = getQValue(state, strategy);
 		} else {
 			qValue = 0.0f;
 		}
 
 		// Update the QValue
-		utilities [key] = qValue + Alpha * (reward + Discount * ComputeValueFromQValues (nextState) - qValue);
+		utilities [key] = qValue + Alpha * (reward + Discount * ComputeValueFromQValues(nextState) - qValue);
 	}
 
 	public StrategyType GetStrategy (State state) {
@@ -220,9 +222,9 @@ public class QLearning {
 	}
 
 	StrategyType[] allStrategies = new StrategyType[] {
-		StrategyType.Attack,
 		StrategyType.RunAway,
 		StrategyType.GetAmmo,
+		StrategyType.Attack,
 		StrategyType.DigDown
 	};
 

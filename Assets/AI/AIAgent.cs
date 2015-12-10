@@ -71,6 +71,7 @@ public class AIAgent : PlayerAgentBase {
 		// Set strategy
 		strategy = Strategy.StrategyWithType(playerNum, StrategyType.RunAway);
 
+
 		level1Searcher = new DiscreteAdversarialSearch(playerNum,
 		                                               strategy.Level1Heuristic,
 		                                               getFillerAction,
@@ -137,8 +138,8 @@ public class AIAgent : PlayerAgentBase {
 
 				// Get reward and update QValues if learning
 				if (IsLearning) {
-					float reward = State.Reward(previousState,strategy.Type,currentState);
-					QLearner.UpdateQValue(previousState,strategy.Type,currentState,reward);
+					float reward = State.Reward(previousState, strategy.Type, currentState);
+					QLearner.UpdateQValue(previousState, strategy.Type, currentState, reward);
 				}
 	
 				// Get a new strategy
@@ -158,6 +159,8 @@ public class AIAgent : PlayerAgentBase {
 
 				// Create block world and danger zone
 				blockWorld = new BlockWorld(playerNum, world);
+
+				// Recalc danger zone if needed
 				dangerZone = new DangerZone(opponentNum, world, blockWorld);
 
 				// Must be set before using the level 2 reward, cost, and goal functions
