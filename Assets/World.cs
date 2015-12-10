@@ -45,7 +45,7 @@ public partial class World : WorldWithGround, IAdvancing {
 	public const float EnlargementFactor = 1.1f;
 
 	// Whether to start both players on the same side
-	public bool StartOnSameSide = false;
+	public bool StartOnSameSide = true;
 
 	// The default "master" (unlimited ammo) player
 	public const int DefaultMasterPlayer = 0;
@@ -225,7 +225,7 @@ public partial class World : WorldWithGround, IAdvancing {
 		Player1 = createPlayer(masterPlayer == 1, actionSet: 1);
 		Player2 = createPlayer(masterPlayer == 2, actionSet: 2);
 
-		Player1.X = (StartOnSameSide ? 128.0f : 1600.0f) + 32.0f;
+		Player1.X = (StartOnSameSide ? 2816.0f : 1600.0f) + 32.0f;
 		Player1.Y = 864.0f;
 		Player2.X = (StartOnSameSide ? 1600.0f : 1280.0f) + 32.0f;
 		Player2.Y = 864.0f;
