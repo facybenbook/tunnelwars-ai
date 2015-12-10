@@ -22,7 +22,8 @@ public class QLearningSimulation: MonoBehaviour {
 	// A list of all agents that are used for the game
 	List<IAgent> agentList;
 
-	const long FramesCutoff = 4800;
+	// After games of this length we restart
+	const long FramesCutoff = 60 * 60 * 2; // 2 minute games
 
 	// Number of games to be played
 	int numberOfGames;
@@ -30,7 +31,8 @@ public class QLearningSimulation: MonoBehaviour {
 	// Specifies which iteration of games we are on
 	int gameIteration;
 
-	long gameFrames; // Number of frames in a game
+	// The game frame timer
+	long gameFrames;
 	
 	public void Start() {
 		
@@ -83,7 +85,6 @@ public class QLearningSimulation: MonoBehaviour {
 
 			Debug.Log ("Learning finished.  Saving QValues...");
 
-
 			qLearner.SaveData();
 
 			Debug.Log ("Finished saving QValues.  Restarting...");
@@ -131,11 +132,11 @@ public class QLearningSimulation: MonoBehaviour {
 		AIAgent ai1 = new AIAgent(1);
 		ai1.IsLearning = true;
 		ai1.QLearner = qLearner;
-		AIAgent ai2 = new AIAgent (2);
+		AIAgent ai2 = new AIAgent(2);
 		ai2.IsLearning = true;
 		ai2.QLearner = qLearner;
 		agentList.Add(ai1);
-		agentList.Add (ai2);
+		agentList.Add(ai2);
 		gameFrames = 0;
 	}
 }

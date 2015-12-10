@@ -22,7 +22,6 @@ class RenderedWorld : World {
 		// Retain the game script reference for later use
 		resourceScript = resourceSourceScript;
 		isSetup = false;
-		//ToDestroy = new List<Transform>();
 
 		init();
 	}

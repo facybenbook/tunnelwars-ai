@@ -31,7 +31,7 @@
 
 // Debug rendering/printing of the path, danger zone, selected strategy
 //#define PATH_RENDER
-#define DANGER_RENDER
+//#define DANGER_RENDER
 //#define STRATEGY_PRINT
 
 using UnityEngine;

@@ -42,10 +42,13 @@ public partial class World : WorldWithGround, IAdvancing {
 	public Player Player2 { get; set; }
 
 	// The enlargement factor for projectile collisions without players
-	public const float EnlargementFactor = 1.1f; // This shouldn't be too big or else
-												 // players can slip through the middle
-												 // of the projectiles
-												
+	public const float EnlargementFactor = 1.1f;
+
+	// Whether to start both players on the same side
+	public const bool StartOnSameSide = false;
+
+	// The default "master" (unlimited ammo) player
+	public const int DefaultMasterPlayer = 0;
 
 	// Get the initial world state
 	public World() {
@@ -204,7 +207,7 @@ public partial class World : WorldWithGround, IAdvancing {
 
 	// Sets up a new world
 	protected void init() {
-		initWithMasterPlayer(2);
+		initWithMasterPlayer(DefaultMasterPlayer);
 	}
 	protected void initWithMasterPlayer(int masterPlayer) {
 
@@ -221,23 +224,26 @@ public partial class World : WorldWithGround, IAdvancing {
 		// Add players
 		Player1 = createPlayer(masterPlayer == 1, actionSet: 1);
 		Player2 = createPlayer(masterPlayer == 2, actionSet: 2);
-		Player1.X = 1344.0f;
+
+		Player1.X = (StartOnSameSide ? 128.0f : 1600.0f) + 32.0f;
 		Player1.Y = 864.0f;
-		Player2.X = 400.0f;//1600.0f;
+		Player2.X = (StartOnSameSide ? 1600.0f : 1280.0f) + 32.0f;
 		Player2.Y = 864.0f;
 
 		// Create bombs that are there at the start
-		for (int i = 0; i < 4; i++)
-		{
-			float x = 0.0f;
-			float y = 0.0f;
-			if (i == 0) x = 1792.0f;
-			else if (i == 1) x = 1952.0f;
-			else if (i == 2) x = 1088.0f;
-			else x = 928.0f;
-			y = FloorLevel - 64.0f;
-			createPowerup(x, y, PowerupType.Minions);
-		};
+		if (!StartOnSameSide) {
+			for (int i = 0; i < 4; i++)
+			{
+				float x = 0.0f;
+				float y = 0.0f;
+				if (i == 0) x = 1792.0f;
+				else if (i == 1) x = 1952.0f;
+				else if (i == 2) x = 1088.0f;
+				else x = 928.0f;
+				y = FloorLevel - 64.0f;
+				createPowerup(x, y, PowerupType.Bombs);
+			};
+		}
 
 		// Fill in regular ground with caves
 		for (int i = 0; i < BlocksWidth; i++) {

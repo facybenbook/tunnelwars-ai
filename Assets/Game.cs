@@ -3,6 +3,9 @@
  * 
  * Runs the game. Connects Unity references with the game logic, and directs
  * the behavior of all other scripts.
+ * 
+ * Right now Game is configured to set up a Q-learning AI against a human player
+ * playing with WASDF
  *
  */
 
@@ -44,36 +47,33 @@ public class Game : MonoBehaviour {
 	// QLearner Object
 	QLearner qLearner;
 
+	// The restart timer
+	int restartTimer;
+
 	// First-time setup
 	void Start () {
 	
 		// Set up the world with the initial state
 		currentWorld = new RenderedWorld(this);
 		currentWorld.Display();
-		Gui.GetComponent<GUIControl>().SetMode(0);
+		Gui.SetMode(0);
 
-		// Create QLearner obj
-		float alpha = 0.65f;
-		float epsilon = 0.05f;
-		float discount = 0.95f;
-		qLearner = new QLearner (alpha, epsilon, discount);
-
-		// Create a keyboard control agent for both players
+		restartTimer = -1;
 		agentList = new List<IAgent>();
-		/*AIAgent ai = new AIAgent(2);
-		ai.ResourceScript = this; // For debug rendering only
-		ai.QLearner = qLearner;
-		agentList.Add(ai);
-		ai.IsLearning = true;
-		*/
-		AIAgent ai = new AIAgent(1);
-		ai.ResourceScript = this; // For debug rendering only
-		ai.QLearner = qLearner;
-		agentList.Add(ai);
-		ai.IsLearning = true;
+		
+		// Create the human agent
+		agentList.Add(new WASDFAgent(1));
 
-		//agentList.Add(new WASDFAgent(1));
-		agentList.Add(new WASDFAgent(2));
+		// Create q-learning object for the AI, and pick up learning where we left off
+		qLearner = new QLearner (alpha: 0.65f, epsilon: 0.05f, discount: 0.95f);
+		qLearner.OpenSavedData();
+
+		// Create and add the AI agent
+		AIAgent ai = new AIAgent(2);
+		ai.ResourceScript = this; // For debug rendering
+		ai.QLearner = qLearner;
+		ai.IsLearning = true;
+		agentList.Add(ai);
 	}
 
 	// Called every frame
@@ -87,16 +87,31 @@ public class Game : MonoBehaviour {
 
 		currentWorld.Advance(actions);
 
+		// Timing of things after game is over
 		if (currentWorld.IsTerminal()) {
-
-
-			Debug.Log ("Game Over");
+			if (restartTimer == -1) {
+				restartTimer = 60 * 3;
+			} else if (restartTimer == 60) {
+				float termUtil = currentWorld.TerminalUtility();
+				if (termUtil > 0.0f) {
+					Gui.SetMode(1);
+				} else if (termUtil < 0.0f) {
+					Gui.SetMode(2);
+				}
+			} else if (restartTimer == 0) {
+				restartGame();
+			}
+			restartTimer--;
 		}
 	}
 
 	// Restarts the game
-	void RestartGame () {
-		
+	void restartGame () {
+
+		// Save our Q function
+		qLearner.SaveData();
+
+		Application.LoadLevel(0);
 	}
 
 	// A list of all agents that are used for the game
