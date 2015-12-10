@@ -80,6 +80,7 @@ public class SimplifiedWorld {
 		XDistanceToEnemy = HowXClose(world);
 		YDistanceToEnemy = HowYClose(world, playerNum);
 
+
 		// Set the player and enemy health
 		health = player.Health;
 		enemyHealth = enemy.Health;
@@ -185,7 +186,7 @@ public class SimplifiedWorld {
 	public YCloseness HowYClose (World world, int playerNum) {
 
 		World.Player player = playerNum == 1 ? world.Player1 : world.Player2;
-		World.Player other = playerNum == 2 ? world.Player2 : world.Player1;
+		World.Player other = playerNum == 1 ? world.Player2 : world.Player1;
 
 		float dY = player.Y - other.Y;
 

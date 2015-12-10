@@ -32,13 +32,13 @@ public class GUIControl : MonoBehaviour
 	
     void OnGUI()
     {
-        int r = (int) Mathf.Round(Mathf.Min((100.0f - health2) / 50.0f * 255.0f, 255.0f));
-        int g = 255 - (int)Mathf.Round(Mathf.Max(Mathf.Min((50.0f - health2) / 50.0f * 255.0f, 255.0f), 0.0f));
-        GUIDrawRect(new Rect(10.0f, 10.0f, health2 * 2.0f, 16.0f), new Color(r, g, 0.0f, 256.0f));
+        int r = (int) Mathf.Round(Mathf.Min((100.0f - health1) / 50.0f * 255.0f, 255.0f));
+        int g = 255 - (int)Mathf.Round(Mathf.Max(Mathf.Min((50.0f - health1) / 50.0f * 255.0f, 255.0f), 0.0f));
+        GUIDrawRect(new Rect(10.0f, 10.0f, health1 * 2.0f, 16.0f), new Color(r, g, 0.0f, 256.0f));
 
-        r = (int) Mathf.Round(Mathf.Min((100.0f - health1) / 50.0f * 255.0f, 255.0f));
-        g = 255 - (int)Mathf.Round(Mathf.Max(Mathf.Min((50.0f - health1) / 50.0f * 255.0f, 255.0f), 0.0f));
-        GUIDrawRect(new Rect(Screen.width * 0.505f + 10.0f, 10.0f, health1 * 2.0f, 16.0f), new Color(r, g, 0.0f, 256.0f));
+        r = (int) Mathf.Round(Mathf.Min((100.0f - health2) / 50.0f * 255.0f, 255.0f));
+        g = 255 - (int)Mathf.Round(Mathf.Max(Mathf.Min((50.0f - health2) / 50.0f * 255.0f, 255.0f), 0.0f));
+        GUIDrawRect(new Rect(Screen.width * 0.505f + 10.0f, 10.0f, health2 * 2.0f, 16.0f), new Color(r, g, 0.0f, 256.0f));
 
         if (GUI.Button(new Rect(Screen.width - 38.0f, 5.0f, 33.0f, 33.0f), currentTex, ""))
         {

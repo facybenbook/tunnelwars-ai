@@ -109,6 +109,16 @@ public abstract class Strategy {
 
 			}
 			normalizedConformance *= oneOverXSquaredNormalizationFactor;
+		} else {
+		
+			// If the path is null, the danger zone will still provide us with a small heuristic weight
+			int playerI = World.XToI(currentPlayer.X);
+			int playerJ = World.YToJ(currentPlayer.Y);
+
+			// The danger zone exists primarily to influence paths, so weight this very lightly
+			if (Level2DangerZone != null) {
+				normalizedConformance = Level2DangerZone.CheckDanger(playerI, playerJ) * 0.01f;
+			}
 		}
 
 

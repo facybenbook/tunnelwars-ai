@@ -17,7 +17,7 @@ using System.IO;
 public class QLearner {
 	
 	// Filename
-	public const string FileName = "/Users/GabeMontague/Desktop/QLearning/QValues";
+	public string PathFromDesktop = "/QLearning/QValues";
 
 	// The learning rate
 	public float Alpha { get; set; }
@@ -33,6 +33,10 @@ public class QLearner {
 		Alpha = alpha;
 		Epsilon = epsilon;
 		Discount = discount;
+
+		// Set file name
+		string path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+		fileName = path + PathFromDesktop;
 
 		// Construct allPossibleStrategies
 		foreach (StrategyType strategy in Enum.GetValues(typeof(StrategyType))) {
@@ -61,7 +65,7 @@ public class QLearner {
 	// Saves the Q function to the disk
 	public void SaveData () {
 
-		string timeSpecific = FileName + DateTime.Now.ToString("yyyyMMdd-HH,mm,ss");
+		string timeSpecific = fileName + DateTime.Now.ToString("yyyyMMdd-HH,mm,ss");
 		FileStream file = File.Open(timeSpecific, FileMode.CreateNew, FileAccess.ReadWrite);
 		var writer = new StreamWriter(file);
 
@@ -78,13 +82,13 @@ public class QLearner {
 		writer.Close();
 
 		// Copy
-		File.Copy(timeSpecific, FileName, true);
+		File.Copy(timeSpecific, fileName, true);
 	}
 
 	// Open the Q function thats been saved to the disk
 	public void OpenSavedData () {
 
-		FileStream file = File.Open(FileName, FileMode.Open, FileAccess.ReadWrite);
+		FileStream file = File.Open(fileName, FileMode.Open, FileAccess.ReadWrite);
 		var reader = new StreamReader(file);
 		string line;
 
@@ -102,14 +106,11 @@ public class QLearner {
 				} else if (i == 7) {
 					value = float.Parse(keyValueArray[i]);
 				}
-
-				string keyString = key.ToString();
-
-				utilities[keyString] = value;
 			}
+
+			string keyString = key.ToString();
+			utilities[keyString] = value;
 		}
-
-
 
 		file.Close ();
 	}
@@ -123,7 +124,7 @@ public class QLearner {
 			return utilities [key];
 		} else {
 			StrategyType recommended = strategyRecommendationFromState(state);
-			return recommended == strategy ? 1.0f : -1.0f;
+			return recommended == strategy ? 1.0f : 0.0f;
 		}
 	}
 
@@ -195,6 +196,10 @@ public class QLearner {
 		}
 	}
 
+
+
+	string fileName;
+
 	StrategyType[] allStrategies = new StrategyType[] {
 		StrategyType.Attack,
 		StrategyType.RunAway,
@@ -208,7 +213,7 @@ public class QLearner {
 	// List of possible strategyies
 	List<StrategyType> allPossibleStrategies = new List<StrategyType> ();
 
-	// The hard-coded QFunction way to construct a strategy
+	// The hard-coded recommendation for new situations that aren't in the dictionary
 	static StrategyType strategyRecommendationFromState(SimplifiedWorld state) {
 		
 		// Enemy has no ammo

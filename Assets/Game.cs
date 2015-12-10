@@ -12,7 +12,7 @@
  */
 
 // Disable for human versus AI
-#define AIVersusAI
+//#define AIVersusAI
 
 using UnityEngine;
 using System.Collections;
@@ -46,15 +46,6 @@ public class Game : MonoBehaviour {
 	public AudioClip AmmoSound;
 	public AudioClip LightningSound;
 
-	// The current world
-	RenderedWorld currentWorld = null;
-
-	// QLearner Object
-	QLearner qLearner;
-
-	// The restart timer
-	int restartTimer;
-
 	// First-time setup
 	void Start () {
 	
@@ -64,10 +55,11 @@ public class Game : MonoBehaviour {
 		Gui.SetMode(0);
 
 		restartTimer = -1;
+		winner = 0;
 		agentList = new List<IAgent>();
 
 		// Create q-learning object for the AI, and pick up learning where we left off
-		qLearner = new QLearner (alpha: 0.65f, epsilon: 0.25f, discount: 0.66f);
+		qLearner = new QLearner (alpha: 0.3f, epsilon: 0.25f, discount: 0.66f);
 		qLearner.OpenSavedData();
 
 #if !AIVersusAI
@@ -103,13 +95,17 @@ public class Game : MonoBehaviour {
 
 		// Timing of things after game is over
 		if (currentWorld.IsTerminal()) {
+
+			float termUtil = currentWorld.TerminalUtility();
+			if (termUtil > 0.0f) winner = 1;
+			if (termUtil < 0.0f) winner = -1;
+
 			if (restartTimer == -1) {
 				restartTimer = 60 * 3;
 			} else if (restartTimer == 60) {
-				float termUtil = currentWorld.TerminalUtility();
-				if (termUtil > 0.0f) {
+				if (winner == 1) {
 					Gui.SetMode(1);
-				} else if (termUtil < 0.0f) {
+				} else if (winner == 2) {
 					Gui.SetMode(2);
 				}
 			} else if (restartTimer == 0) {
@@ -118,6 +114,8 @@ public class Game : MonoBehaviour {
 			restartTimer--;
 		}
 	}
+
+
 
 	// Restarts the game
 	void restartGame () {
@@ -130,5 +128,18 @@ public class Game : MonoBehaviour {
 
 	// A list of all agents that are used for the game
 	List<IAgent> agentList;
+
+	// The current world
+	RenderedWorld currentWorld = null;
+	
+	// QLearner Object
+	QLearner qLearner;
+	
+	// The restart timer
+	int restartTimer;
+
+	// The winner
+	int winner = 0;
+
 
 }
