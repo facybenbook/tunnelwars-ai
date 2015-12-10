@@ -71,9 +71,19 @@ public class SimplifiedWorld {
 		}
 
 		// Set the player and enemy weapons and ammo amounts
-		Weapon = player.Weapon;
+		if (player.Ammo == 0) {
+			Weapon = WeaponType.None;
+		} else {
+			Weapon = player.Weapon;
+		}
+
+		if (enemy.Ammo == 0) {
+			EnemyWeapon = WeaponType.None;
+		} else {
+			EnemyWeapon = enemy.Weapon;
+		}
+
 		AmmoAmount = player.Ammo;
-		EnemyWeapon = enemy.Weapon;
 		EnemyAmmoAmount = enemy.Ammo;
 
 		// Convert these distances into closeness types

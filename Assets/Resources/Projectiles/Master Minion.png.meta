@@ -1,6 +1,15 @@
 fileFormatVersion: 2
 guid: 8e22e8197cc234d73826bcde21ed5f16
 TextureImporter:
+  fileIDToRecycleName:
+    21300000: Master Minion_0
+    21300002: Master Minion_1
+    21300004: Master Minion_2
+    21300006: Master Minion_3
+    21300008: Master Minion_4
+    21300010: Master Minion_5
+    21300012: Master Minion_6
+    21300014: Master Minion_7
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
@@ -19,6 +28,9 @@ TextureImporter:
   isReadable: 0
   grayScaleToAlpha: 0
   generateCubemap: 0
+  cubemapConvolution: 0
+  cubemapConvolutionSteps: 8
+  cubemapConvolutionExponent: 1.5
   seamlessCubemap: 0
   textureFormat: -1
   maxTextureSize: 1024
@@ -29,12 +41,15 @@ TextureImporter:
     wrapMode: 1
   nPOTScale: 0
   lightmap: 0
+  rGBM: 0
   compressionQuality: 50
+  allowsAlphaSplitting: 0
   spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: .5, y: .5}
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spritePixelsToUnits: 1
   alphaIsTransparency: 1
   textureType: 8
@@ -50,6 +65,7 @@ TextureImporter:
         height: 64
       alignment: 0
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Master Minion_1
       rect:
         serializedVersion: 2
@@ -59,6 +75,7 @@ TextureImporter:
         height: 64
       alignment: 0
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Master Minion_2
       rect:
         serializedVersion: 2
@@ -68,6 +85,7 @@ TextureImporter:
         height: 64
       alignment: 0
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Master Minion_3
       rect:
         serializedVersion: 2
@@ -77,6 +95,7 @@ TextureImporter:
         height: 64
       alignment: 0
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Master Minion_4
       rect:
         serializedVersion: 2
@@ -86,6 +105,7 @@ TextureImporter:
         height: 64
       alignment: 0
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Master Minion_5
       rect:
         serializedVersion: 2
@@ -95,6 +115,7 @@ TextureImporter:
         height: 64
       alignment: 0
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Master Minion_6
       rect:
         serializedVersion: 2
@@ -104,6 +125,7 @@ TextureImporter:
         height: 64
       alignment: 0
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Master Minion_7
       rect:
         serializedVersion: 2
@@ -113,5 +135,8 @@ TextureImporter:
         height: 64
       alignment: 0
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
   spritePackingTag: 
   userData: 
+  assetBundleName: 
+  assetBundleVariant: 

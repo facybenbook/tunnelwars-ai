@@ -108,6 +108,7 @@ public class Game : MonoBehaviour {
 				} else if (winner == 2) {
 					Gui.SetMode(2);
 				}
+			
 			} else if (restartTimer == 0) {
 				restartGame();
 			}
@@ -123,7 +124,7 @@ public class Game : MonoBehaviour {
 		// Save our Q function
 		qLearner.SaveData();
 
-		Application.LoadLevel(0);
+		//Application.LoadLevel(0);
 	}
 
 	// A list of all agents that are used for the game
