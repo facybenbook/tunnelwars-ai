@@ -59,7 +59,7 @@ public class Game : MonoBehaviour {
 		agentList = new List<IAgent>();
 
 		// Create q-learning object for the AI, and pick up learning where we left off
-		qLearner = new QLearner (alpha: 0.3f, epsilon: 0.25f, discount: 0.66f);
+		qLearner = new QLearner (alpha: 0.3f, epsilon: 0.15f, discount: 0.66f);
 		qLearner.OpenSavedData();
 
 #if !AIVersusAI

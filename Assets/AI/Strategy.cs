@@ -117,7 +117,7 @@ public abstract class Strategy {
 
 			// The danger zone exists primarily to influence paths, so weight this very lightly
 			if (Level2DangerZone != null) {
-				normalizedConformance = Level2DangerZone.CheckDanger(playerI, playerJ) * 0.01f;
+				normalizedConformance = Level2DangerZone.CheckDanger(playerI, playerJ) * 0.001f;
 			}
 		}
 

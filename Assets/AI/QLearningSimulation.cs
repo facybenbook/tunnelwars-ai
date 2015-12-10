@@ -43,7 +43,7 @@ public class QLearningSimulation: MonoBehaviour {
 		currentWorld = new World();
 
 		// Create QLearner object
-		qLearner = new QLearner (alpha: 0.65f, epsilon: 0.15f, discount: 0.66f);
+		qLearner = new QLearner (alpha: 0.3f, epsilon: 0.15f, discount: 0.66f);
 		qLearner.OpenSavedData();
 		
 		// Create 2 ai agents
