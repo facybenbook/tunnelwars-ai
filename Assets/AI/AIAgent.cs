@@ -29,15 +29,14 @@
  * 
  */
 
+// Debug rendering/printing of the path, danger zone, selected strategy
+//#define PATH_RENDER
+#define DANGER_RENDER
+//#define STRATEGY_PRINT
+
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-
-public class Program {
-	public static void Main (string[] args) {
-
-	}
-}
 
 public class AIAgent : PlayerAgentBase {
 
@@ -81,6 +80,7 @@ public class AIAgent : PlayerAgentBase {
 		fillerAction = WorldAction.NoAction;
 		isFirstTime = true;
 		boredomTimer = BoredTime;
+		calculatePathNextFrame = false;
 	}
 
 	// The center of the AI - get an action
@@ -107,100 +107,98 @@ public class AIAgent : PlayerAgentBase {
 		} else {
 			bestAction = fillerAction;
 
-			// Update
+			// Advance position along path and check distance to path
 			strategy.NextPathIndex = getNewPathIndex(player, strategy.NextPathIndex);
 			bool doneWithPath = false;
 			if (strategy.SearchPath != null) {
 				doneWithPath = strategy.NextPathIndex >= strategy.SearchPath.States.Count - 1;
 			}
 
-			// Get currentState
-			State currentState = new State(world, playerNum);
+			// Calculate the path if this frame has been designated to it
+			if (calculatePathNextFrame) {
 
-			// Check if this is the first time GetAction has been called or if one of the cases for changing strategies is hit
-			if (isFirstTime || !previousState.IsEquivalent(currentState) || doneWithPath
-			    || dangerZoneShifted(world) || playerLeftPath(world, strategy.SearchPath)
-			    || boredomTimer == 0) {
-
-				if (isFirstTime) {
-					previousState = currentState;
-				} /*else {
-					bool statesDifferent = !previousState.IsEquivalent(currentState);
-					bool zoneShift = dangerZoneShifted(world);
-					bool leftPath = playerLeftPath(world, strategy.SearchPath);
-					Debug.Log ("A");
-				}*/
-
-				isFirstTime = false;
-
-				// Get reward and update QValues if learning
-				if (IsLearning) {
-					float reward = State.Reward(previousState, strategy.Type, currentState);
-					QLearner.UpdateQValue(previousState, strategy.Type, currentState, reward);
-				}
-	
-				// Get a new strategy
-				StrategyType newStrategy = QLearner.GetStrategy(currentState);
-
-				Debug.Log (playerNum.ToString() + " is doing " + newStrategy.ToString());
-				strategy = Strategy.StrategyWithType(playerNum, newStrategy);
-
-				level1Searcher = new DiscreteAdversarialSearch(playerNum,
-				                                               strategy.Level1Heuristic,
-				                                               getFillerAction,
-				                                               getNewPathIndex,
-				                                               Level1StepSize,
-				                                               4);
-				level2Searcher = new AStar(Level2MaxNodesInPrioQueue, Level2MaxExpansions, strategy.Level2CostFunction,
-				                           strategy.Level2GoalFunction, strategy.Level2HeuristicFunction);
-
-				// Create block world and danger zone
-				blockWorld = new BlockWorld(playerNum, world);
-
-				// Recalc danger zone if needed
-				dangerZone = new DangerZone(opponentNum, world, blockWorld);
-
-				// Must be set before using the level 2 reward, cost, and goal functions
-				strategy.Level2DangerZone = dangerZone;
-
-
-				// Calculate player path
+				// Run A*
 				Path path = level2Searcher.ComputeBestPath(blockWorld);
 				
-				// Must be set before using the level 1 heuristic
+				// Must be set before using the level 1 heuristic with a path
 				strategy.SearchPath = path;
 				strategy.NextPathIndex = 0;
+				calculatePathNextFrame = false;
 
-				// Reset previous state
-				previousState = currentState;
+			} else {
 
-				boredomTimer = BoredTime;
+				// Compute a new strategy if the old one is no longer valid
+				State currentState = new State(world, playerNum);
+
+				if (isFirstTime
+				    || !previousState.IsEquivalent(currentState)
+				    || doneWithPath
+				    || dangerZoneShifted(world)
+				    || playerLeftPath(world, strategy.SearchPath)
+				    || boredomTimer == 0) {
+
+					if (isFirstTime) {
+						previousState = currentState;
+					}
+
+					isFirstTime = false;
+
+					// Get reward and update QValues if learning
+					if (IsLearning) {
+						float reward = State.Reward(previousState, strategy.Type, currentState);
+						QLearner.UpdateQValue(previousState, strategy.Type, currentState, reward);
+					}
+		
+					// Get a new strategy
+					StrategyType newStrategy = QLearner.GetStrategy(currentState);
+
+#if STRATEGY_PRINT
+					Debug.Log ("Player " + playerNum.ToString() + " selects strategy: " + newStrategy.ToString());
+#endif
+					strategy = Strategy.StrategyWithType(playerNum, newStrategy);
+
+					level1Searcher = new DiscreteAdversarialSearch(playerNum,
+					                                               strategy.Level1Heuristic,
+					                                               getFillerAction,
+					                                               getNewPathIndex,
+					                                               Level1StepSize,
+					                                               4);
+					level2Searcher = new AStar(Level2MaxNodesInPrioQueue, Level2MaxExpansions, strategy.Level2CostFunction,
+					                           strategy.Level2GoalFunction, strategy.Level2HeuristicFunction);
+
+					// Create block world and danger zone
+					blockWorld = new BlockWorld(playerNum, world);
+
+					// Recalc danger zone
+					dangerZone = new DangerZone(opponentNum, world, blockWorld);
+
+					// Must be set before using the level 2 reward, cost, and goal functions
+					strategy.Level2DangerZone = dangerZone;
+
+					// Calculate the path in the next frame
+					calculatePathNextFrame = true;
+
+					// Reset previous state
+					previousState = currentState;
+					boredomTimer = BoredTime;
+				}
 			}
 
-			//dangerZone.Render(ResourceScript);
-			//dangerZone.RenderPlayerBeliefs(ResourceScript);
-
+			// Debug rendering of danger zone
+#if DANGER_RENDER
+			dangerZone.Render(ResourceScript);
+			dangerZone.RenderPlayerBeliefs(ResourceScript);
+#endif
 		}
 	
 		decisionTimer--;
 		boredomTimer--;
 
+#if PATH_RENDER
 		if (strategy.SearchPath != null) {
 			strategy.SearchPath.Render(ResourceScript, strategy.NextPathIndex);
 		}
-
-		/*if (strategy.SearchPath != null) {
-			int len = strategy.SearchPath.States.Count;
-			if (true) {
-
-				int targetI = strategy.SearchPath.States[len - 1].Player.I;
-				int targetJ = strategy.SearchPath.States[len - 1].Player.J;
-				float targetX = World.IToXMin(targetI); //+ World.BlockSize / 2.0f;
-				float targetY = World.JToYMin(targetJ); //+ World.BlockSize / 2.0f;
-				GameObject obj = Object.Instantiate(ResourceScript.Protopath);
-				obj.transform.position = new Vector3(targetX, targetY);
-			}
-		}*/
+#endif
 
 		// Return a single-valued list with the best action
 		return new List<WorldAction>() {bestAction};
@@ -226,6 +224,10 @@ public class AIAgent : PlayerAgentBase {
 	State previousState;
 	bool isFirstTime;
 	int boredomTimer;
+
+	bool calculatePathNextFrame; // Indicates a path must be found in the next frame.
+	// This allows for exact filtering for danger zone and A* pathfinding to be done in different
+	// frames to improve the speed
 
 	// Defines the association between level 1 actions and filler actions
 	WorldAction getFillerAction(WorldAction action, WorldAction prevFillerAction) {
