@@ -1,8 +1,23 @@
 # Tunnel Wars AI Final Project
 
-To get started:
+To get started after cloning *with Unity*:
+
 1. Download Unity
 2. Open Assets/Scene.unity
+3. Make a folder on the Desktop called QLearning, and place the file called QValues in that folder. This step allows for multiple compilations to access the same learning data.
+4. Press play in the editor
+
+To get started after cloning *without Unity*:
+
+1. Do step 3 from above
+2. Run any of the compiled examples for Mac
+
+*Options*
+* Look in World.cs to start players on the opposite/same sides of the wall.
+* Look in Game.cs to simulate AI vs AI or Human vs AI
+* To run without graphics, uncheck the Game script of the Control object in the editor and instead enable the QLearningSimulation script.
+* FPS can be set in a script on the control object in Unity
+* Debug rendering of Paths and Danger Zones, as well as declaration of strategies can be enabled in AIAgent.cs
 
 The main logic of the game is all crammed into Game.cs. The AI addition will add classes used by this main script.
 
