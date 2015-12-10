@@ -148,6 +148,9 @@ public class AIAgent : PlayerAgentBase {
 					if (IsLearning) {
 						float reward = SimplifiedWorld.Reward(previousState, strategy.Type, currentState);
 						QLearner.UpdateQValue(previousState, strategy.Type, currentState, reward);
+
+						// Don't learn once world is terminal
+						if (world.IsTerminal()) IsLearning = false;
 					}
 		
 					// Get a new strategy
@@ -178,6 +181,9 @@ public class AIAgent : PlayerAgentBase {
 
 					// Calculate the path in the next frame
 					calculatePathNextFrame = true;
+
+					// Speeds up framerate after player has died
+					if (world.IsTerminal()) calculatePathNextFrame = false;
 
 					// Reset previous state
 					previousState = currentState;
