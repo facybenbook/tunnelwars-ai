@@ -92,7 +92,6 @@ public class QLearner {
 		var reader = new StreamReader(file);
 		string line;
 
-		Dictionary <String, List<float>> EmptyAmmoDict = new Dictionary <String, List<float>> ();
 
 		while ((line = reader.ReadLine()) != null) {
 
@@ -112,7 +111,9 @@ public class QLearner {
 
 			string keyString = key.ToString();
 
+
 			utilities[keyString] = value;
+
 		}
 
 		file.Close ();
