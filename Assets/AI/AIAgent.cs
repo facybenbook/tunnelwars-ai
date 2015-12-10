@@ -53,7 +53,7 @@ public class AIAgent : PlayerAgentBase {
 
 	public const int Level3StepSize = 20;
 	public Game ResourceScript { get; set; }
-	public QLearning QLearner;
+	public QLearner QLearner;
 	public bool IsLearning;
 
 	public AIAgent(int player) : base(player) {
@@ -61,11 +61,8 @@ public class AIAgent : PlayerAgentBase {
 		playerNum = player;
 		opponentNum = playerNum == 1 ? 2 : 1;
 
-		// Get qLearner
-		float alpha = 0.5f;
-		float epsilon = 0.3f;
-		float discount = 0.95f;
-		QLearner = new QLearning (alpha, epsilon, discount);
+		// Create a new, default QLearner. Usually want to replace this value for more control
+		QLearner = new QLearner();
 		IsLearning = false;
 
 		// Set strategy

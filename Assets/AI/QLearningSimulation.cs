@@ -1,8 +1,7 @@
 /*
- * Game.cs
+ * QLearningSimulation.cs
  * 
- * Runs the game. Connects Unity references with the game logic, and directs
- * the behavior of all other scripts.
+ * Meant to be added to the control object in Unity to simulate AI-on-AI games.
  *
  */
 
@@ -17,8 +16,8 @@ public class QLearningSimulation: MonoBehaviour {
 	// World
 	World currentWorld;
 
-	// QLearning Object
-	QLearning qLearner;
+	// QLearner Object
+	QLearner qLearner;
 
 	// A list of all agents that are used for the game
 	List<IAgent> agentList;
@@ -38,11 +37,11 @@ public class QLearningSimulation: MonoBehaviour {
 		// Set up the world with the initial state
 		currentWorld = new World();
 
-		// Create QLearning obj
+		// Create QLearner obj
 		float alpha = 0.65f;
 		float epsilon = 0.05f;
 		float discount = 0.95f;
-		qLearner = new QLearning (alpha, epsilon, discount);
+		qLearner = new QLearner (alpha, epsilon, discount);
 		qLearner.OpenSavedData();
 		
 		// Create 2 ai agents

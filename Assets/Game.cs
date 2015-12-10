@@ -41,8 +41,8 @@ public class Game : MonoBehaviour {
 	// The current world
 	RenderedWorld currentWorld = null;
 
-	// QLearning Object
-	QLearning qLearner;
+	// QLearner Object
+	QLearner qLearner;
 
 	// First-time setup
 	void Start () {
@@ -52,11 +52,11 @@ public class Game : MonoBehaviour {
 		currentWorld.Display();
 		Gui.GetComponent<GUIControl>().SetMode(0);
 
-		// Create QLearning obj
+		// Create QLearner obj
 		float alpha = 0.65f;
 		float epsilon = 0.05f;
 		float discount = 0.95f;
-		qLearner = new QLearning (alpha, epsilon, discount);
+		qLearner = new QLearner (alpha, epsilon, discount);
 
 		// Create a keyboard control agent for both players
 		agentList = new List<IAgent>();

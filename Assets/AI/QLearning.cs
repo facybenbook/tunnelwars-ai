@@ -1,7 +1,7 @@
 /* 
- * QLearning.cs
+ * QLearner.cs
  * 
- * The QLearning class is responsible for learning and storing the Q values
+ * The QLearner class is responsible for learning and storing the Q values
  * that associate a generalized state with a strategy. Actually selection and
  * implementation of strategy is carried out by the AIAgent
  * 
@@ -13,8 +13,8 @@ using System.Collections.Generic;
 using System;
 using System.IO;
 
-// Class used in QLearning
-public class QLearning {
+// Class used in QLearner
+public class QLearner {
 	
 	// Filename
 	public const string FileName = "QValues";
@@ -29,7 +29,7 @@ public class QLearning {
 	public float Discount { get; set; }
 
 	// Constructor
-	public QLearning (float alpha, float epsilon, float discount) {
+	public QLearner (float alpha=0.25f, float epsilon=0.05f, float discount=0.75f) {
 		Alpha = alpha;
 		Epsilon = epsilon;
 		Discount = discount;
@@ -136,8 +136,8 @@ public class QLearning {
 			
 			float qValue = getQValue (state, strategy);
 			
-			// If the utility for this strategy is higher than the current best
-			if (qValue > currentQValue) {
+			// If the utility for this strategy is higher than the current best, update
+			if (qValue >= currentQValue) {
 				currentQValue = qValue;
 			}
 		}
@@ -170,8 +170,6 @@ public class QLearning {
 	// Updates the q value of a state-action tuple
 	public void UpdateQValue (State state, StrategyType strategy, State nextState, float reward) {
 
-
-
 		// Get the key
 		float qValue;
 		string key = (new Key(state,strategy)).ToString();
@@ -184,7 +182,7 @@ public class QLearning {
 		}
 
 		// Update the QValue
-		utilities [key] = qValue + Alpha * (reward + Discount * ComputeValueFromQValues(nextState) - qValue);
+		utilities[key] = qValue + Alpha * (reward + Discount * ComputeValueFromQValues(nextState) - qValue);
 	}
 
 	public StrategyType GetStrategy (State state) {
