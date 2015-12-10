@@ -128,14 +128,15 @@ public class AIAgent : PlayerAgentBase {
 			} else {
 
 				// Compute a new strategy if the old one is no longer valid
-				State currentState = new State(world, playerNum);
+				SimplifiedWorld currentState = new SimplifiedWorld(world, playerNum);
 
 				if (isFirstTime
 				    || !previousState.IsEquivalent(currentState)
 				    || doneWithPath
 				    || dangerZoneShifted(world)
 				    || playerLeftPath(world, strategy.SearchPath)
-				    || boredomTimer == 0) {
+				    || boredomTimer == 0
+				    || world.IsTerminal()) {
 
 					if (isFirstTime) {
 						previousState = currentState;
@@ -145,7 +146,7 @@ public class AIAgent : PlayerAgentBase {
 
 					// Get reward and update QValues if learning
 					if (IsLearning) {
-						float reward = State.Reward(previousState, strategy.Type, currentState);
+						float reward = SimplifiedWorld.Reward(previousState, strategy.Type, currentState);
 						QLearner.UpdateQValue(previousState, strategy.Type, currentState, reward);
 					}
 		
@@ -221,7 +222,7 @@ public class AIAgent : PlayerAgentBase {
 
 	// Level 3
 	Strategy strategy;
-	State previousState;
+	SimplifiedWorld previousState;
 	bool isFirstTime;
 	int boredomTimer;
 

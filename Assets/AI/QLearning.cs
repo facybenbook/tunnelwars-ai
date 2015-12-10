@@ -115,7 +115,7 @@ public class QLearner {
 	}
 
 	// Returns the q value of a state-action tuple
-	public float getQValue (State state, StrategyType strategy) {
+	public float getQValue (SimplifiedWorld state, StrategyType strategy) {
 
 		string key = (new Key (state, strategy)).ToString();
 
@@ -127,7 +127,7 @@ public class QLearner {
 	}
 
 	// Returns the utility value of a state
-	public float ComputeValueFromQValues (State state) {
+	public float ComputeValueFromQValues (SimplifiedWorld state) {
 
 		float currentQValue = 0.0f;
 		
@@ -146,7 +146,7 @@ public class QLearner {
 	}
 
 	// Returns the optimal action at a state
-	public StrategyType ComputeStrategyFromQValues(State state) {
+	public StrategyType ComputeStrategyFromQValues(SimplifiedWorld state) {
 
 		StrategyType currentStrategy = StrategyType.Attack;
 		float maxQValue = float.MinValue;
@@ -168,7 +168,7 @@ public class QLearner {
 	}
 
 	// Updates the q value of a state-action tuple
-	public void UpdateQValue (State state, StrategyType strategy, State nextState, float reward) {
+	public void UpdateQValue (SimplifiedWorld state, StrategyType strategy, SimplifiedWorld nextState, float reward) {
 
 		// Get the key
 		float qValue;
@@ -185,7 +185,7 @@ public class QLearner {
 		utilities[key] = qValue + Alpha * (reward + Discount * ComputeValueFromQValues(nextState) - qValue);
 	}
 
-	public StrategyType GetStrategy (State state) {
+	public StrategyType GetStrategy (SimplifiedWorld state) {
 
 		float random = UnityEngine.Random.Range (0.0f, 1.0f);
 
@@ -208,7 +208,7 @@ public class QLearner {
 	void initializeQValuesToZero () {
 
 		// Iterate through every strategy and state
-		foreach (State state in State.AllPossible()) {
+		foreach (SimplifiedWorld state in SimplifiedWorld.AllPossible()) {
 			foreach (StrategyType strategy in allStrategies) {
 
 				// Get the key for the dictionary and enter in 0.0
@@ -236,17 +236,17 @@ public class QLearner {
 // Key class that stores a state and a strategy
 class Key {
 	
-	public State state { get; set; }
+	public SimplifiedWorld state { get; set; }
 	public StrategyType strategy { get; set; }
 	
 	// Constructors
-	public Key (State state1, StrategyType strategy1) {
-		state = state1;
-		strategy = strategy1;
+	public Key (SimplifiedWorld state, StrategyType strategy) {
+		this.state = state;
+		this.strategy = strategy;
 	}
 	
 	public Key () {
-		state = new State();
+		state = new SimplifiedWorld();
 		strategy = StrategyType.Attack;
 	}
 	
@@ -254,7 +254,7 @@ class Key {
 		
 		string keyString = "";
 		
-		// State
+		// SimplifiedWorld
 		keyString = keyString + state.ToString ();
 		keyString = keyString + " ";
 		
@@ -277,7 +277,7 @@ class Key {
 			if (i < l - 1) {
 				stateString += propertyArray[i] + " ";
 			} else {
-				key.state = State.FromString(stateString);
+				key.state = SimplifiedWorld.FromString(stateString);
 				key.strategy = (StrategyType) Enum.Parse(typeof(StrategyType),propertyArray[i]);
 			}
 		}
