@@ -116,7 +116,8 @@ public abstract class Strategy {
 		return level1HealthWeight * dHealth
 			+ level1AmmoWeight * dAmmo
 			+ level1ConfrontationWeight * normalizedInverseDist
-			+ level1SuperlevelWeight * normalizedConformance;
+			+ level1SuperlevelWeight * normalizedConformance
+			;
 	}
 
 	// Override points

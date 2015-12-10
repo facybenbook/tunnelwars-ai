@@ -1,7 +1,10 @@
 /*
  * QLearningSimulation.cs
  * 
- * Meant to be added to the control object in Unity to simulate AI-on-AI games.
+ * Added to the control object in Unity to simulate multiple AI-on-AI games.
+ * 
+ * NOTE: It is important that this is not simultaneously turned on with Game.cs in the Unity
+ * editor
  *
  */
 
@@ -39,11 +42,8 @@ public class QLearningSimulation: MonoBehaviour {
 		// Set up the world with the initial state
 		currentWorld = new World();
 
-		// Create QLearner obj
-		float alpha = 0.65f;
-		float epsilon = 0.05f;
-		float discount = 0.95f;
-		qLearner = new QLearner (alpha, epsilon, discount);
+		// Create QLearner object
+		qLearner = new QLearner (alpha: 0.65f, epsilon: 0.15f, discount: 0.66f);
 		qLearner.OpenSavedData();
 		
 		// Create 2 ai agents
@@ -51,14 +51,14 @@ public class QLearningSimulation: MonoBehaviour {
 		AIAgent ai1 = new AIAgent(1);
 		ai1.IsLearning = true;
 		ai1.QLearner = qLearner;
-		AIAgent ai2 = new AIAgent (2);
+		AIAgent ai2 = new AIAgent(2);
 		ai2.IsLearning = true;
 		ai2.QLearner = qLearner;
 		agentList.Add(ai1);
-		agentList.Add (ai2);
+		agentList.Add(ai2);
 
 		// Specify number of games
-		numberOfGames = 1;
+		numberOfGames = 10;
 
 		// Specify which iteration of games we are on
 		gameIteration = 1;
@@ -119,8 +119,8 @@ public class QLearningSimulation: MonoBehaviour {
 			currentWorld.Advance(actions);
 
 			gameFrames++;
-			if (gameFrames == 60 * 60) {
-				Debug.Log ("A minute goes by...");
+			if (gameFrames % (60 * 5) == 0) {
+				Debug.Log ("Simulated " + (gameFrames / 60).ToString() + " seconds.");
 			}
 		}
 	}

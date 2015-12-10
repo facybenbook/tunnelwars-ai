@@ -30,9 +30,12 @@
  */
 
 // Debug rendering/printing of the path, danger zone, selected strategy
-//#define PATH_RENDER
+
+#define PATH_RENDER
+
 //#define DANGER_RENDER
-//#define STRATEGY_PRINT
+
+#define STRATEGY_PRINT
 
 using UnityEngine;
 using System.Collections;
@@ -47,8 +50,11 @@ public class AIAgent : PlayerAgentBase {
 	public const int Level2MaxExpansions = 200;
 	public const int DangerZoneRecalcDistance = DangerZone.DistributionSteps;
 	public const float PathDeviationRecalcDistance = World.BlocksHeight * 6;
+	
+	public const int MaxStrategyTime = 60 * 5;
 
-	public const int BoredTime = 60 * 20;
+	// If no path is found, wait this long before trying again
+	public const int NoPathFoundRefreshTimer = 30;
 
 	public const int Level3StepSize = 20;
 	public Game ResourceScript { get; set; }
@@ -79,7 +85,7 @@ public class AIAgent : PlayerAgentBase {
 		                           strategy.Level2GoalFunction, strategy.Level2HeuristicFunction);
 		fillerAction = WorldAction.NoAction;
 		isFirstTime = true;
-		boredomTimer = BoredTime;
+		strategyTimer = MaxStrategyTime;
 		calculatePathNextFrame = false;
 	}
 
@@ -101,14 +107,12 @@ public class AIAgent : PlayerAgentBase {
 			fillerAction = decision.FillerAction;
 
 			decisionTimer = Level1StepSize;
-			boredomTimer = BoredTime;
 		
 		// Otherwise do the filler action
 		} else {
 			bestAction = fillerAction;
 
-			// Advance position along path and check distance to path
-			strategy.NextPathIndex = getNewPathIndex(player, strategy.NextPathIndex);
+			// Check distance to path
 			bool doneWithPath = false;
 			if (strategy.SearchPath != null) {
 				doneWithPath = strategy.NextPathIndex >= strategy.SearchPath.States.Count - 1;
@@ -125,6 +129,9 @@ public class AIAgent : PlayerAgentBase {
 				strategy.NextPathIndex = 0;
 				calculatePathNextFrame = false;
 
+				// If no path is able to be calculated, then check again sooner than normal
+				if (path == null) strategyTimer = NoPathFoundRefreshTimer;
+
 			} else {
 
 				// Compute a new strategy if the old one is no longer valid
@@ -135,13 +142,12 @@ public class AIAgent : PlayerAgentBase {
 				    || doneWithPath
 				    || dangerZoneShifted(world)
 				    || playerLeftPath(world, strategy.SearchPath)
-				    || boredomTimer == 0
+				    || strategyTimer <= 0
 				    || world.IsTerminal()) {
 
 					if (isFirstTime) {
 						previousState = currentState;
 					}
-
 					isFirstTime = false;
 
 					// Get reward and update QValues if learning
@@ -187,7 +193,7 @@ public class AIAgent : PlayerAgentBase {
 
 					// Reset previous state
 					previousState = currentState;
-					boredomTimer = BoredTime;
+					strategyTimer = MaxStrategyTime;
 				}
 			}
 
@@ -198,8 +204,11 @@ public class AIAgent : PlayerAgentBase {
 #endif
 		}
 	
+		// Advance path position
+		strategy.NextPathIndex = getNewPathIndex(player, strategy.NextPathIndex);
+
 		decisionTimer--;
-		boredomTimer--;
+		strategyTimer--;
 
 #if PATH_RENDER
 		if (strategy.SearchPath != null) {
@@ -230,7 +239,7 @@ public class AIAgent : PlayerAgentBase {
 	Strategy strategy;
 	SimplifiedWorld previousState;
 	bool isFirstTime;
-	int boredomTimer;
+	int strategyTimer;
 
 	bool calculatePathNextFrame; // Indicates a path must be found in the next frame.
 	// This allows for exact filtering for danger zone and A* pathfinding to be done in different

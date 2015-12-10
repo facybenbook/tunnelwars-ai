@@ -6,8 +6,13 @@
  * 
  * Right now Game is configured to set up a Q-learning AI against a human player
  * playing with WASDF
+ * 
+ * Should not be enabled in the Unity Editor at the same time as QLearningSimulation
  *
  */
+
+// Disable for human versus AI
+#define AIVersusAI
 
 using UnityEngine;
 using System.Collections;
@@ -60,20 +65,29 @@ public class Game : MonoBehaviour {
 
 		restartTimer = -1;
 		agentList = new List<IAgent>();
-		
-		// Create the human agent
-		agentList.Add(new WASDFAgent(1));
 
 		// Create q-learning object for the AI, and pick up learning where we left off
-		qLearner = new QLearner (alpha: 0.65f, epsilon: 0.05f, discount: 0.95f);
+		qLearner = new QLearner (alpha: 0.65f, epsilon: 0.25f, discount: 0.66f);
 		qLearner.OpenSavedData();
 
+#if !AIVersusAI
+		// Create the human agent
+		agentList.Add(new WASDFAgent(1));
+#else
+		// Create AI for player 1
+		AIAgent player1Ai = new AIAgent(1);
+		player1Ai.ResourceScript = this; // For debug rendering
+		player1Ai.QLearner = qLearner;
+		player1Ai.IsLearning = true;
+		agentList.Add(player1Ai);
+#endif
+
 		// Create and add the AI agent
-		AIAgent ai = new AIAgent(2);
-		ai.ResourceScript = this; // For debug rendering
-		ai.QLearner = qLearner;
-		ai.IsLearning = true;
-		agentList.Add(ai);
+		AIAgent player2Ai = new AIAgent(2);
+		player2Ai.ResourceScript = this; // For debug rendering
+		player2Ai.QLearner = qLearner;
+		player2Ai.IsLearning = true;
+		agentList.Add(player2Ai);
 	}
 
 	// Called every frame

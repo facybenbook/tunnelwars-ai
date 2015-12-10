@@ -17,7 +17,7 @@ using System.IO;
 public class QLearner {
 	
 	// Filename
-	public const string FileName = "QValues";
+	public const string FileName = "/Users/GabeMontague/Desktop/QLearning/QValues";
 
 	// The learning rate
 	public float Alpha { get; set; }
@@ -122,7 +122,8 @@ public class QLearner {
 		if (utilities.ContainsKey (key)) {
 			return utilities [key];
 		} else {
-			return 0.0f;
+			StrategyType recommended = strategyRecommendationFromState(state);
+			return recommended == strategy ? 1.0f : -1.0f;
 		}
 	}
 
@@ -171,15 +172,8 @@ public class QLearner {
 	public void UpdateQValue (SimplifiedWorld state, StrategyType strategy, SimplifiedWorld nextState, float reward) {
 
 		// Get the key
-		float qValue;
-		string key = (new Key(state,strategy)).ToString();
-
-		// If the key is already in the dictionary then get the current QValue otherwise set the current QValue to 0
-		if (utilities.ContainsKey(key)) {
-			qValue = getQValue(state, strategy);
-		} else {
-			qValue = 0.0f;
-		}
+		float qValue = getQValue(state, strategy);
+		string key = (new Key(state, strategy)).ToString();
 
 		// Update the QValue
 		utilities[key] = qValue + Alpha * (reward + Discount * ComputeValueFromQValues(nextState) - qValue);
@@ -201,28 +195,10 @@ public class QLearner {
 		}
 	}
 
-
-
-
-	// Sets all Q values to 0
-	void initializeQValuesToZero () {
-
-		// Iterate through every strategy and state
-		foreach (SimplifiedWorld state in SimplifiedWorld.AllPossible()) {
-			foreach (StrategyType strategy in allStrategies) {
-
-				// Get the key for the dictionary and enter in 0.0
-				string key = (new Key(state,strategy)).ToString();
-				utilities.Add(key,0.0f);
-
-			}
-		}
-	}
-
 	StrategyType[] allStrategies = new StrategyType[] {
+		StrategyType.Attack,
 		StrategyType.RunAway,
 		StrategyType.GetAmmo,
-		StrategyType.Attack,
 		StrategyType.DigDown
 	};
 
@@ -231,6 +207,66 @@ public class QLearner {
 
 	// List of possible strategyies
 	List<StrategyType> allPossibleStrategies = new List<StrategyType> ();
+
+	// The hard-coded QFunction way to construct a strategy
+	static StrategyType strategyRecommendationFromState(SimplifiedWorld state) {
+		
+		// Enemy has no ammo
+		if (state.EnemyAmmoAmount == 0 || state.EnemyWeapon == WeaponType.None) {
+			
+			// Both the enemy and the player have no ammo
+			if (state.AmmoAmount == 0 || state.Weapon == WeaponType.None) {
+				
+				return StrategyType.GetAmmo;
+			}
+			
+			// Player has ammo but enemy doesn't
+			else {
+				
+				return StrategyType.Attack;
+			}
+		}
+		
+		// Enemy has ammo
+		else {
+			
+			// Enemy has ammo and the player doesn't
+			if (state.AmmoAmount == 0 || state.Weapon == WeaponType.None) {
+				
+				// Player is vulnerable to enemies weapons. Positive Y closeness is player below
+				if ((state.EnemyWeapon == WeaponType.Rockets && 
+				     (state.YDistanceToEnemy == YCloseness.PosNear || state.YDistanceToEnemy == YCloseness.NegNear)) ||
+				    (state.EnemyWeapon == WeaponType.Bombs && state.XDistanceToEnemy == XCloseness.Near) ||
+				    (state.EnemyWeapon == WeaponType.Lightning && state.XDistanceToEnemy == XCloseness.Near)) {
+
+					return StrategyType.RunAway;
+				}
+				
+				
+				// Player is probably safe from enemy attack
+				else {
+					return StrategyType.GetAmmo;
+				}
+			}
+			
+			// Both the player and the enemy have ammo
+			else {
+				
+				// Player is vulnerable to enemies weapons
+				if ((state.EnemyWeapon == WeaponType.Rockets && 
+				     (state.YDistanceToEnemy == YCloseness.PosNear || state.YDistanceToEnemy == YCloseness.NegNear)) ||
+				    (state.EnemyWeapon == WeaponType.Bombs && state.XDistanceToEnemy == XCloseness.Near) ||
+				    (state.EnemyWeapon == WeaponType.Lightning && state.XDistanceToEnemy == XCloseness.Near)) {
+					
+					return StrategyType.RunAway;
+				}
+				// Player is probably safe from enemy attack
+				else {
+					return StrategyType.Attack;
+				}    
+			}
+		}
+	}
 }
 
 // Key class that stores a state and a strategy
