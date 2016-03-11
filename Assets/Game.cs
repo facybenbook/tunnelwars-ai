@@ -12,7 +12,11 @@
  */
 
 // Disable for human versus AI
-//#define AIVersusAI
+//#define AIP1
+//#define AIP2
+
+// Enable this if either of the above flags are enabled
+//#define AIEnabled
 
 using UnityEngine;
 using System.Collections;
@@ -58,28 +62,37 @@ public class Game : MonoBehaviour {
 		winner = 0;
 		agentList = new List<IAgent>();
 
+#if AIEnabled
+
 		// Create q-learning object for the AI, and pick up learning where we left off
 		qLearner = new QLearner (alpha: 0.3f, epsilon: 0.15f, discount: 0.66f);
 		qLearner.OpenSavedData();
 
-#if !AIVersusAI
-		// Create the human agent
-		agentList.Add(new WASDFAgent(1));
-#else
+#endif
+
+#if AIP1
 		// Create AI for player 1
 		AIAgent player1Ai = new AIAgent(1);
 		player1Ai.ResourceScript = this; // For debug rendering
 		player1Ai.QLearner = qLearner;
 		player1Ai.IsLearning = true;
 		agentList.Add(player1Ai);
+#else
+		// Create the human agent
+		agentList.Add(new WASDFAgent(1));
 #endif
 
-		// Create and add the AI agent
+#if AIP2
+		// Create AI for player 1
 		AIAgent player2Ai = new AIAgent(2);
 		player2Ai.ResourceScript = this; // For debug rendering
 		player2Ai.QLearner = qLearner;
 		player2Ai.IsLearning = true;
 		agentList.Add(player2Ai);
+#else
+		// Create the human agent
+		agentList.Add(new ArrowsAgent(2));
+#endif
 	}
 
 	// Called every frame
@@ -121,9 +134,11 @@ public class Game : MonoBehaviour {
 	// Restarts the game
 	void restartGame () {
 
+#if AIEnabled
 		// Save our Q function
 		qLearner.SaveData();
 
+#endif
 		Application.LoadLevel(0);
 	}
 
@@ -141,6 +156,4 @@ public class Game : MonoBehaviour {
 
 	// The winner
 	int winner = 0;
-
-
 }
